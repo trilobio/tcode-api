@@ -52,6 +52,9 @@ class GET_TOOL(TCODEBase):
     type: Literal["GET_TOOL"] = "GET_TOOL"
     tool: Tool
 
+class DROP_TOOL(TCODEBase):
+    type: Literal["DROP_TOOL"] = "DROP_TOOL"
+
 
 class GET_TIP(TCODEBase):
     type: Literal["GET_TIP"] = "GET_TIP"
@@ -86,7 +89,7 @@ class DROP_TIP(TCODEBase):
 
 
 TCODE = Annotated[
-    Union[GET_TOOL, GET_TIP, GOTO, ASPIRATE, DISPENSE, DROP_TIP],
+    Union[GET_TOOL, GET_TIP, GOTO, ASPIRATE, DISPENSE, DROP_TIP, DROP_TOOL],
     Field(discriminator="type"),
 ]
 
