@@ -26,7 +26,51 @@ class TCODEBase(BaseModelStrict):
     pass
 
 
+class EnumWithDisplayName(Enum):
+        raise ValueError(f"'{value}' is not a valid LabwareType")
+    """Base class for Enum with display_name attribute."""
+
+    def __init__(self, value: int, display_name: str):
+        self._value_ = value
+        self.display_name = display_name
+
+    @classmethod
+    def from_value(cls, value: str | int) -> EnumWithDisplayName:
+        match type(value):
+            # Attempt to match by value
+            case int():
+                for member in cls:
+                    if member.value == value:
+                        return member
+
+            # Attempt to match by name or display_name
+            case str():
+                for member in cls:
+                    if member.name == value.upper() or member.display_name == value:
+                        return member
+
+            case _:
+                raise TypeError(f"Invalid value type: {type(value)}")
+
+
+Matrix = list[list[float]]
+
+
+class Location(BaseModelStrict):
+    """Resolvable location on a robot.
+
+    Three options:
+    - (int): 0-based index into a Fleet's labware list
+    - (str): name of a node in a robot's TransformTree
+    - (Matrix): transformation matrix relative to the robot's base
+    """
+    data: Union[int, str, Matrix]
+
+
 # Define constraint schemas
+class Probe(BaseModelStrict):
+    type: Literal["Probe"] = "Probe"
+
 class PipetteCommon(BaseModelStrict):
     min_volume: Optional[ValueWithUnits] = Field(default=None)
     max_volume: Optional[ValueWithUnits] = Field(default=None)
@@ -43,14 +87,38 @@ class EightChannelPipette(PipetteCommon):
 
 # Define the Tool discriminated union
 Tool = Annotated[
-    Union[SingleChannelPipette, EightChannelPipette],
+    Union[SingleChannelPipette, EightChannelPipette, Probe],
     Field(discriminator="type"),
 ]
+
+
+class PathType(EnumWithDisplayName):
+    """Enumeration of robot path types.
+
+    DIRECT: robot moves to the target location directly in jointspace.
+    SAFE: robot moves to the target location via a safe path.
+    SHORTCUT: robot uses DIRECT if it is close to the target, othserwise SAFE.
+    """
+    DIRECT = (1, "Direct")
+    SAFE = (2, "Safe")
+    SHORTCUT = (3, "Shortcut")
+
+
+class TrajectoryType(EnumWithDisplayName):
+    """Enumeration of trajectory types.
+
+    JOINT_SQUARE: robot moves in joint space with square motor profiles.
+    JOINT_TRAPEZOIDAL: robot moves in joint space with trapezoidal motor profiles.
+    LINEAR: robot moves in cartesian space with non-uniform motor profiles.
+    """
+    JOINT_SQUARE = (1, "Square")
+    JOINT_TRAPEZOIDAL = (2, "Trapezoidal")
 
 
 class GET_TOOL(TCODEBase):
     type: Literal["GET_TOOL"] = "GET_TOOL"
     tool: Tool
+
 
 class DROP_TOOL(TCODEBase):
     type: Literal["DROP_TOOL"] = "DROP_TOOL"
@@ -58,17 +126,17 @@ class DROP_TOOL(TCODEBase):
 
 class GET_TIP(TCODEBase):
     type: Literal["GET_TIP"] = "GET_TIP"
-    location: int
-
-
-Matrix = list[list[float]]
+    location: Location
 
 
 class GOTO(TCODEBase):
     type: Literal["GOTO"] = "GOTO"
-    location: int
+    location: Location
     location_offset: Matrix
-    tool_offset: Matrix
+    flange: Location
+    flange_offset: Matrix
+    path_type: PathType
+    trajectory_type: TrajectoryType
 
 
 class ASPIRATE(TCODEBase):
@@ -85,7 +153,7 @@ class DISPENSE(TCODEBase):
 
 class DROP_TIP(TCODEBase):
     type: Literal["DROP_TIP"] = "DROP_TIP"
-    location: int
+    location: Location
 
 
 TCODE = Annotated[
@@ -94,28 +162,10 @@ TCODE = Annotated[
 ]
 
 
-class LabwareType(Enum):
+class LabwareType(EnumWithDisplayName):
     SAMPLE = (1, "Sample")
     TIP = (2, "Tip")
     TRASH = (3, "Trash")
-
-    def __init__(self, value, display_name):
-        self._value_ = value
-        self.display_name = display_name
-
-    @classmethod
-    def from_value(cls, value):
-        # Attempt to match by value
-        if isinstance(value, int):
-            for member in cls:
-                if member.value == value:
-                    return member
-        # Attempt to match by name or display_name
-        if isinstance(value, str):
-            for member in cls:
-                if member.name == value.upper() or member.display_name == value:
-                    return member
-        raise ValueError(f"'{value}' is not a valid LabwareType")
 
 
 class Labware(BaseModel):
