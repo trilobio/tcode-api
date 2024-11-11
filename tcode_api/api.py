@@ -1,4 +1,6 @@
 """Pydantic BaseModel definitions of TCode API."""
+from __future__ import annotations
+
 from enum import Enum
 from typing import Annotated, List, Literal, Optional, Union
 
@@ -27,7 +29,6 @@ class TCODEBase(BaseModelStrict):
 
 
 class EnumWithDisplayName(Enum):
-        raise ValueError(f"'{value}' is not a valid LabwareType")
     """Base class for Enum with display_name attribute."""
 
     def __init__(self, value: int, display_name: str):
