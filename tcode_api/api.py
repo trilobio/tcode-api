@@ -116,30 +116,6 @@ class TrajectoryType(EnumWithDisplayName):
     JOINT_TRAPEZOIDAL = (2, "Trapezoidal")
 
 
-class GET_TOOL(TCODEBase):
-    type: Literal["GET_TOOL"] = "GET_TOOL"
-    tool: Tool
-
-
-class DROP_TOOL(TCODEBase):
-    type: Literal["DROP_TOOL"] = "DROP_TOOL"
-
-
-class GET_TIP(TCODEBase):
-    type: Literal["GET_TIP"] = "GET_TIP"
-    location: Location
-
-
-class GOTO(TCODEBase):
-    type: Literal["GOTO"] = "GOTO"
-    location: Location
-    location_offset: Matrix
-    flange: Location
-    flange_offset: Matrix
-    path_type: PathType
-    trajectory_type: TrajectoryType
-
-
 class ASPIRATE(TCODEBase):
     type: Literal["ASPIRATE"] = "ASPIRATE"
     volume: ValueWithUnits
@@ -152,13 +128,52 @@ class DISPENSE(TCODEBase):
     speed: ValueWithUnits
 
 
+class CALIBRATE_FTS_NOISE_FLOOR(TCODEBase):
+    type: Literal["CALIBRATE_FTS_NOISE_FLOOR"] = "CALIBRATE_FTS_NOISE_FLOOR"
+    axes: str
+    snr: float
+
+
 class DROP_TIP(TCODEBase):
     type: Literal["DROP_TIP"] = "DROP_TIP"
     location: Location
 
 
+class DROP_TOOL(TCODEBase):
+    type: Literal["DROP_TOOL"] = "DROP_TOOL"
+
+
+class GET_TIP(TCODEBase):
+    type: Literal["GET_TIP"] = "GET_TIP"
+    location: Location
+
+
+class GET_TOOL(TCODEBase):
+    type: Literal["GET_TOOL"] = "GET_TOOL"
+    tool: Tool
+
+
+class GOTO(TCODEBase):
+    type: Literal["GOTO"] = "GOTO"
+    location: Location
+    location_offset: Matrix
+    flange: Location
+    flange_offset: Matrix
+    path_type: PathType
+    trajectory_type: TrajectoryType
+
+
 TCODE = Annotated[
-    Union[GET_TOOL, GET_TIP, GOTO, ASPIRATE, DISPENSE, DROP_TIP, DROP_TOOL],
+    Union[
+        ASPIRATE,
+        CALIBRATE_FTS_NOISE_FLOOR,
+        DISPENSE,
+        DROP_TIP,
+        DROP_TOOL,
+        GET_TIP,
+        GET_TOOL,
+        GOTO,
+    ],
     Field(discriminator="type"),
 ]
 
