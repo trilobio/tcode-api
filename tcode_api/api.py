@@ -163,6 +163,10 @@ class GOTO(TCODEBase):
     trajectory_type: TrajectoryType
 
 
+class RESET_FTS(TCODEBase):
+    type: Literal["RESET_FTS"] = "RESET_FTS"
+
+
 TCODE = Annotated[
     Union[
         ASPIRATE,
@@ -173,6 +177,7 @@ TCODE = Annotated[
         GET_TIP,
         GET_TOOL,
         GOTO,
+        RESET_FTS,
     ],
     Field(discriminator="type"),
 ]
