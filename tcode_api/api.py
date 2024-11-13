@@ -163,6 +163,16 @@ class GOTO(TCODEBase):
     trajectory_type: TrajectoryType
 
 
+class PROBE(TCODEBase):
+    type: Literal["PROBE"] = "PROBE"
+    location: Location
+    location_offset: Matrix
+    flange: Location
+    flange_offset: Matrix
+    speed_fraction: ValueWithUnits
+    backoff_distance_m: ValueWithUnits
+
+
 class RESET_FTS(TCODEBase):
     type: Literal["RESET_FTS"] = "RESET_FTS"
 
@@ -177,6 +187,7 @@ TCODE = Annotated[
         GET_TIP,
         GET_TOOL,
         GOTO,
+        PROBE,
         RESET_FTS,
     ],
     Field(discriminator="type"),
