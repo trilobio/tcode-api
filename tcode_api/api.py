@@ -169,7 +169,7 @@ class PROBE(TCODEBase):
     location_offset: Matrix
     flange: Location
     flange_offset: Matrix
-    speed_fraction: ValueWithUnits
+    speed_fraction: float
     backoff_distance_m: ValueWithUnits
 
 
