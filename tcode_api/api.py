@@ -72,10 +72,17 @@ class Location(BaseModelStrict):
 class Probe(BaseModelStrict):
     type: Literal["Probe"] = "Probe"
 
+
 class PipetteCommon(BaseModelStrict):
     min_volume: Optional[ValueWithUnits] = Field(default=None)
     max_volume: Optional[ValueWithUnits] = Field(default=None)
     max_speed: Optional[ValueWithUnits] = Field(default=None)
+
+
+class Gripper(BaseModelStrict):
+    type: Literal["Gripper"] = "Gripper"
+    motor_position_open: float
+    motor_position_closed: float
 
 
 class SingleChannelPipette(PipetteCommon):
@@ -88,7 +95,7 @@ class EightChannelPipette(PipetteCommon):
 
 # Define the Tool discriminated union
 Tool = Annotated[
-    Union[SingleChannelPipette, EightChannelPipette, Probe],
+    Union[SingleChannelPipette, EightChannelPipette, Probe, Gripper],
     Field(discriminator="type"),
 ]
 
@@ -134,6 +141,11 @@ class CALIBRATE_FTS_NOISE_FLOOR(TCODEBase):
     snr: float
 
 
+class DROP_LABWARE(TCODEBase):
+    type: Literal["DROP_LABWARE"] = "DROP_LABWARE"
+    location: Location
+
+
 class DROP_TIP(TCODEBase):
     type: Literal["DROP_TIP"] = "DROP_TIP"
     location: Location
@@ -141,6 +153,11 @@ class DROP_TIP(TCODEBase):
 
 class DROP_TOOL(TCODEBase):
     type: Literal["DROP_TOOL"] = "DROP_TOOL"
+
+
+class GET_LABWARE(TCODEBase):
+    type: Literal["GET_LABWARE"] = "GET_LABWARE"
+    location: Location
 
 
 class GET_TIP(TCODEBase):
@@ -182,8 +199,10 @@ TCODE = Annotated[
         ASPIRATE,
         CALIBRATE_FTS_NOISE_FLOOR,
         DISPENSE,
+        DROP_LABWARE,
         DROP_TIP,
         DROP_TOOL,
+        GET_LABWARE,
         GET_TIP,
         GET_TOOL,
         GOTO,
