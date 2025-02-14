@@ -62,7 +62,7 @@ class Location(BaseModelStrict):
 
     Three options:
     - (int): 0-based index into a Fleet's labware list
-    - (str): name of a node in a robot's TransformTree
+    - (str): NodeID in a robot's TransformTree
     - (Matrix): transformation matrix relative to the robot's base
     """
     data: Union[int, str, Matrix]
