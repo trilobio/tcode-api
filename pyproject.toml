@@ -15,6 +15,7 @@ optional = true
 [tool.poetry.group.dev.dependencies]
 isort = "^6.0.1"
 black = "^25.1.0"
+mypy = "^1.15.0"
 
 
 [build-system]

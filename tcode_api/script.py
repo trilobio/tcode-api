@@ -1,9 +1,9 @@
 """Human-readable scripting wrapper for the TCode API."""
 
-import datetime
 import importlib.metadata
 import logging
 import pathlib
+import time
 from difflib import get_close_matches
 
 from tcode_api.api import (
@@ -11,6 +11,7 @@ from tcode_api.api import (
     Fleet,
     Labware,
     Location,
+    LocationType,
     Metadata,
     PathType,
     Robot,
@@ -81,10 +82,10 @@ class TCodeScriptBuilder:
                     "File already exists. Use overwrite=True to overwrite."
                 )
 
-        self.ast.metadata.timestamp = datetime.datetime()
+        self.ast.metadata.timestamp = time.time()
 
         with file_path.open("w") as file:
-            file.write(self.ast.model_dump())
+            file.write(self.ast.model_dump_json())
 
     # Construction Command Methods #
 
@@ -117,10 +118,12 @@ class TCodeScriptBuilder:
         """Add a new command to the TCode script."""
         self.ast.tcode.append(command)
 
-    def goto_labware_index(self, labware_index: int) -> None:
+    def goto_labware_index(self, labware_serial: str, labware_index: int) -> None:
         """Helpful wrapper for add_command(GOTO) that auto-fills many default values."""
         command = GOTO(
-            location=Location(data=labware_index),
+            location=Location(
+                type=LocationType.LABWARE_INDEX, data=(labware_serial, labware_index)
+            ),
             path_type=self.default_path_type,
             trajectory_type=self.default_trajectory_type,
         )
