@@ -227,8 +227,17 @@ class Fleet(BaseModelStrict):
     labware: list[Labware] = Field(default_factory=list)
 
 
+class Metadata(BaseModelStrict):
+    """TCode script metadata."""
+    name: str
+    timestamp: float
+    description: Optional[str] = Field(default=None)
+    tcode_api_version: Optional[str] = Field(default=None)
+
+
 class TCodeAST(BaseModel):
     """Structure of a TCode script as an abstract syntax tree."""
 
+    metadata: Metadata
     fleet: Fleet
     tcode: List[TCODE] = Field(default_factory=list)
