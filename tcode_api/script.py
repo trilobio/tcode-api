@@ -6,7 +6,7 @@ import pathlib
 import importlib.metadata
 from difflib import get_close_matches
 
-from tcode_api.api import TCodeAST, Robot, Metadata, Fleet, Labware, Matrix, GOTO, Location, PathType, TrajectoryType
+from tcode_api.api import TCodeAST, Robot, Metadata, Fleet, Labware, GOTO, Location, PathType, TrajectoryType
 
 _logger = logging.getLogger("tcode.script")
 
@@ -23,14 +23,6 @@ def load_tcode_json_file(file_path: pathlib.Path) -> TCodeAST:
         data = f.read()
 
     return TCodeAST.model_validate_json(data)
-
-
-def create_new_identity_transform() -> Matrix:
-    return [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [0, 0, 0, 1]]
 
 
 class TCodeScriptBuilder:
@@ -105,9 +97,6 @@ class TCodeScriptBuilder:
         """Helpful wrapper for add_command(GOTO) that auto-fills many default values."""
         command = GOTO(
             location=Location(data=labware_index),
-            location_offset=create_new_identity_transform(),
-            flange=Location(data="flange"),
-            flange_offset=create_new_identity_transform(),
             path_type=self.default_path_type,
             trajectory_type=self.default_trajectory_type,
         )

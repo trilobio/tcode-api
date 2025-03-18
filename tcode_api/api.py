@@ -53,6 +53,14 @@ class EnumWithDisplayName(Enum):
 Matrix = list[list[float]]
 
 
+def identity_transform_factory() -> Matrix:
+    return [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [0, 0, 0, 1]]
+
+
 class LocationType(EnumWithDisplayName):
     """Enumeration of different methods for specifying a location.
 
@@ -161,9 +169,9 @@ class GOTO(TCODEBase):
     location: Location
     path_type: PathType
     trajectory_type: TrajectoryType
-    location_offset: Optional[Matrix] = None
+    location_offset: Optional[Matrix] = Field(default_factory=identity_transform_factory)
     flange: Optional[Location] = None
-    flange_offset: Optional[Matrix] = None
+    flange_offset: Optional[Matrix] = Field(default_factory=identity_transform_factory)
 
 
 class PROBE(TCODEBase):
