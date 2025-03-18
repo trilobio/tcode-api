@@ -6,7 +6,7 @@ import pathlib
 import importlib.metadata
 from difflib import get_close_matches
 
-from tcode_api import TCodeAST, Robot, Metadata, Fleet, Labware
+from tcode_api.api import TCodeAST, Robot, Metadata, Fleet, Labware, Matrix, GOTO, Location, PathType, TrajectoryType
 
 _logger = logging.getLogger("tcode.script")
 
@@ -25,6 +25,14 @@ def load_tcode_json_file(file_path: pathlib.Path) -> TCodeAST:
     return TCodeAST.model_validate_json(data)
 
 
+def create_new_identity_transform() -> Matrix:
+    return [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [0, 0, 0, 1]]
+
+
 class TCodeScriptBuilder:
     """Builder for TCode scripts."""
 
@@ -32,11 +40,15 @@ class TCodeScriptBuilder:
         """Initialize a new TCode script builder with metadata."""
         self.reset(name, description)
 
+        self.default_path_type = PathType.SAFE
+        self.default_trajectory_type = TrajectoryType.JOINT_SQUARE
+
     def reset(self, name: str, description: str | None = None) -> None:
         """Set up the builder to write a new script."""
         metadata = Metadata(
             name=name,
             description=description,
+            timestamp=0.0,  # Will be overwritten on call to emit()
             tcode_api_version=importlib.metadata.version("tcode_api"),
         )
         self.ast = TCodeAST(metadata=metadata, fleet=Fleet(), tcode=[])
@@ -66,15 +78,15 @@ class TCodeScriptBuilder:
         
     def add_robot(self, robot: Robot) -> None:
         """Add a new robot to the targeted fleet."""
-        if robot in self.ast.fleet:
+        if robot in self.ast.fleet.robots:
             _logger.error("Robot %s already exists in fleet %s", robot, self.ast.fleet)
             raise ValueError(robot)
 
-        self.ast.fleet.append(robot)
+        self.ast.fleet.robots.append(robot)
 
     def add_labware(self, labware: Labware) -> None:
         """Add a new labware to the script."""
-        serials = {self.ast.fleet.labware.serial: labware for labware in self.ast.fleet.labware}
+        serials = {labware.serial: labware for labware in self.ast.fleet.labware}
         try:
             duplicate_labware = serials[labware.serial]
             _logger.error("Labware with serial %s already registered: %s", labware.serial, duplicate_labware)
@@ -83,8 +95,20 @@ class TCodeScriptBuilder:
         except KeyError:
             pass  # No duplicate serial found
 
-        self.ast.fleet.append(labware)
+        self.ast.fleet.labware.append(labware)
 
     def add_command(self, command) -> None:
         """Add a new command to the TCode script."""
         self.ast.tcode.append(command)
+
+    def goto_labware_index(self, labware_index: int) -> None:
+        """Helpful wrapper for add_command(GOTO) that auto-fills many default values."""
+        command = GOTO(
+            location=Location(data=labware_index),
+            location_offset=create_new_identity_transform(),
+            flange=Location(data="flange"),
+            flange_offset=create_new_identity_transform(),
+            path_type=self.default_path_type,
+            trajectory_type=self.default_trajectory_type,
+        )
+        self.add_command(command)

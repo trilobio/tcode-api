@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import Annotated, List, Literal, Optional, Union
+from typing import Annotated, List, Literal, Optional, Union, Tuple
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -37,35 +37,38 @@ class EnumWithDisplayName(Enum):
 
     @classmethod
     def from_value(cls, value: str | int) -> EnumWithDisplayName:
-        match type(value):
-            # Attempt to match by value
-            case int():
-                for member in cls:
-                    if member.value == value:
-                        return member
+        if isinstance(value, int):
+            for member in cls:
+                if member.value == value:
+                    return member
+        elif isinstance(value, str):
+            for member in cls:
+                if member.name == value.upper() or member.display_name == value:
+                    return member
 
-            # Attempt to match by name or display_name
-            case str():
-                for member in cls:
-                    if member.name == value.upper() or member.display_name == value:
-                        return member
-
-            case _:
-                raise TypeError(f"Invalid value type: {type(value)}")
+        else:
+            raise TypeError(f"Invalid value type: {type(value)}")
 
 
 Matrix = list[list[float]]
 
 
-class Location(BaseModelStrict):
-    """Resolvable location on a robot.
+class LocationType(EnumWithDisplayName):
+    """Enumeration of different methods for specifying a location.
 
-    Three options:
-    - (int): 0-based index into a Fleet's labware list
-    - (str): name of a node in a robot's TransformTree
-    - (Matrix): transformation matrix relative to the robot's base
+    LABWARE_INDEX: tuple of (str, int); str corresponds to Labware.serial, int is index into labware's locations.
+    NODE_ID: identifier of a node in a fleet's Transform Tree.
+    MATRIX: transformation matrix relative to the fleet's root node.
     """
-    data: Union[int, str, Matrix]
+    LABWARE_INDEX = (1, "LabwareIndex")
+    NODE_ID = (2, "NodeId")
+    MATRIX = (3, "Matrix")
+
+
+class Location(BaseModelStrict):
+    """Location schema."""
+    type: LocationType
+    data: Union[Tuple[str, int], str, Matrix]
 
 
 # Define constraint schemas
@@ -156,11 +159,11 @@ class GET_TOOL(TCODEBase):
 class GOTO(TCODEBase):
     type: Literal["GOTO"] = "GOTO"
     location: Location
-    location_offset: Matrix
-    flange: Location
-    flange_offset: Matrix
     path_type: PathType
     trajectory_type: TrajectoryType
+    location_offset: Optional[Matrix] = None
+    flange: Optional[Location] = None
+    flange_offset: Optional[Matrix] = None
 
 
 class PROBE(TCODEBase):
