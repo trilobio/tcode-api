@@ -1,8 +1,7 @@
 """Pydantic BaseModel definitions of TCode API."""
-from __future__ import annotations
 
 from enum import Enum
-from typing import Annotated, List, Literal, Optional, Union, Tuple
+from typing import Annotated, Self, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -36,7 +35,7 @@ class EnumWithDisplayName(Enum):
         self.display_name = display_name
 
     @classmethod
-    def from_value(cls, value: str | int) -> EnumWithDisplayName:
+    def from_value(cls, value: str | int) -> Self:
         if isinstance(value, int):
             for member in cls:
                 if member.value == value:
@@ -76,7 +75,7 @@ class LocationType(EnumWithDisplayName):
 class Location(BaseModelStrict):
     """Location schema."""
     type: LocationType
-    data: Union[Tuple[str, int], str, Matrix]
+    data: tuple[str, int] | str | Matrix
 
 
 # Define constraint schemas
@@ -84,9 +83,9 @@ class Probe(BaseModelStrict):
     type: Literal["Probe"] = "Probe"
 
 class PipetteCommon(BaseModelStrict):
-    min_volume: Optional[ValueWithUnits] = Field(default=None)
-    max_volume: Optional[ValueWithUnits] = Field(default=None)
-    max_speed: Optional[ValueWithUnits] = Field(default=None)
+    min_volume: ValueWithUnits | None = Field(default=None)
+    max_volume: ValueWithUnits | None = Field(default=None)
+    max_speed:  ValueWithUnits | None = Field(default=None)
 
 
 class SingleChannelPipette(PipetteCommon):
@@ -99,7 +98,7 @@ class EightChannelPipette(PipetteCommon):
 
 # Define the Tool discriminated union
 Tool = Annotated[
-    Union[SingleChannelPipette, EightChannelPipette, Probe],
+    SingleChannelPipette | EightChannelPipette | Probe,
     Field(discriminator="type"),
 ]
 
@@ -169,9 +168,9 @@ class GOTO(TCODEBase):
     location: Location
     path_type: PathType
     trajectory_type: TrajectoryType
-    location_offset: Optional[Matrix] = Field(default_factory=identity_transform_factory)
-    flange: Optional[Location] = None
-    flange_offset: Optional[Matrix] = Field(default_factory=identity_transform_factory)
+    location_offset: Matrix = Field(default_factory=identity_transform_factory)
+    flange: Location | None = None
+    flange_offset: Matrix = Field(default_factory=identity_transform_factory)
 
 
 class PROBE(TCODEBase):
@@ -188,19 +187,7 @@ class RESET_FTS(TCODEBase):
     type: Literal["RESET_FTS"] = "RESET_FTS"
 
 
-TCODE = Annotated[
-    Union[
-        ASPIRATE,
-        CALIBRATE_FTS_NOISE_FLOOR,
-        DISPENSE,
-        DROP_TIP,
-        DROP_TOOL,
-        GET_TIP,
-        GET_TOOL,
-        GOTO,
-        PROBE,
-        RESET_FTS,
-    ],
+TCODE = Annotated[ASPIRATE | CALIBRATE_FTS_NOISE_FLOOR | DISPENSE | DROP_TIP | DROP_TOOL | GET_TIP | GET_TOOL | GOTO | PROBE | RESET_FTS,
     Field(discriminator="type"),
 ]
 
@@ -214,8 +201,8 @@ class LabwareType(EnumWithDisplayName):
 class Labware(BaseModel):
     rows: int
     columns: int
-    type: Optional[LabwareType] = Field(default=None)
-    serial: Optional[str] = Field(default=None)
+    type: LabwareType | None = Field(default=None)
+    serial: str | None = Field(default=None)
 
     @field_validator("type", mode="before")
     def parse_type(cls, v):
@@ -242,8 +229,8 @@ class Metadata(BaseModelStrict):
     """TCode script metadata."""
     name: str
     timestamp: float
-    description: Optional[str] = Field(default=None)
-    tcode_api_version: Optional[str] = Field(default=None)
+    description: str | None = Field(default=None)
+    tcode_api_version: str | None = Field(default=None)
 
 
 class TCodeAST(BaseModel):
@@ -251,4 +238,4 @@ class TCodeAST(BaseModel):
 
     metadata: Metadata
     fleet: Fleet
-    tcode: List[TCODE] = Field(default_factory=list)
+    tcode: list[TCODE] = Field(default_factory=list)
