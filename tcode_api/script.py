@@ -1,12 +1,22 @@
 """Human-readable scripting wrapper for the TCode API."""
 
-import logging
 import datetime
-import pathlib
 import importlib.metadata
+import logging
+import pathlib
 from difflib import get_close_matches
 
-from tcode_api.api import TCodeAST, Robot, Metadata, Fleet, Labware, GOTO, Location, PathType, TrajectoryType
+from tcode_api.api import (
+    GOTO,
+    Fleet,
+    Labware,
+    Location,
+    Metadata,
+    PathType,
+    Robot,
+    TCodeAST,
+    TrajectoryType,
+)
 
 _logger = logging.getLogger("tcode.script")
 
@@ -15,9 +25,13 @@ def load_tcode_json_file(file_path: pathlib.Path) -> TCodeAST:
     """Load a TCode AST from a json file."""
     file_path = file_path.resolve()
     if not file_path.is_file():
-        matches = get_close_matches(file_path.name, [f.name for f in file_path.parent.iterdir()])
+        matches = get_close_matches(
+            file_path.name, [f.name for f in file_path.parent.iterdir()]
+        )
         closest_file = None if len(matches) == 0 else file_path.parent / matches[0]
-        raise FileNotFoundError({"missing_file": file_path, "closest_file_name": closest_file})
+        raise FileNotFoundError(
+            {"missing_file": file_path, "closest_file_name": closest_file}
+        )
 
     with open(file_path, "r") as f:
         data = f.read()
@@ -51,7 +65,11 @@ class TCodeScriptBuilder:
         file_version = self.ast.metadata.tcode_api_version
         current_version = importlib.metadata.version("tcode_api")
         if file_version != current_version:
-            _logger.warning("Loaded TCode script was created with API version %s, current version is %s", file_version, current_version)
+            _logger.warning(
+                "Loaded TCode script was created with API version %s, current version is %s",
+                file_version,
+                current_version,
+            )
 
     def emit(self, file_path: pathlib.Path, overwrite: bool = False) -> None:
         """Save the current TCode script to a file."""
@@ -59,15 +77,17 @@ class TCodeScriptBuilder:
             if overwrite:
                 _logger.info("Overwriting existing file %s", file_path)
             else:
-                raise RuntimeError("File already exists. Use overwrite=True to overwrite.")
+                raise RuntimeError(
+                    "File already exists. Use overwrite=True to overwrite."
+                )
 
         self.ast.metadata.timestamp = datetime.datetime()
 
-        with file_path.open('w') as file:
+        with file_path.open("w") as file:
             file.write(self.ast.model_dump())
 
     # Construction Command Methods #
-        
+
     def add_robot(self, robot: Robot) -> None:
         """Add a new robot to the targeted fleet."""
         if robot in self.ast.fleet.robots:
@@ -81,7 +101,11 @@ class TCodeScriptBuilder:
         serials = {labware.serial: labware for labware in self.ast.fleet.labware}
         try:
             duplicate_labware = serials[labware.serial]
-            _logger.error("Labware with serial %s already registered: %s", labware.serial, duplicate_labware)
+            _logger.error(
+                "Labware with serial %s already registered: %s",
+                labware.serial,
+                duplicate_labware,
+            )
             raise ValueError(labware)
 
         except KeyError:

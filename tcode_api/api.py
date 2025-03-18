@@ -1,7 +1,7 @@
 """Pydantic BaseModel definitions of TCode API."""
 
 from enum import Enum
-from typing import Annotated, Self, Literal
+from typing import Annotated, Literal, Self
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -53,11 +53,7 @@ Matrix = list[list[float]]
 
 
 def identity_transform_factory() -> Matrix:
-    return [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [0, 0, 0, 1]]
+    return [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
 
 
 class LocationType(EnumWithDisplayName):
@@ -67,6 +63,7 @@ class LocationType(EnumWithDisplayName):
     NODE_ID: identifier of a node in a fleet's Transform Tree.
     MATRIX: transformation matrix relative to the fleet's root node.
     """
+
     LABWARE_INDEX = (1, "LabwareIndex")
     NODE_ID = (2, "NodeId")
     MATRIX = (3, "Matrix")
@@ -74,6 +71,7 @@ class LocationType(EnumWithDisplayName):
 
 class Location(BaseModelStrict):
     """Location schema."""
+
     type: LocationType
     data: tuple[str, int] | str | Matrix
 
@@ -82,10 +80,11 @@ class Location(BaseModelStrict):
 class Probe(BaseModelStrict):
     type: Literal["Probe"] = "Probe"
 
+
 class PipetteCommon(BaseModelStrict):
     min_volume: ValueWithUnits | None = Field(default=None)
     max_volume: ValueWithUnits | None = Field(default=None)
-    max_speed:  ValueWithUnits | None = Field(default=None)
+    max_speed: ValueWithUnits | None = Field(default=None)
 
 
 class SingleChannelPipette(PipetteCommon):
@@ -110,6 +109,7 @@ class PathType(EnumWithDisplayName):
     SAFE: robot moves to the target location via a safe path.
     SHORTCUT: robot uses DIRECT if it is close to the target, othserwise SAFE.
     """
+
     DIRECT = (1, "Direct")
     SAFE = (2, "Safe")
     SHORTCUT = (3, "Shortcut")
@@ -122,6 +122,7 @@ class TrajectoryType(EnumWithDisplayName):
     JOINT_TRAPEZOIDAL: robot moves in joint space with trapezoidal motor profiles.
     LINEAR: robot moves in cartesian space with non-uniform motor profiles.
     """
+
     JOINT_SQUARE = (1, "Square")
     JOINT_TRAPEZOIDAL = (2, "Trapezoidal")
 
@@ -187,7 +188,17 @@ class RESET_FTS(TCODEBase):
     type: Literal["RESET_FTS"] = "RESET_FTS"
 
 
-TCODE = Annotated[ASPIRATE | CALIBRATE_FTS_NOISE_FLOOR | DISPENSE | DROP_TIP | DROP_TOOL | GET_TIP | GET_TOOL | GOTO | PROBE | RESET_FTS,
+TCODE = Annotated[
+    ASPIRATE
+    | CALIBRATE_FTS_NOISE_FLOOR
+    | DISPENSE
+    | DROP_TIP
+    | DROP_TOOL
+    | GET_TIP
+    | GET_TOOL
+    | GOTO
+    | PROBE
+    | RESET_FTS,
     Field(discriminator="type"),
 ]
 
@@ -227,6 +238,7 @@ class Fleet(BaseModelStrict):
 
 class Metadata(BaseModelStrict):
     """TCode script metadata."""
+
     name: str
     timestamp: float
     description: str | None = Field(default=None)
