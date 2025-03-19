@@ -21,11 +21,47 @@ from tcode_api.script import TCodeScriptBuilder
 
 class TestTCodeScriptBuilder(unittest.TestCase):
 
+    def test_bad_keys(self) -> None:
+        """Verify expected failures on bad tool and labware keys."""
+        builder = TCodeScriptBuilder(name="test_bad_keys")
+        builder.add_robot(Robot())
+        with self.subTest("Invalid robot index"):
+            with self.assertRaises(IndexError):
+                builder.add_tool("pipette", 1, SingleChannelPipette())
+
+        builder.add_tool("pipette", 0, SingleChannelPipette())
+        with self.subTest("Duplicate tool key"):
+            with self.assertRaises(ValueError):
+                builder.add_tool("pipette", 0, SingleChannelPipette())
+
+        with self.subTest("Missing tool key"):
+            with self.assertRaises(ValueError):
+                builder.get_tool("gripper")
+
+        builder.add_labware(
+            "well_plate_1", Labware(rows=8, columns=12, serial="serial_a")
+        )
+        with self.subTest("Duplicate labware key"):
+            with self.assertRaises(ValueError):
+                builder.add_labware(
+                    "well_plate_1", Labware(rows=8, columns=12, serial="serial_b")
+                )
+
+        with self.subTest("Duplicate labware serial"):
+            with self.assertRaises(ValueError):
+                builder.add_labware(
+                    "well_plate_2", Labware(rows=8, columns=12, serial="serial_a")
+                )
+
+        with self.subTest("Missing labware key"):
+            with self.assertRaises(ValueError):
+                builder.goto_labware_index("well_plate_2", 0)
+
     def test_to_and_from_file(self) -> None:
         """Check that TCodeScripts read and write from file without modification."""
         tip_box = Labware(rows=8, columns=12, serial="tip_box_1")
         well_plate = Labware(rows=8, columns=12, serial="well_plate_1")
-        builder = TCodeScriptBuilder(name="unittest_script")
+        builder = TCodeScriptBuilder(name="test_to_and_from_file")
         builder.add_robot(Robot())
         builder.add_tool("pipette", 0, SingleChannelPipette())
         builder.add_labware("tip_box", tip_box)
@@ -59,12 +95,6 @@ class TestTCodeScriptBuilder(unittest.TestCase):
 
         # Check that the ASTs are equal
         self.assertEqual(ast, new_ast)
-
-    def test_from_file(self) -> None:
-        file = pathlib.Path("~/Workspace/trilobio/aceta/tcode/data/basic_fluid_move.tc")
-        builder = TCodeScriptBuilder(name=file.name)
-        builder.set_up_from_file(file.expanduser())
-        pass
 
 
 if __name__ == "__main__":
