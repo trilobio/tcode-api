@@ -56,6 +56,7 @@ Matrix = list[list[float]]
 
 
 def identity_transform_factory() -> Matrix:
+    """Create new list of lists representing an identity matrix."""
     return [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
 
 
@@ -215,8 +216,8 @@ class LabwareType(EnumWithDisplayName):
 class Labware(BaseModel):
     rows: int
     columns: int
+    serial: str
     type: LabwareType | None = Field(default=None)
-    serial: str | None = Field(default=None)
 
     @field_validator("type", mode="before")
     def parse_type(cls, v):
