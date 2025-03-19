@@ -10,6 +10,7 @@ from tcode_api.api import (
     GET_TIP,
     GET_TOOL,
     Labware,
+    LabwareType,
     Location,
     LocationType,
     Robot,
@@ -38,20 +39,23 @@ class TestTCodeScriptBuilder(unittest.TestCase):
             with self.assertRaises(ValueError):
                 builder.get_tool("gripper")
 
-        builder.add_labware(
-            "well_plate_1", Labware(rows=8, columns=12, serial="serial_a")
+        labware = Labware(
+            id="serial_a",
+            row_count=8,
+            column_count=12,
+            row_pitch=ValueWithUnits(magnitude=9.0, units="mm"),
+            column_pitch=ValueWithUnits(magnitude=9.0, units="mm"),
+            type=LabwareType.WELL_PLATE,
         )
-        with self.subTest("Duplicate labware key"):
-            with self.assertRaises(ValueError):
-                builder.add_labware(
-                    "well_plate_1", Labware(rows=8, columns=12, serial="serial_b")
-                )
-
+        builder.add_labware("well_plate_1", labware)
         with self.subTest("Duplicate labware serial"):
             with self.assertRaises(ValueError):
-                builder.add_labware(
-                    "well_plate_2", Labware(rows=8, columns=12, serial="serial_a")
-                )
+                builder.add_labware("well_plate_2", labware)
+
+        with self.subTest("Duplicate labware key"):
+            with self.assertRaises(ValueError):
+                labware.id = "serial_b"
+                builder.add_labware("well_plate_1", labware)
 
         with self.subTest("Missing labware key"):
             with self.assertRaises(ValueError):
@@ -59,8 +63,22 @@ class TestTCodeScriptBuilder(unittest.TestCase):
 
     def test_to_and_from_file(self) -> None:
         """Check that TCodeScripts read and write from file without modification."""
-        tip_box = Labware(rows=8, columns=12, serial="tip_box_1")
-        well_plate = Labware(rows=8, columns=12, serial="well_plate_1")
+        tip_box = Labware(
+            id="tip_box_1",
+            type=LabwareType.PIPETTE_TIP_RACK,
+            row_count=8,
+            column_count=12,
+            row_pitch=ValueWithUnits(magnitude=9.0, units="mm"),
+            column_pitch=ValueWithUnits(magnitude=9.0, units="mm"),
+        )
+        well_plate = Labware(
+            id="well_plate_1",
+            type=LabwareType.WELL_PLATE,
+            row_count=8,
+            column_count=12,
+            row_pitch=ValueWithUnits(magnitude=9.0, units="mm"),
+            column_pitch=ValueWithUnits(magnitude=9.0, units="mm"),
+        )
         builder = TCodeScriptBuilder(name="test_to_and_from_file")
         builder.add_robot(Robot())
         builder.add_tool("pipette", 0, SingleChannelPipette())

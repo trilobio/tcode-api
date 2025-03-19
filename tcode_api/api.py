@@ -211,16 +211,19 @@ TCODE = Annotated[
 
 
 class LabwareType(EnumWithDisplayName):
-    SAMPLE = (1, "Sample")
-    TIP = (2, "Tip")
+    WELL_PLATE = (1, "WellPlate")
+    PIPETTE_TIP_RACK = (2, "PipetteTipRack")
     TRASH = (3, "Trash")
+    AGAR_PLATE = (4, "AgarPlate")
 
 
 class Labware(BaseModel):
-    rows: int
-    columns: int
-    serial: str
-    type: LabwareType | None = Field(default=None)
+    type: LabwareType
+    id: str
+    row_count: int
+    column_count: int
+    row_pitch: ValueWithUnits
+    column_pitch: ValueWithUnits
 
     @field_validator("type", mode="before")
     def parse_type(cls, v):
@@ -247,9 +250,9 @@ class Metadata(BaseModelStrict):
     """TCode script metadata."""
 
     name: str
-    timestamp: float
+    timestamp: str  # ISO 8601 timestamp string
+    tcode_api_version: str
     description: str | None = Field(default=None)
-    tcode_api_version: str | None = Field(default=None)
 
 
 class TCodeAST(BaseModel):
