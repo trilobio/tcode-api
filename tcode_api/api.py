@@ -1,8 +1,7 @@
 """Pydantic BaseModel definitions of TCode API."""
-from __future__ import annotations
 
 from enum import Enum
-from typing import Annotated, List, Literal, Optional, Union
+from typing import Annotated, Literal, Self
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -36,46 +35,60 @@ class EnumWithDisplayName(Enum):
         self.display_name = display_name
 
     @classmethod
-    def from_value(cls, value: str | int) -> EnumWithDisplayName:
-        match type(value):
-            # Attempt to match by value
-            case int():
-                for member in cls:
-                    if member.value == value:
-                        return member
+    def from_value(cls, value: str | int) -> Self:
+        if isinstance(value, int):
+            for member in cls:
+                if member.value == value:
+                    retval = member
 
-            # Attempt to match by name or display_name
-            case str():
-                for member in cls:
-                    if member.name == value.upper() or member.display_name == value:
-                        return member
+        elif isinstance(value, str):
+            for member in cls:
+                if member.name == value.upper() or member.display_name == value:
+                    retval = member
 
-            case _:
-                raise TypeError(f"Invalid value type: {type(value)}")
+        else:
+            raise TypeError(f"Invalid value type: {type(value)}")
+
+        return retval
 
 
 Matrix = list[list[float]]
 
 
-class Location(BaseModelStrict):
-    """Resolvable location on a robot.
+def identity_transform_factory() -> Matrix:
+    """Create new list of lists representing an identity matrix."""
+    return [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
 
-    Three options:
-    - (int): 0-based index into a Fleet's labware list
-    - (str): name of a node in a robot's TransformTree
-    - (Matrix): transformation matrix relative to the robot's base
+
+class LocationType(EnumWithDisplayName):
+    """Enumeration of different methods for specifying a location.
+
+    LABWARE_INDEX: tuple of (str, int); str corresponds to Labware.serial, int is index into labware's locations.
+    NODE_ID: identifier of a node in a fleet's Transform Tree.
+    MATRIX: transformation matrix relative to the fleet's root node.
     """
-    data: Union[int, str, Matrix]
+
+    LABWARE_INDEX = (1, "LabwareIndex")
+    NODE_ID = (2, "NodeId")
+    MATRIX = (3, "Matrix")
+
+
+class Location(BaseModelStrict):
+    """Location schema."""
+
+    type: LocationType
+    data: tuple[str, int] | str | Matrix
 
 
 # Define constraint schemas
 class Probe(BaseModelStrict):
     type: Literal["Probe"] = "Probe"
 
+
 class PipetteCommon(BaseModelStrict):
-    min_volume: Optional[ValueWithUnits] = Field(default=None)
-    max_volume: Optional[ValueWithUnits] = Field(default=None)
-    max_speed: Optional[ValueWithUnits] = Field(default=None)
+    min_volume: ValueWithUnits | None = Field(default=None)
+    max_volume: ValueWithUnits | None = Field(default=None)
+    max_speed: ValueWithUnits | None = Field(default=None)
 
 
 class SingleChannelPipette(PipetteCommon):
@@ -88,7 +101,7 @@ class EightChannelPipette(PipetteCommon):
 
 # Define the Tool discriminated union
 Tool = Annotated[
-    Union[SingleChannelPipette, EightChannelPipette, Probe],
+    SingleChannelPipette | EightChannelPipette | Probe,
     Field(discriminator="type"),
 ]
 
@@ -100,6 +113,7 @@ class PathType(EnumWithDisplayName):
     SAFE: robot moves to the target location via a safe path.
     SHORTCUT: robot uses DIRECT if it is close to the target, othserwise SAFE.
     """
+
     DIRECT = (1, "Direct")
     SAFE = (2, "Safe")
     SHORTCUT = (3, "Shortcut")
@@ -112,6 +126,7 @@ class TrajectoryType(EnumWithDisplayName):
     JOINT_TRAPEZOIDAL: robot moves in joint space with trapezoidal motor profiles.
     LINEAR: robot moves in cartesian space with non-uniform motor profiles.
     """
+
     JOINT_SQUARE = (1, "Square")
     JOINT_TRAPEZOIDAL = (2, "Trapezoidal")
 
@@ -128,9 +143,12 @@ class DISPENSE(TCODEBase):
     speed: ValueWithUnits
 
 
+Axes = Literal["x", "y", "z", "xy", "xz", "yz", "xyz"]
+
+
 class CALIBRATE_FTS_NOISE_FLOOR(TCODEBase):
     type: Literal["CALIBRATE_FTS_NOISE_FLOOR"] = "CALIBRATE_FTS_NOISE_FLOOR"
-    axes: str
+    axes: Axes
     snr: float
 
 
@@ -156,19 +174,19 @@ class GET_TOOL(TCODEBase):
 class GOTO(TCODEBase):
     type: Literal["GOTO"] = "GOTO"
     location: Location
-    location_offset: Matrix
-    flange: Location
-    flange_offset: Matrix
     path_type: PathType
     trajectory_type: TrajectoryType
+    location_offset: Matrix = Field(default_factory=identity_transform_factory)
+    flange: Location | None = None
+    flange_offset: Matrix = Field(default_factory=identity_transform_factory)
 
 
 class PROBE(TCODEBase):
     type: Literal["PROBE"] = "PROBE"
     location: Location
-    location_offset: Matrix
-    flange: Location
-    flange_offset: Matrix
+    location_offset: Matrix = Field(default_factory=identity_transform_factory)
+    flange: Location | None = None
+    flange_offset: Matrix = Field(default_factory=identity_transform_factory)
     speed_fraction: float
     backoff_distance: ValueWithUnits
 
@@ -178,18 +196,16 @@ class RESET_FTS(TCODEBase):
 
 
 TCODE = Annotated[
-    Union[
-        ASPIRATE,
-        CALIBRATE_FTS_NOISE_FLOOR,
-        DISPENSE,
-        DROP_TIP,
-        DROP_TOOL,
-        GET_TIP,
-        GET_TOOL,
-        GOTO,
-        PROBE,
-        RESET_FTS,
-    ],
+    ASPIRATE
+    | CALIBRATE_FTS_NOISE_FLOOR
+    | DISPENSE
+    | DROP_TIP
+    | DROP_TOOL
+    | GET_TIP
+    | GET_TOOL
+    | GOTO
+    | PROBE
+    | RESET_FTS,
     Field(discriminator="type"),
 ]
 
@@ -203,8 +219,8 @@ class LabwareType(EnumWithDisplayName):
 class Labware(BaseModel):
     rows: int
     columns: int
-    type: Optional[LabwareType] = Field(default=None)
-    serial: Optional[str] = Field(default=None)
+    serial: str
+    type: LabwareType | None = Field(default=None)
 
     @field_validator("type", mode="before")
     def parse_type(cls, v):
@@ -227,8 +243,18 @@ class Fleet(BaseModelStrict):
     labware: list[Labware] = Field(default_factory=list)
 
 
+class Metadata(BaseModelStrict):
+    """TCode script metadata."""
+
+    name: str
+    timestamp: float
+    description: str | None = Field(default=None)
+    tcode_api_version: str | None = Field(default=None)
+
+
 class TCodeAST(BaseModel):
     """Structure of a TCode script as an abstract syntax tree."""
 
+    metadata: Metadata
     fleet: Fleet
-    tcode: List[TCODE] = Field(default_factory=list)
+    tcode: list[TCODE] = Field(default_factory=list)
