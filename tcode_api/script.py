@@ -8,12 +8,16 @@ from difflib import get_close_matches
 
 from tcode_api.api import (
     ASPIRATE,
+    CALIBRATE_FTS_NOISE_FLOOR,
     DISPENSE,
     DROP_TIP,
     DROP_TOOL,
     GET_TIP,
     GET_TOOL,
     GOTO,
+    PROBE,
+    RESET_FTS,
+    Axes,
     Fleet,
     Labware,
     Location,
@@ -268,3 +272,25 @@ class TCodeScriptBuilder:
         """Wrapper for add_command(DROP_TOOL) that auto-fills default values."""
         command = DROP_TOOL()
         self.add_command(command)
+
+    def reset_fts(self) -> None:
+        """Wrapper for add_command(RESET_FTS)."""
+        self.add_command(RESET_FTS())
+
+    def probe(
+        self, node_id: str, backoff_distance: float, speed_fraction: float
+    ) -> None:
+        """Wrapper for add_command(PROBE) that auto-fills default values."""
+        location = Location(type=LocationType.NODE_ID, data=node_id)
+        command = PROBE(
+            location=location,
+            backoff_distance=ValueWithUnits(
+                magnitude=backoff_distance, units="millimeters"
+            ),
+            speed_fraction=speed_fraction,
+        )
+        self.add_command(command)
+
+    def calibrate_fts_noise_floor(self, axes: Axes, snr: float) -> None:
+        """Wrapper for add_command(CALIBRATE_FTS_NOISE_FLOOR)."""
+        self.add_command(CALIBRATE_FTS_NOISE_FLOOR(axes=axes, snr=snr))

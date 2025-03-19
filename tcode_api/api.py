@@ -143,9 +143,12 @@ class DISPENSE(TCODEBase):
     speed: ValueWithUnits
 
 
+Axes = Literal["x", "y", "z", "xy", "xz", "yz", "xyz"]
+
+
 class CALIBRATE_FTS_NOISE_FLOOR(TCODEBase):
     type: Literal["CALIBRATE_FTS_NOISE_FLOOR"] = "CALIBRATE_FTS_NOISE_FLOOR"
-    axes: str
+    axes: Axes
     snr: float
 
 
@@ -181,9 +184,9 @@ class GOTO(TCODEBase):
 class PROBE(TCODEBase):
     type: Literal["PROBE"] = "PROBE"
     location: Location
-    location_offset: Matrix
-    flange: Location
-    flange_offset: Matrix
+    location_offset: Matrix = Field(default_factory=identity_transform_factory)
+    flange: Location | None = None
+    flange_offset: Matrix = Field(default_factory=identity_transform_factory)
     speed_fraction: float
     backoff_distance: ValueWithUnits
 
