@@ -66,6 +66,8 @@ class TCodeScriptBuilder:
         self.default_trajectory_type = TrajectoryType.JOINT_SQUARE
         self.default_pipette_speed = 100.0  # uL/s
 
+    # Input/output management methods #
+
     def reset(self, name: str, description: str | None = None) -> None:
         """Set up the builder to write a new script."""
         metadata = Metadata(
@@ -78,6 +80,10 @@ class TCodeScriptBuilder:
         self._labware_key_to_fleet_index = {}
         self._tool_key_to_robot_index = []
 
+    def emit(self) -> TCodeAST:
+        """Return the current TCode script as an abstract syntax tree."""
+        return self.ast.model_copy()
+
     def set_up_from_file(self, file_path: pathlib.Path) -> None:
         """Load a TCode script from a file into the builder for modification."""
         self.ast = load_tcode_json_file(file_path)
@@ -89,10 +95,6 @@ class TCodeScriptBuilder:
                 file_version,
                 current_version,
             )
-
-    def emit(self) -> TCodeAST:
-        """Return the current TCode script as an abstract syntax tree."""
-        return self.ast.model_copy()
 
     def write_to_file(self, file_path: pathlib.Path, overwrite: bool = False) -> None:
         """Save the current TCode script to a file."""
@@ -108,6 +110,8 @@ class TCodeScriptBuilder:
 
         with file_path.open("w") as file:
             file.write(self.ast.model_dump_json())
+
+    # Private implementation methods #
 
     def _labware_key_to_labware(self, labware_key: str) -> Labware:
         try:
@@ -147,21 +151,11 @@ class TCodeScriptBuilder:
         serial = self._labware_key_to_labware(key).serial
         return Location(type=LocationType.LABWARE_INDEX, data=(serial, index))
 
-    # Construction Command Methods #
+    # Component registration methods #
 
-    def add_robot(self, robot: Robot) -> None:
-        """Add a new robot to the targeted fleet."""
-        if robot in self.ast.fleet.robots:
-            _logger.error("Robot %s already exists in fleet %s", robot, self.ast.fleet)
-            raise ValueError(robot)
-
-        if len(robot.tools) > 0:
-            raise NotImplementedError(
-                "add_robot() doesn't support robots with tools. Use buoilder.add_tool() to add tools to a robot."
-            )
-
-        self.ast.fleet.robots.append(robot)
-        self._tool_key_to_robot_index.append({})
+    def add_command(self, command) -> None:
+        """Add a new command to the TCode script."""
+        self.ast.tcode.append(command)
 
     def add_labware(self, key: str, labware: Labware) -> None:
         """Add a new labware to the script."""
@@ -191,6 +185,20 @@ class TCodeScriptBuilder:
         self._labware_key_to_fleet_index[key] = len(self.ast.fleet.labware)
         self.ast.fleet.labware.append(labware)
 
+    def add_robot(self, robot: Robot) -> None:
+        """Add a new robot to the targeted fleet."""
+        if robot in self.ast.fleet.robots:
+            _logger.error("Robot %s already exists in fleet %s", robot, self.ast.fleet)
+            raise ValueError(robot)
+
+        if len(robot.tools) > 0:
+            raise NotImplementedError(
+                "add_robot() doesn't support robots with tools. Use buoilder.add_tool() to add tools to a robot."
+            )
+
+        self.ast.fleet.robots.append(robot)
+        self._tool_key_to_robot_index.append({})
+
     def add_tool(self, key: str, robot_index: int, tool: Tool) -> None:
         """Add a new tool to the script."""
         # Check robot_index
@@ -218,19 +226,7 @@ class TCodeScriptBuilder:
         tool_key_to_index[key] = len(robot.tools)
         robot.tools.append(tool)
 
-    def add_command(self, command) -> None:
-        """Add a new command to the TCode script."""
-        self.ast.tcode.append(command)
-
-    def goto_labware_index(self, labware_key: str, labware_index: int) -> None:
-        """Wrapper for add_command(GOTO) that auto-fills default values."""
-        location = self._labware_specification_to_location(labware_key, labware_index)
-        command = GOTO(
-            location=location,
-            path_type=self.default_path_type,
-            trajectory_type=self.default_trajectory_type,
-        )
-        self.add_command(command)
+    # TCode command methods #
 
     def aspirate(self, volume: float, speed: float | None = None) -> None:
         """Wrapper for add_command(ASPIRATE) that auto-fills default values."""
@@ -239,6 +235,21 @@ class TCodeScriptBuilder:
             volume=ValueWithUnits(magnitude=volume, units="microliters"),
             speed=ValueWithUnits(magnitude=speed, units="microliters/second"),
         )
+        self.add_command(command)
+
+    def calibrate_fts_noise_floor(self, axes: Axes, snr: float) -> None:
+        """Wrapper for add_command(CALIBRATE_FTS_NOISE_FLOOR)."""
+        self.add_command(CALIBRATE_FTS_NOISE_FLOOR(axes=axes, snr=snr))
+
+    def drop_tip(self, labware_key: str, labware_index: int) -> None:
+        """Wrapper for add_command(GET_TIP) that auto-fills default values."""
+        location = self._labware_specification_to_location(labware_key, labware_index)
+        command = DROP_TIP(location=location)
+        self.add_command(command)
+
+    def drop_tool(self) -> None:
+        """Wrapper for add_command(DROP_TOOL) that auto-fills default values."""
+        command = DROP_TOOL()
         self.add_command(command)
 
     def dispense(self, volume: float, speed: float | None = None) -> None:
@@ -256,26 +267,21 @@ class TCodeScriptBuilder:
         command = GET_TIP(location=location)
         self.add_command(command)
 
-    def drop_tip(self, labware_key: str, labware_index: int) -> None:
-        """Wrapper for add_command(GET_TIP) that auto-fills default values."""
-        location = self._labware_specification_to_location(labware_key, labware_index)
-        command = DROP_TIP(location=location)
-        self.add_command(command)
-
     def get_tool(self, tool_key: str) -> None:
         """Wrapper for add_command(GET_TOOL) that auto-fills default values."""
         tool = self._tool_key_to_tool(tool_key)
         command = GET_TOOL(tool=tool)
         self.add_command(command)
 
-    def drop_tool(self) -> None:
-        """Wrapper for add_command(DROP_TOOL) that auto-fills default values."""
-        command = DROP_TOOL()
+    def goto_labware_index(self, labware_key: str, labware_index: int) -> None:
+        """Wrapper for add_command(GOTO) that auto-fills default values."""
+        location = self._labware_specification_to_location(labware_key, labware_index)
+        command = GOTO(
+            location=location,
+            path_type=self.default_path_type,
+            trajectory_type=self.default_trajectory_type,
+        )
         self.add_command(command)
-
-    def reset_fts(self) -> None:
-        """Wrapper for add_command(RESET_FTS)."""
-        self.add_command(RESET_FTS())
 
     def probe(
         self, node_id: str, backoff_distance: float, speed_fraction: float
@@ -291,6 +297,6 @@ class TCodeScriptBuilder:
         )
         self.add_command(command)
 
-    def calibrate_fts_noise_floor(self, axes: Axes, snr: float) -> None:
-        """Wrapper for add_command(CALIBRATE_FTS_NOISE_FLOOR)."""
-        self.add_command(CALIBRATE_FTS_NOISE_FLOOR(axes=axes, snr=snr))
+    def reset_fts(self) -> None:
+        """Wrapper for add_command(RESET_FTS)."""
+        self.add_command(RESET_FTS())
