@@ -226,9 +226,7 @@ class Labware(BaseModel):
     column_pitch: ValueWithUnits
 
     @field_validator("type", mode="before")
-    def parse_type(cls, v):
-        if v is None:
-            return v
+    def parse_type(cls, v: LabwareType | str | int) -> LabwareType:
         if isinstance(v, LabwareType):
             return v
         try:
