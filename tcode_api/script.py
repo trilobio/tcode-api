@@ -1,9 +1,9 @@
 """Human-readable scripting wrapper for the TCode API."""
 
+import datetime
 import importlib.metadata
 import logging
 import pathlib
-import time
 from difflib import get_close_matches
 
 from tcode_api.api import (
@@ -73,7 +73,7 @@ class TCodeScriptBuilder:
         metadata = Metadata(
             name=name,
             description=description,
-            timestamp=0.0,  # Will be overwritten on call to emit()
+            timestamp=datetime.datetime.now().isoformat(),
             tcode_api_version=importlib.metadata.version("tcode_api"),
         )
         self.ast = TCodeAST(metadata=metadata, fleet=Fleet(), tcode=[])
@@ -106,7 +106,7 @@ class TCodeScriptBuilder:
                     "File already exists. Use overwrite=True to overwrite."
                 )
 
-        self.ast.metadata.timestamp = time.time()
+        self.ast.metadata.timestamp = datetime.datetime.now().isoformat()
 
         with file_path.open("w") as file:
             file.write(self.ast.model_dump_json())
@@ -148,8 +148,8 @@ class TCodeScriptBuilder:
 
     def _labware_specification_to_location(self, key: str, index: int) -> Location:
         """Turn builder's labware key and labware index into a TCode-compliant Location."""
-        serial = self._labware_key_to_labware(key).serial
-        return Location(type=LocationType.LABWARE_INDEX, data=(serial, index))
+        labware_id = self._labware_key_to_labware(key).id
+        return Location(type=LocationType.LABWARE_INDEX, data=(labware_id, index))
 
     # Component registration methods #
 
@@ -167,19 +167,19 @@ class TCodeScriptBuilder:
             )
             raise ValueError(key)
 
-        # Check that labware.serial is unique
-        serials = {labware.serial: labware for labware in self.ast.fleet.labware}
+        # Check that labware.id is unique
+        ids = {labware.id: labware for labware in self.ast.fleet.labware}
         try:
-            duplicate_labware = serials[labware.serial]
+            duplicate_labware = ids[labware.id]
             _logger.error(
-                "Labware with serial %s already registered: %s",
-                labware.serial,
+                "Labware with id %s already registered: %s",
+                labware.id,
                 duplicate_labware,
             )
             raise ValueError(labware)
 
         except KeyError:
-            pass  # No duplicate serial found
+            pass  # No duplicate id found
 
         # Register labware
         self._labware_key_to_fleet_index[key] = len(self.ast.fleet.labware)
