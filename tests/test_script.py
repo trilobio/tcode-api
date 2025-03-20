@@ -5,10 +5,7 @@ import tempfile
 import unittest
 
 from tcode_api.api import (
-    ASPIRATE,
-    DISPENSE,
     GET_TIP,
-    GET_TOOL,
     Labware,
     LabwareType,
     Location,
