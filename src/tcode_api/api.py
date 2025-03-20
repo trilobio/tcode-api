@@ -39,17 +39,17 @@ class EnumWithDisplayName(Enum):
         if isinstance(value, int):
             for member in cls:
                 if member.value == value:
-                    retval = member
+                    return member
 
         elif isinstance(value, str):
             for member in cls:
                 if member.name == value.upper() or member.display_name == value:
-                    retval = member
+                    return member
 
         else:
             raise TypeError(f"Invalid value type: {type(value)}")
 
-        return retval
+        raise ValueError("Invalid value: {value}")
 
 
 Matrix = list[list[float]]
@@ -226,9 +226,7 @@ class Labware(BaseModel):
     column_pitch: ValueWithUnits
 
     @field_validator("type", mode="before")
-    def parse_type(cls, v):
-        if v is None:
-            return v
+    def parse_type(cls, v: LabwareType | str | int) -> LabwareType:
         if isinstance(v, LabwareType):
             return v
         try:
