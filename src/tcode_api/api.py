@@ -56,6 +56,14 @@ def identity_transform_factory() -> Matrix:
     return [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]]
 
 
+def verify_positive_nonzero_int(value: int) -> int:
+    """Validator to ensure the value is a positive non-zero integer."""
+    if value <= 0:
+        raise ValueError(f"Value must be > 0, not {value}")
+
+    return value
+
+
 class LocationType(EnumWithDisplayName):
     """Enumeration of different methods for specifying a location.
 
@@ -74,6 +82,16 @@ class Location(BaseModelStrict):
 
     type: LocationType
     data: tuple[str, int] | str | Matrix
+
+
+class PipetteTipGroup(BaseModelStrict):
+    """Grid layout of pipette tips."""
+
+    id: str
+    row_count: Annotated[int, verify_positive_nonzero_int]
+    column_count: Annotated[int, verify_positive_nonzero_int]
+    pipette_tip_tags: list[str] = Field(default_factory=list)
+    pipette_tip_named_tags: dict[str, str] = Field(default_factory=dict)
 
 
 # Define constraint schemas
@@ -137,12 +155,6 @@ class ASPIRATE(TCODEBase):
     speed: ValueWithUnits
 
 
-class DISPENSE(TCODEBase):
-    type: Literal["DISPENSE"] = "DISPENSE"
-    volume: ValueWithUnits
-    speed: ValueWithUnits
-
-
 Axes = Literal["x", "y", "z", "xy", "xz", "yz", "xyz"]
 
 
@@ -152,23 +164,10 @@ class CALIBRATE_FTS_NOISE_FLOOR(TCODEBase):
     snr: float
 
 
-class DROP_TIP(TCODEBase):
-    type: Literal["DROP_TIP"] = "DROP_TIP"
-    location: Location
-
-
-class DROP_TOOL(TCODEBase):
-    type: Literal["DROP_TOOL"] = "DROP_TOOL"
-
-
-class GET_TIP(TCODEBase):
-    type: Literal["GET_TIP"] = "GET_TIP"
-    location: Location
-
-
-class GET_TOOL(TCODEBase):
-    type: Literal["GET_TOOL"] = "GET_TOOL"
-    tool: Tool
+class DISPENSE(TCODEBase):
+    type: Literal["DISPENSE"] = "DISPENSE"
+    volume: ValueWithUnits
+    speed: ValueWithUnits
 
 
 class GOTO(TCODEBase):
@@ -181,6 +180,16 @@ class GOTO(TCODEBase):
     flange_offset: Matrix = Field(default_factory=identity_transform_factory)
 
 
+class PICK_UP_PIPETTE_TIP(TCODEBase):
+    type: Literal["PICK_UP_PIPETTE_TIP"] = "PICK_UP_PIPETTE_TIP"
+    location: Location
+
+
+class PICK_UP_TOOL(TCODEBase):
+    type: Literal["PICK_UP_TOOL"] = "PICK_UP_TOOL"
+    location: Location
+
+
 class PROBE(TCODEBase):
     type: Literal["PROBE"] = "PROBE"
     location: Location
@@ -191,21 +200,54 @@ class PROBE(TCODEBase):
     backoff_distance: ValueWithUnits
 
 
+class PUT_DOWN_PIPETTE_TIP(TCODEBase):
+    type: Literal["PUT_DOWN_PIPETTE_TIP"] = "PUT_DOWN_PIPETTE_TIP"
+    location: Location
+
+
+class PUT_DOWN_TOOL(TCODEBase):
+    type: Literal["PUT_DOWN_TOOL"] = "PUT_DOWN_TOOL"
+    location: Location
+
+
 class RESET_FTS(TCODEBase):
     type: Literal["RESET_FTS"] = "RESET_FTS"
+
+
+class RETRIEVE_PIPETTE_TIP_GROUP(TCODEBase):
+    type: Literal["RETRIEVE_PIPETTE_TIP_GROUP"] = "RETRIEVE_PIPETTE_TIP_GROUP"
+    pipette_tip_group: PipetteTipGroup
+
+
+class RETRIEVE_TOOL(TCODEBase):
+    type: Literal["RETRIEVE_TOOL"] = "RETRIEVE_TOOL"
+    tool: Tool
+
+
+class RETURN_PIPETTE_TIP_GROUP(TCODEBase):
+    type: Literal["RETURN_PIPETTE_TIP_GROUP"] = "RETURN_PIPETTE_TIP_GROUP"
+    pipette_tip_group: PipetteTipGroup
+
+
+class RETURN_TOOL(TCODEBase):
+    type: Literal["RETURN_TOOL"] = "RETURN_TOOL"
 
 
 TCODE = Annotated[
     ASPIRATE
     | CALIBRATE_FTS_NOISE_FLOOR
     | DISPENSE
-    | DROP_TIP
-    | DROP_TOOL
-    | GET_TIP
-    | GET_TOOL
     | GOTO
+    | PICK_UP_PIPETTE_TIP
+    | PICK_UP_TOOL
     | PROBE
-    | RESET_FTS,
+    | PUT_DOWN_PIPETTE_TIP
+    | PUT_DOWN_TOOL
+    | RESET_FTS
+    | RETRIEVE_PIPETTE_TIP_GROUP
+    | RETRIEVE_TOOL
+    | RETURN_PIPETTE_TIP_GROUP
+    | RETURN_TOOL,
     Field(discriminator="type"),
 ]
 
@@ -263,3 +305,4 @@ class TCodeAST(BaseModel):
     metadata: Metadata
     fleet: Fleet
     tcode: list[TCODE] = Field(default_factory=list)
+    pipette_tips: list[PipetteTipGroup] = Field(default_factory=list)
