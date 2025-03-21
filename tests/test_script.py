@@ -5,9 +5,9 @@ import tempfile
 import unittest
 
 from tcode_api.api import (
+    PICK_UP_PIPETTE_TIP,
     Location,
     LocationType,
-    PICK_UP_PIPETTE_TIP,
     PipetteTipRack,
     Robot,
     SingleChannelPipette,
