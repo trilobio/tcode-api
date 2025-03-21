@@ -3,7 +3,7 @@
 from enum import Enum
 from typing import Annotated, Literal, Self
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class BaseModelStrict(BaseModel):
@@ -21,10 +21,6 @@ class ValueWithUnits(BaseModelStrict):
 
     def __str__(self):
         return f"{self.magnitude} {self.units}"
-
-
-class TCODEBase(BaseModelStrict):
-    pass
 
 
 class EnumWithDisplayName(Enum):
@@ -131,6 +127,10 @@ class TrajectoryType(EnumWithDisplayName):
     JOINT_TRAPEZOIDAL = (2, "Trapezoidal")
 
 
+class TCODEBase(BaseModelStrict):
+    pass
+
+
 class ASPIRATE(TCODEBase):
     type: Literal["ASPIRATE"] = "ASPIRATE"
     volume: ValueWithUnits
@@ -210,29 +210,33 @@ TCODE = Annotated[
 ]
 
 
-class LabwareType(EnumWithDisplayName):
-    WELL_PLATE = (1, "WellPlate")
-    PIPETTE_TIP_RACK = (2, "PipetteTipRack")
-    TRASH = (3, "Trash")
-    AGAR_PLATE = (4, "AgarPlate")
-
-
-class Labware(BaseModel):
-    type: LabwareType
+class _LabwareBase(BaseModel):
     id: str
     row_count: int
     column_count: int
     row_pitch: ValueWithUnits
     column_pitch: ValueWithUnits
+    tags: list[str] = Field(default_factory=list)
+    named_tags: dict[str, str] = Field(default_factory=dict)
 
-    @field_validator("type", mode="before")
-    def parse_type(cls, v: LabwareType | str | int) -> LabwareType:
-        if isinstance(v, LabwareType):
-            return v
-        try:
-            return LabwareType.from_value(v)
-        except ValueError as e:
-            raise ValueError(f"Invalid LabwareType: {v}") from e
+
+class WellPlate(_LabwareBase):
+    type: Literal["WellPlate"] = "WellPlate"
+
+
+class PipetteTipRack(_LabwareBase):
+    type: Literal["PipetteTipRack"] = "PipetteTipRack"
+    full: bool
+
+
+class Trash(_LabwareBase):
+    type: Literal["Trash"] = "Trash"
+
+
+LABWARE = Annotated[
+    WellPlate | PipetteTipRack | Trash,
+    Field(discriminator="type"),
+]
 
 
 class Robot(BaseModelStrict):
@@ -241,7 +245,7 @@ class Robot(BaseModelStrict):
 
 class Fleet(BaseModelStrict):
     robots: list[Robot] = Field(default_factory=list)
-    labware: list[Labware] = Field(default_factory=list)
+    labware: list[LABWARE] = Field(default_factory=list)
 
 
 class Metadata(BaseModelStrict):

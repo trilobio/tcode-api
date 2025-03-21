@@ -6,13 +6,13 @@ import unittest
 
 from tcode_api.api import (
     GET_TIP,
-    Labware,
-    LabwareType,
     Location,
     LocationType,
+    PipetteTipRack,
     Robot,
     SingleChannelPipette,
     ValueWithUnits,
+    WellPlate,
 )
 from tcode_api.script import TCodeScriptBuilder
 
@@ -36,13 +36,12 @@ class TestTCodeScriptBuilder(unittest.TestCase):
             with self.assertRaises(ValueError):
                 builder.get_tool("gripper")
 
-        labware = Labware(
+        labware = WellPlate(
             id="serial_a",
             row_count=8,
             column_count=12,
             row_pitch=ValueWithUnits(magnitude=9.0, units="mm"),
             column_pitch=ValueWithUnits(magnitude=9.0, units="mm"),
-            type=LabwareType.WELL_PLATE,
         )
         builder.add_labware("well_plate_1", labware)
         with self.subTest("Duplicate labware serial"):
@@ -60,17 +59,16 @@ class TestTCodeScriptBuilder(unittest.TestCase):
 
     def test_to_and_from_file(self) -> None:
         """Check that TCodeScripts read and write from file without modification."""
-        tip_box = Labware(
+        tip_box = PipetteTipRack(
             id="tip_box_1",
-            type=LabwareType.PIPETTE_TIP_RACK,
             row_count=8,
             column_count=12,
             row_pitch=ValueWithUnits(magnitude=9.0, units="mm"),
             column_pitch=ValueWithUnits(magnitude=9.0, units="mm"),
+            full=True,
         )
-        well_plate = Labware(
+        well_plate = WellPlate(
             id="well_plate_1",
-            type=LabwareType.WELL_PLATE,
             row_count=8,
             column_count=12,
             row_pitch=ValueWithUnits(magnitude=9.0, units="mm"),

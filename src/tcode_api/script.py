@@ -15,11 +15,11 @@ from tcode_api.api import (
     GET_TIP,
     GET_TOOL,
     GOTO,
+    LABWARE,
     PROBE,
     RESET_FTS,
     Axes,
     Fleet,
-    Labware,
     Location,
     LocationType,
     Metadata,
@@ -113,7 +113,7 @@ class TCodeScriptBuilder:
 
     # Private implementation methods #
 
-    def _labware_key_to_labware(self, labware_key: str) -> Labware:
+    def _labware_key_to_labware(self, labware_key: str) -> LABWARE:
         try:
             index = self._labware_key_to_fleet_index[labware_key]
 
@@ -157,7 +157,7 @@ class TCodeScriptBuilder:
         """Add a new command to the TCode script."""
         self.ast.tcode.append(command)
 
-    def add_labware(self, key: str, labware: Labware) -> None:
+    def add_labware(self, key: str, labware: LABWARE) -> None:
         """Add a new labware to the script."""
         # Check that key is unique
         if key in self._labware_key_to_fleet_index.keys():
