@@ -5,7 +5,7 @@ import tempfile
 import unittest
 
 from tcode_api.api import (
-    GET_TIP,
+    PICK_UP_PIPETTE_TIP,
     Location,
     LocationType,
     PipetteTipRack,
@@ -34,7 +34,7 @@ class TestTCodeScriptBuilder(unittest.TestCase):
 
         with self.subTest("Missing tool key"):
             with self.assertRaises(ValueError):
-                builder.get_tool("gripper")
+                builder.retrieve_tool("gripper")
 
         labware = WellPlate(
             id="serial_a",
@@ -79,21 +79,21 @@ class TestTCodeScriptBuilder(unittest.TestCase):
         builder.add_tool("pipette", 0, SingleChannelPipette())
         builder.add_labware("tip_box", tip_box)
         builder.add_labware("well_plate", well_plate)
-        builder.get_tool("pipette")
+        builder.retrieve_tool("pipette")
         builder.add_command(
-            GET_TIP(
+            PICK_UP_PIPETTE_TIP(
                 location=Location(
                     type=LocationType.LABWARE_INDEX, data=("tip_box_1", 1)
                 )
             )
         )
-        builder.get_tip("tip_box", 0)
+        builder.pick_up_pipette_tip("tip_box", 0)
         builder.goto_labware_index("well_plate", 0)  # Well A1
         builder.aspirate(100.0)
         builder.goto_labware_index("well_plate", 1)  # Well A2
         builder.dispense(100.0)
-        builder.drop_tip("tip_box", 0)
-        builder.drop_tool()
+        builder.put_down_pipette_tip("tip_box", 0)
+        builder.return_tool()
         ast = builder.emit()
 
         with tempfile.NamedTemporaryFile(delete=True, suffix=".tc") as temp_file:

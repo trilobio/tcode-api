@@ -10,14 +10,14 @@ from tcode_api.api import (
     ASPIRATE,
     CALIBRATE_FTS_NOISE_FLOOR,
     DISPENSE,
-    DROP_TIP,
-    DROP_TOOL,
-    GET_TIP,
-    GET_TOOL,
     GOTO,
     LABWARE,
+    PICK_UP_PIPETTE_TIP,
     PROBE,
+    PUT_DOWN_PIPETTE_TIP,
     RESET_FTS,
+    RETRIEVE_TOOL,
+    RETURN_TOOL,
     Axes,
     Fleet,
     Location,
@@ -241,15 +241,15 @@ class TCodeScriptBuilder:
         """Wrapper for add_command(CALIBRATE_FTS_NOISE_FLOOR)."""
         self.add_command(CALIBRATE_FTS_NOISE_FLOOR(axes=axes, snr=snr))
 
-    def drop_tip(self, labware_key: str, labware_index: int) -> None:
-        """Wrapper for add_command(GET_TIP) that auto-fills default values."""
+    def put_down_pipette_tip(self, labware_key: str, labware_index: int) -> None:
+        """Wrapper for add_command(PUT_DOWN_PIPETTE_TIP) that auto-fills default values."""
         location = self._labware_specification_to_location(labware_key, labware_index)
-        command = DROP_TIP(location=location)
+        command = PUT_DOWN_PIPETTE_TIP(location=location)
         self.add_command(command)
 
-    def drop_tool(self) -> None:
-        """Wrapper for add_command(DROP_TOOL) that auto-fills default values."""
-        command = DROP_TOOL()
+    def return_tool(self) -> None:
+        """Wrapper for add_command(RETURN_TOOL) that auto-fills default values."""
+        command = RETURN_TOOL()
         self.add_command(command)
 
     def dispense(self, volume: float, speed: float | None = None) -> None:
@@ -261,16 +261,16 @@ class TCodeScriptBuilder:
         )
         self.add_command(command)
 
-    def get_tip(self, labware_key: str, labware_index: int) -> None:
-        """Wrapper for add_command(GET_TIP) that auto-fills default values."""
+    def pick_up_pipette_tip(self, labware_key: str, labware_index: int) -> None:
+        """Wrapper for add_command(PICK_UP_PIPETTE_TIP) that auto-fills default values."""
         location = self._labware_specification_to_location(labware_key, labware_index)
-        command = GET_TIP(location=location)
+        command = PICK_UP_PIPETTE_TIP(location=location)
         self.add_command(command)
 
-    def get_tool(self, tool_key: str) -> None:
-        """Wrapper for add_command(GET_TOOL) that auto-fills default values."""
+    def retrieve_tool(self, tool_key: str) -> None:
+        """Wrapper for add_command(RETRIEVE_TOOL) that auto-fills default values."""
         tool = self._tool_key_to_tool(tool_key)
-        command = GET_TOOL(tool=tool)
+        command = RETRIEVE_TOOL(tool=tool)
         self.add_command(command)
 
     def goto_labware_index(self, labware_key: str, labware_index: int) -> None:
