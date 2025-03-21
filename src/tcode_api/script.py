@@ -31,7 +31,7 @@ from tcode_api.api import (
     ValueWithUnits,
 )
 
-_logger = logging.getLogger("tcode.script")
+_logger = logging.getLogger("tcode_api.script")
 
 
 def load_tcode_json_file(file_path: pathlib.Path) -> TCodeAST:
