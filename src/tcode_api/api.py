@@ -164,6 +164,11 @@ class CALIBRATE_FTS_NOISE_FLOOR(TCODEBase):
     snr: float
 
 
+class DISCARD_PIPETTE_TIP_GROUP(TCODEBase):
+    type: Literal["DISCARD_PIPETTE_TIP_GROUP"] = "DISCARD_PIPETTE_TIP_GROUP"
+    id: str
+
+
 class DISPENSE(TCODEBase):
     type: Literal["DISPENSE"] = "DISPENSE"
     volume: ValueWithUnits
@@ -216,7 +221,7 @@ class RESET_FTS(TCODEBase):
 
 class RETRIEVE_PIPETTE_TIP_GROUP(TCODEBase):
     type: Literal["RETRIEVE_PIPETTE_TIP_GROUP"] = "RETRIEVE_PIPETTE_TIP_GROUP"
-    pipette_tip_group: PipetteTipGroup
+    id: str
 
 
 class RETRIEVE_TOOL(TCODEBase):
@@ -226,7 +231,7 @@ class RETRIEVE_TOOL(TCODEBase):
 
 class RETURN_PIPETTE_TIP_GROUP(TCODEBase):
     type: Literal["RETURN_PIPETTE_TIP_GROUP"] = "RETURN_PIPETTE_TIP_GROUP"
-    pipette_tip_group: PipetteTipGroup
+    id: str
 
 
 class RETURN_TOOL(TCODEBase):
@@ -236,6 +241,7 @@ class RETURN_TOOL(TCODEBase):
 TCODE = Annotated[
     ASPIRATE
     | CALIBRATE_FTS_NOISE_FLOOR
+    | DISCARD_PIPETTE_TIP_GROUP
     | DISPENSE
     | GOTO
     | PICK_UP_PIPETTE_TIP

@@ -31,7 +31,7 @@ from tcode_api.api import (
     ValueWithUnits,
 )
 
-_logger = logging.getLogger("tcode.script")
+_logger = logging.getLogger("tcode_api.script")
 
 
 def load_tcode_json_file(file_path: pathlib.Path) -> TCodeAST:
@@ -184,6 +184,7 @@ class TCodeScriptBuilder:
         # Register labware
         self._labware_key_to_fleet_index[key] = len(self.ast.fleet.labware)
         self.ast.fleet.labware.append(labware)
+        _logger.info("Builder registered labware with key %s: %s", key, labware)
 
     def add_robot(self, robot: Robot) -> None:
         """Add a new robot to the targeted fleet."""
@@ -198,6 +199,7 @@ class TCodeScriptBuilder:
 
         self.ast.fleet.robots.append(robot)
         self._tool_key_to_robot_index.append({})
+        _logger.info("Builder registered robot: %s", robot)
 
     def add_tool(self, key: str, robot_index: int, tool: Tool) -> None:
         """Add a new tool to the script."""
@@ -225,6 +227,7 @@ class TCodeScriptBuilder:
         # Register tool
         tool_key_to_index[key] = len(robot.tools)
         robot.tools.append(tool)
+        _logger.info("Builder registered tool with key %s: %s", key, tool)
 
     # TCode command methods #
 
