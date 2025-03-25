@@ -3,13 +3,13 @@
 import datetime
 import unittest
 
-from tcode_api.api import EnumWithDisplayName, Fleet, Metadata, TCodeAST
+from tcode_api.api import Fleet, Metadata, TCodeAST, _EnumWithDisplayName
 
 
 class TestEnumWithDisplayName(unittest.TestCase):
     """EnumWithDisplayName unittests."""
 
-    class FruitType(EnumWithDisplayName):
+    class FruitType(_EnumWithDisplayName):
         """EnumWithDisplayName subclass, referenced in unittests."""
 
         APPLE = (1, "Apple")
