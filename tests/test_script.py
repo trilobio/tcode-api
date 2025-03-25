@@ -14,53 +14,64 @@ from tcode_api.api import (
     ValueWithUnits,
     WellPlate,
 )
+from tcode_api.error import IdExistsError, IdNotFoundError
 from tcode_api.script import TCodeScriptBuilder
 
 
 class TestTCodeScriptBuilder(unittest.TestCase):
 
-    def test_bad_keys(self) -> None:
-        """Verify expected failures on bad tool and labware keys."""
-        builder = TCodeScriptBuilder(name="test_bad_keys")
-        builder.add_robot(Robot())
-        with self.subTest("Invalid robot index"):
-            with self.assertRaises(IndexError):
-                builder.add_tool("pipette", 1, SingleChannelPipette())
+    def test_bad_ids(self) -> None:
+        """Verify expected failures on bad tool, labware, and robot ids."""
+        builder = TCodeScriptBuilder(name="test_bad_ids")
 
-        builder.add_tool("pipette", 0, SingleChannelPipette())
-        with self.subTest("Duplicate tool key"):
-            with self.assertRaises(ValueError):
-                builder.add_tool("pipette", 0, SingleChannelPipette())
+        r0, t0 = "ID-R0", "ID-T0"
+        builder.add_robot(Robot(id=r0))
+        builder.add_tool(r0, SingleChannelPipette(id=t0))
 
-        with self.subTest("Missing tool key"):
-            with self.assertRaises(ValueError):
-                builder.retrieve_tool("gripper")
+        with self.subTest("Duplicate robot id"):
+            with self.assertRaises(IdExistsError):
+                builder.add_robot(Robot(id=r0))
 
+        with self.subTest("Successful tool retrieval"):
+            builder.retrieve_tool(t0)
+
+        with self.subTest("Invalid robot id"):
+            with self.assertRaises(IdNotFoundError):
+                builder.add_tool("ID-R1", SingleChannelPipette(id="ID-T1"))
+
+        with self.subTest("Duplicate tool id"):
+            with self.assertRaises(IdExistsError):
+                builder.add_tool(r0, SingleChannelPipette(id=t0))
+
+        with self.subTest("Missing tool id"):
+            with self.assertRaises(IdNotFoundError):
+                builder.retrieve_tool("ID-T1")
+
+        l0 = "ID-L0"
         labware = WellPlate(
-            id="serial_a",
+            id=l0,
             row_count=8,
             column_count=12,
             row_pitch=ValueWithUnits(magnitude=9.0, units="mm"),
             column_pitch=ValueWithUnits(magnitude=9.0, units="mm"),
         )
-        builder.add_labware("well_plate_1", labware)
-        with self.subTest("Duplicate labware serial"):
-            with self.assertRaises(ValueError):
-                builder.add_labware("well_plate_2", labware)
+        builder.add_labware(labware)
+        with self.subTest("Duplicate labware id"):
+            with self.assertRaises(IdExistsError):
+                builder.add_labware(labware)
 
-        with self.subTest("Duplicate labware key"):
-            with self.assertRaises(ValueError):
-                labware.id = "serial_b"
-                builder.add_labware("well_plate_1", labware)
+        with self.subTest("Successful labware location generation"):
+            builder.goto_labware_index(l0, 0)
 
-        with self.subTest("Missing labware key"):
-            with self.assertRaises(ValueError):
-                builder.goto_labware_index("well_plate_2", 0)
+        with self.subTest("Missing labware id"):
+            with self.assertRaises(IdNotFoundError):
+                builder.goto_labware_index("ID-L1", 0)
 
     def test_to_and_from_file(self) -> None:
         """Check that TCodeScripts read and write from file without modification."""
+        r0, t0, l0, l1 = "ID-R0", "ID-T0", "ID-L0", "ID-L1"
         tip_box = PipetteTipRack(
-            id="tip_box_1",
+            id=l0,
             row_count=8,
             column_count=12,
             row_pitch=ValueWithUnits(magnitude=9.0, units="mm"),
@@ -68,31 +79,29 @@ class TestTCodeScriptBuilder(unittest.TestCase):
             full=True,
         )
         well_plate = WellPlate(
-            id="well_plate_1",
+            id=l1,
             row_count=8,
             column_count=12,
             row_pitch=ValueWithUnits(magnitude=9.0, units="mm"),
             column_pitch=ValueWithUnits(magnitude=9.0, units="mm"),
         )
         builder = TCodeScriptBuilder(name="test_to_and_from_file")
-        builder.add_robot(Robot())
-        builder.add_tool("pipette", 0, SingleChannelPipette())
-        builder.add_labware("tip_box", tip_box)
-        builder.add_labware("well_plate", well_plate)
-        builder.retrieve_tool("pipette")
+        builder.add_robot(Robot(id=r0))
+        builder.add_tool(r0, SingleChannelPipette(id=t0))
+        builder.add_labware(tip_box)
+        builder.add_labware(well_plate)
+        builder.retrieve_tool(t0)
         builder.add_command(
             PICK_UP_PIPETTE_TIP(
-                location=Location(
-                    type=LocationType.LABWARE_INDEX, data=("tip_box_1", 1)
-                )
+                location=Location(type=LocationType.LABWARE_INDEX, data=(l0, 1))
             )
         )
-        builder.pick_up_pipette_tip("tip_box", 0)
-        builder.goto_labware_index("well_plate", 0)  # Well A1
+        builder.pick_up_pipette_tip(l0, 0)
+        builder.goto_labware_index(l1, 0)  # Well A1
         builder.aspirate(100.0)
-        builder.goto_labware_index("well_plate", 1)  # Well A2
+        builder.goto_labware_index(l1, 1)  # Well A2
         builder.dispense(100.0)
-        builder.put_down_pipette_tip("tip_box", 0)
+        builder.put_down_pipette_tip(l0, 0)
         builder.return_tool()
         ast = builder.emit()
 
