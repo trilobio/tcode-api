@@ -111,17 +111,17 @@ class Probe(_ToolBase):
     type: Literal["Probe"] = "Probe"
 
 
-class PipetteCommon(_ToolBase):
+class _PipetteCommon(_ToolBase):
     min_volume: ValueWithUnits | None = Field(default=None)
     max_volume: ValueWithUnits | None = Field(default=None)
     max_speed: ValueWithUnits | None = Field(default=None)
 
 
-class SingleChannelPipette(PipetteCommon):
+class SingleChannelPipette(_PipetteCommon):
     type: Literal["SingleChannelPipette"] = "SingleChannelPipette"
 
 
-class EightChannelPipette(PipetteCommon):
+class EightChannelPipette(_PipetteCommon):
     type: Literal["EightChannelPipette"] = "EightChannelPipette"
 
 
@@ -293,7 +293,7 @@ class WellPlate(_LabwareBase):
 
 class PipetteTipRack(_LabwareBase):
     type: Literal["PipetteTipRack"] = "PipetteTipRack"
-    full: bool
+    full: bool = True
 
 
 class Trash(_LabwareBase):
