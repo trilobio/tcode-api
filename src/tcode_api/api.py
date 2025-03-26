@@ -6,24 +6,29 @@ from typing import Annotated, Literal, Self
 from pydantic import BaseModel, ConfigDict, Field
 
 
-class BaseModelStrict(BaseModel):
+class _BaseModelStrict(BaseModel):
     model_config = ConfigDict(strict=True, extra="forbid")
 
 
+class _BaseModelWithId(_BaseModelStrict):
+    id: str
+
+
 # Define the ValueWithUnits schema
-class ValueWithUnits(BaseModelStrict):
+class ValueWithUnits(_BaseModelStrict):
     type: Literal["ValueWithUnits"] = "ValueWithUnits"
     magnitude: float
     units: str
 
     def __hash__(self):
+        # TODO (connor): Mia mentioned that this can produce collisions, fix.
         return hash(self.magnitude) ^ hash(self.units)
 
     def __str__(self):
         return f"{self.magnitude} {self.units}"
 
 
-class EnumWithDisplayName(Enum):
+class _EnumWithDisplayName(Enum):
     """Base class for Enum with display_name attribute."""
 
     def __init__(self, value: int, display_name: str):
@@ -64,7 +69,7 @@ def verify_positive_nonzero_int(value: int) -> int:
     return value
 
 
-class LocationType(EnumWithDisplayName):
+class LocationType(_EnumWithDisplayName):
     """Enumeration of different methods for specifying a location.
 
     LABWARE_INDEX: tuple of (str, int); str corresponds to Labware.serial, int is index into labware's locations.
@@ -77,39 +82,46 @@ class LocationType(EnumWithDisplayName):
     MATRIX = (3, "Matrix")
 
 
-class Location(BaseModelStrict):
+class Location(_BaseModelStrict):
     """Location schema."""
 
     type: LocationType
     data: tuple[str, int] | str | Matrix
 
 
-class PipetteTipGroup(BaseModelStrict):
+class PipetteTipGroup(_BaseModelWithId):
     """Grid layout of pipette tips."""
 
-    id: str
     row_count: Annotated[int, verify_positive_nonzero_int]
     column_count: Annotated[int, verify_positive_nonzero_int]
     pipette_tip_tags: list[str] = Field(default_factory=list)
     pipette_tip_named_tags: dict[str, str] = Field(default_factory=dict)
 
 
-# Define constraint schemas
-class Probe(BaseModelStrict):
+# Tool schemas
+
+
+class _ToolBase(_BaseModelWithId):
+    """Base schema shared by all tools in the TOOL discriminated union."""
+
+    ...
+
+
+class Probe(_ToolBase):
     type: Literal["Probe"] = "Probe"
 
 
-class PipetteCommon(BaseModelStrict):
+class _PipetteCommon(_ToolBase):
     min_volume: ValueWithUnits | None = Field(default=None)
     max_volume: ValueWithUnits | None = Field(default=None)
     max_speed: ValueWithUnits | None = Field(default=None)
 
 
-class SingleChannelPipette(PipetteCommon):
+class SingleChannelPipette(_PipetteCommon):
     type: Literal["SingleChannelPipette"] = "SingleChannelPipette"
 
 
-class EightChannelPipette(PipetteCommon):
+class EightChannelPipette(_PipetteCommon):
     type: Literal["EightChannelPipette"] = "EightChannelPipette"
 
 
@@ -120,7 +132,7 @@ Tool = Annotated[
 ]
 
 
-class PathType(EnumWithDisplayName):
+class PathType(_EnumWithDisplayName):
     """Enumeration of robot path types.
 
     DIRECT: robot moves to the target location directly in jointspace.
@@ -133,7 +145,7 @@ class PathType(EnumWithDisplayName):
     SHORTCUT = (3, "Shortcut")
 
 
-class TrajectoryType(EnumWithDisplayName):
+class TrajectoryType(_EnumWithDisplayName):
     """Enumeration of trajectory types.
 
     JOINT_SQUARE: robot moves in joint space with square motor profiles.
@@ -145,11 +157,16 @@ class TrajectoryType(EnumWithDisplayName):
     JOINT_TRAPEZOIDAL = (2, "Trapezoidal")
 
 
-class TCODEBase(BaseModelStrict):
-    pass
+# TCode command schemas
 
 
-class ASPIRATE(TCODEBase):
+class _TCodeBase(_BaseModelStrict):
+    """Base schema shared by all TCode commands in the TCODE discriminated union."""
+
+    ...
+
+
+class ASPIRATE(_TCodeBase):
     type: Literal["ASPIRATE"] = "ASPIRATE"
     volume: ValueWithUnits
     speed: ValueWithUnits
@@ -158,44 +175,43 @@ class ASPIRATE(TCODEBase):
 Axes = Literal["x", "y", "z", "xy", "xz", "yz", "xyz"]
 
 
-class CALIBRATE_FTS_NOISE_FLOOR(TCODEBase):
+class CALIBRATE_FTS_NOISE_FLOOR(_TCodeBase):
     type: Literal["CALIBRATE_FTS_NOISE_FLOOR"] = "CALIBRATE_FTS_NOISE_FLOOR"
     axes: Axes
     snr: float
 
 
-class DISCARD_PIPETTE_TIP_GROUP(TCODEBase):
+class DISCARD_PIPETTE_TIP_GROUP(_TCodeBase):
     type: Literal["DISCARD_PIPETTE_TIP_GROUP"] = "DISCARD_PIPETTE_TIP_GROUP"
-    id: str
 
 
-class DISPENSE(TCODEBase):
+class DISPENSE(_TCodeBase):
     type: Literal["DISPENSE"] = "DISPENSE"
     volume: ValueWithUnits
     speed: ValueWithUnits
 
 
-class GOTO(TCODEBase):
+class GOTO(_TCodeBase):
     type: Literal["GOTO"] = "GOTO"
     location: Location
-    path_type: PathType
-    trajectory_type: TrajectoryType
     location_offset: Matrix = Field(default_factory=identity_transform_factory)
     flange: Location | None = None
     flange_offset: Matrix = Field(default_factory=identity_transform_factory)
+    path_type: PathType | None = None
+    trajectory_type: TrajectoryType | None = None
 
 
-class PICK_UP_PIPETTE_TIP(TCODEBase):
+class PICK_UP_PIPETTE_TIP(_TCodeBase):
     type: Literal["PICK_UP_PIPETTE_TIP"] = "PICK_UP_PIPETTE_TIP"
     location: Location
 
 
-class PICK_UP_TOOL(TCODEBase):
+class PICK_UP_TOOL(_TCodeBase):
     type: Literal["PICK_UP_TOOL"] = "PICK_UP_TOOL"
     location: Location
 
 
-class PROBE(TCODEBase):
+class PROBE(_TCodeBase):
     type: Literal["PROBE"] = "PROBE"
     location: Location
     location_offset: Matrix = Field(default_factory=identity_transform_factory)
@@ -205,40 +221,39 @@ class PROBE(TCODEBase):
     backoff_distance: ValueWithUnits
 
 
-class PUT_DOWN_PIPETTE_TIP(TCODEBase):
+class PUT_DOWN_PIPETTE_TIP(_TCodeBase):
     type: Literal["PUT_DOWN_PIPETTE_TIP"] = "PUT_DOWN_PIPETTE_TIP"
     location: Location
 
 
-class PUT_DOWN_TOOL(TCODEBase):
+class PUT_DOWN_TOOL(_TCodeBase):
     type: Literal["PUT_DOWN_TOOL"] = "PUT_DOWN_TOOL"
     location: Location
 
 
-class RESET_FTS(TCODEBase):
+class RESET_FTS(_TCodeBase):
     type: Literal["RESET_FTS"] = "RESET_FTS"
 
 
-class RETRIEVE_PIPETTE_TIP_GROUP(TCODEBase):
+class RETRIEVE_PIPETTE_TIP_GROUP(_TCodeBase):
     type: Literal["RETRIEVE_PIPETTE_TIP_GROUP"] = "RETRIEVE_PIPETTE_TIP_GROUP"
     id: str
 
 
-class RETRIEVE_TOOL(TCODEBase):
+class RETRIEVE_TOOL(_TCodeBase):
     type: Literal["RETRIEVE_TOOL"] = "RETRIEVE_TOOL"
-    tool: Tool
-
-
-class RETURN_PIPETTE_TIP_GROUP(TCODEBase):
-    type: Literal["RETURN_PIPETTE_TIP_GROUP"] = "RETURN_PIPETTE_TIP_GROUP"
     id: str
 
 
-class RETURN_TOOL(TCODEBase):
+class RETURN_PIPETTE_TIP_GROUP(_TCodeBase):
+    type: Literal["RETURN_PIPETTE_TIP_GROUP"] = "RETURN_PIPETTE_TIP_GROUP"
+
+
+class RETURN_TOOL(_TCodeBase):
     type: Literal["RETURN_TOOL"] = "RETURN_TOOL"
 
 
-TCODE = Annotated[
+TCode = Annotated[
     ASPIRATE
     | CALIBRATE_FTS_NOISE_FLOOR
     | DISCARD_PIPETTE_TIP_GROUP
@@ -257,9 +272,13 @@ TCODE = Annotated[
     Field(discriminator="type"),
 ]
 
+# Various plate schemas #
+# Note: called Labware for historical reasons, but all correspond to the ANSI-SLAS format
 
-class _LabwareBase(BaseModel):
-    id: str
+
+class _LabwareBase(_BaseModelWithId):
+    """Base schema shared by all labware in the Labware discriminated union."""
+
     row_count: int
     column_count: int
     row_pitch: ValueWithUnits
@@ -274,29 +293,31 @@ class WellPlate(_LabwareBase):
 
 class PipetteTipRack(_LabwareBase):
     type: Literal["PipetteTipRack"] = "PipetteTipRack"
-    full: bool
+    full: bool = True
 
 
 class Trash(_LabwareBase):
     type: Literal["Trash"] = "Trash"
 
 
-LABWARE = Annotated[
+Labware = Annotated[
     WellPlate | PipetteTipRack | Trash,
     Field(discriminator="type"),
 ]
 
+# Top-level component schemas
 
-class Robot(BaseModelStrict):
+
+class Robot(_BaseModelWithId):
     tools: list[Tool] = Field(default_factory=list)
 
 
-class Fleet(BaseModelStrict):
+class Fleet(_BaseModelStrict):
     robots: list[Robot] = Field(default_factory=list)
-    labware: list[LABWARE] = Field(default_factory=list)
+    labware: list[Labware] = Field(default_factory=list)
 
 
-class Metadata(BaseModelStrict):
+class Metadata(_BaseModelStrict):
     """TCode script metadata."""
 
     name: str
@@ -310,5 +331,5 @@ class TCodeAST(BaseModel):
 
     metadata: Metadata
     fleet: Fleet
-    tcode: list[TCODE] = Field(default_factory=list)
+    tcode: list[TCode] = Field(default_factory=list)
     pipette_tips: list[PipetteTipGroup] = Field(default_factory=list)

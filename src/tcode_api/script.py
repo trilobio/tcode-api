@@ -5,13 +5,13 @@ import importlib.metadata
 import logging
 import pathlib
 from difflib import get_close_matches
+from typing import Iterable, Protocol, cast
 
 from tcode_api.api import (
     ASPIRATE,
     CALIBRATE_FTS_NOISE_FLOOR,
     DISPENSE,
     GOTO,
-    LABWARE,
     PICK_UP_PIPETTE_TIP,
     PROBE,
     PUT_DOWN_PIPETTE_TIP,
@@ -20,6 +20,7 @@ from tcode_api.api import (
     RETURN_TOOL,
     Axes,
     Fleet,
+    Labware,
     Location,
     LocationType,
     Metadata,
@@ -30,6 +31,7 @@ from tcode_api.api import (
     TrajectoryType,
     ValueWithUnits,
 )
+from tcode_api.error import IdExistsError, IdNotFoundError
 
 _logger = logging.getLogger("tcode_api.script")
 
@@ -52,14 +54,18 @@ def load_tcode_json_file(file_path: pathlib.Path) -> TCodeAST:
     return TCodeAST.model_validate_json(data)
 
 
+class ModelWithId(Protocol):
+    id: str
+
+
+Id = str
+
+
 class TCodeScriptBuilder:
     """Builder for TCode scripts."""
 
     def __init__(self, name: str, description: str | None = None) -> None:
         """Initialize a new TCode script builder with metadata."""
-        self._labware_key_to_fleet_index: dict[str, int] = {}
-        self._tool_key_to_robot_index: list[dict[str, int]] = []
-
         self.reset(name, description)
 
         self.default_path_type = PathType.SAFE
@@ -77,8 +83,6 @@ class TCodeScriptBuilder:
             tcode_api_version=importlib.metadata.version("tcode_api"),
         )
         self.ast = TCodeAST(metadata=metadata, fleet=Fleet(), tcode=[])
-        self._labware_key_to_fleet_index = {}
-        self._tool_key_to_robot_index = []
 
     def emit(self) -> TCodeAST:
         """Return the current TCode script as an abstract syntax tree."""
@@ -113,43 +117,49 @@ class TCodeScriptBuilder:
 
     # Private implementation methods #
 
-    def _labware_key_to_labware(self, labware_key: str) -> LABWARE:
-        try:
-            index = self._labware_key_to_fleet_index[labware_key]
-
-        except KeyError:
-            _logger.error(
-                "Builder has no labware registered under key %s: %s",
-                labware_key,
-                self._labware_key_to_labware,
-            )
-            raise ValueError(labware_key)
-
-        return self.ast.fleet.labware[index]
-
-    def _tool_key_to_tool(self, tool_key: str) -> Tool:
-        try:
-            tool_key_to_tool = self._tool_key_to_robot_index[0]
-            index = tool_key_to_tool[tool_key]
-
-        except KeyError:
-            _logger.error(
-                "Builder has no tool registered under key %s: %s",
-                tool_key,
-                self._tool_key_to_robot_index,
-            )
-            raise ValueError(tool_key)
-
-        if len(self.ast.fleet.robots) > 1:
-            _logger.warning(
-                "Assuming tool_key %s refers to 0th robot in fleet", tool_key
-            )
-        return self.ast.fleet.robots[0].tools[index]
-
-    def _labware_specification_to_location(self, key: str, index: int) -> Location:
+    def _labware_specification_to_location(
+        self, labware_id: Id, index: int
+    ) -> Location:
         """Turn builder's labware key and labware index into a TCode-compliant Location."""
-        labware_id = self._labware_key_to_labware(key).id
+        self._find_labware_by_id(labware_id)  # Check that the labware exists
         return Location(type=LocationType.LABWARE_INDEX, data=(labware_id, index))
+
+    def _find_model_by_id(
+        self, model_id: Id, model_list: Iterable[ModelWithId]
+    ) -> ModelWithId:
+        """Return the model with the given id."""
+        models = [model for model in model_list if model.id == model_id]
+        match len(models):
+            case 0:
+                _logger.error("No matching model in %s", model_list)
+            case 1:
+                return models[0]
+            case _:
+                _logger.error(
+                    "Multiple models with id %s in %s: %s",
+                    model_id,
+                    model_list,
+                    models,
+                )
+
+        raise IdNotFoundError(model_id)
+
+    def _find_labware_by_id(self, labware_id: Id) -> Labware:
+        """Return the labware with the given id."""
+        return cast(Labware, self._find_model_by_id(labware_id, self.ast.fleet.labware))
+
+    def _find_tool_by_id(self, tool_id: Id) -> Tool:
+        """Return the tool with the given id."""
+        return cast(
+            Tool,
+            self._find_model_by_id(
+                tool_id, [t for r in self.ast.fleet.robots for t in r.tools]
+            ),
+        )
+
+    def _find_robot_by_id(self, robot_id: Id) -> Robot:
+        """Return the robot with the given id."""
+        return cast(Robot, self._find_model_by_id(robot_id, self.ast.fleet.robots))
 
     # Component registration methods #
 
@@ -157,77 +167,45 @@ class TCodeScriptBuilder:
         """Add a new command to the TCode script."""
         self.ast.tcode.append(command)
 
-    def add_labware(self, key: str, labware: LABWARE) -> None:
+    def add_labware(self, labware: Labware) -> None:
         """Add a new labware to the script."""
-        # Check that key is unique
-        if key in self._labware_key_to_fleet_index.keys():
-            labware = self.ast.fleet.labware[self._labware_key_to_fleet_index[key]]
-            _logger.error(
-                "Builder already has labware registered with key %s: %s", key, labware
-            )
-            raise ValueError(key)
-
-        # Check that labware.id is unique
-        ids = {labware.id: labware for labware in self.ast.fleet.labware}
         try:
-            duplicate_labware = ids[labware.id]
+            discovered_model = self._find_labware_by_id(labware.id)
             _logger.error(
-                "Labware with id %s already registered: %s",
-                labware.id,
-                duplicate_labware,
+                "Labware with id %s already exists: %s", labware.id, discovered_model
             )
-            raise ValueError(labware)
+            raise IdExistsError(labware.id)
+        except IdNotFoundError:
+            pass
 
-        except KeyError:
-            pass  # No duplicate id found
-
-        # Register labware
-        self._labware_key_to_fleet_index[key] = len(self.ast.fleet.labware)
         self.ast.fleet.labware.append(labware)
-        _logger.info("Builder registered labware with key %s: %s", key, labware)
 
     def add_robot(self, robot: Robot) -> None:
         """Add a new robot to the targeted fleet."""
-        if robot in self.ast.fleet.robots:
-            _logger.error("Robot %s already exists in fleet %s", robot, self.ast.fleet)
-            raise ValueError(robot)
-
         if len(robot.tools) > 0:
             raise NotImplementedError(
                 "add_robot() doesn't support robots with tools. Use buoilder.add_tool() to add tools to a robot."
             )
-
-        self.ast.fleet.robots.append(robot)
-        self._tool_key_to_robot_index.append({})
-        _logger.info("Builder registered robot: %s", robot)
-
-    def add_tool(self, key: str, robot_index: int, tool: Tool) -> None:
-        """Add a new tool to the script."""
-        # Check robot_index
         try:
-            tool_key_to_index = self._tool_key_to_robot_index[robot_index]
-            robot = self.ast.fleet.robots[robot_index]
-
-        except KeyError:
+            discovered_model = self._find_robot_by_id(robot.id)
             _logger.error(
-                "Builder has no robot registered under index %s: %s",
-                robot_index,
-                self.ast.fleet.robots,
+                "Robot with id %s already exists: %s", robot.id, discovered_model
             )
-            raise ValueError(robot_index)
+            raise IdExistsError(robot.id)
+        except IdNotFoundError:
+            self.ast.fleet.robots.append(robot)
 
-        # Check that key is unique
-        if key in tool_key_to_index.keys():
-            tool = robot.tools[tool_key_to_index[key]]
+    def add_tool(self, robot_id: Id, tool: Tool) -> None:
+        """Add a new tool to the script on a specific robot."""
+        try:
+            discovered_model = self._find_tool_by_id(tool.id)
             _logger.error(
-                "Builder already has tool registered with key %s: %s", key, tool
+                "Tool with id %s already exists: %s", tool.id, discovered_model
             )
-            raise ValueError(key)
-
-        # Register tool
-        tool_key_to_index[key] = len(robot.tools)
-        robot.tools.append(tool)
-        _logger.info("Builder registered tool with key %s: %s", key, tool)
+            raise IdExistsError(tool.id)
+        except IdNotFoundError:
+            robot = self._find_robot_by_id(robot_id)
+            robot.tools.append(tool)
 
     # TCode command methods #
 
@@ -244,9 +222,9 @@ class TCodeScriptBuilder:
         """Wrapper for add_command(CALIBRATE_FTS_NOISE_FLOOR)."""
         self.add_command(CALIBRATE_FTS_NOISE_FLOOR(axes=axes, snr=snr))
 
-    def put_down_pipette_tip(self, labware_key: str, labware_index: int) -> None:
+    def put_down_pipette_tip(self, labware_id: Id, labware_index: int) -> None:
         """Wrapper for add_command(PUT_DOWN_PIPETTE_TIP) that auto-fills default values."""
-        location = self._labware_specification_to_location(labware_key, labware_index)
+        location = self._labware_specification_to_location(labware_id, labware_index)
         command = PUT_DOWN_PIPETTE_TIP(location=location)
         self.add_command(command)
 
@@ -264,21 +242,21 @@ class TCodeScriptBuilder:
         )
         self.add_command(command)
 
-    def pick_up_pipette_tip(self, labware_key: str, labware_index: int) -> None:
+    def pick_up_pipette_tip(self, labware_id: Id, labware_index: int) -> None:
         """Wrapper for add_command(PICK_UP_PIPETTE_TIP) that auto-fills default values."""
-        location = self._labware_specification_to_location(labware_key, labware_index)
+        location = self._labware_specification_to_location(labware_id, labware_index)
         command = PICK_UP_PIPETTE_TIP(location=location)
         self.add_command(command)
 
-    def retrieve_tool(self, tool_key: str) -> None:
+    def retrieve_tool(self, tool_id: Id) -> None:
         """Wrapper for add_command(RETRIEVE_TOOL) that auto-fills default values."""
-        tool = self._tool_key_to_tool(tool_key)
-        command = RETRIEVE_TOOL(tool=tool)
+        tool = self._find_tool_by_id(tool_id)
+        command = RETRIEVE_TOOL(id=tool.id)
         self.add_command(command)
 
-    def goto_labware_index(self, labware_key: str, labware_index: int) -> None:
+    def goto_labware_index(self, labware_id: Id, labware_index: int) -> None:
         """Wrapper for add_command(GOTO) that auto-fills default values."""
-        location = self._labware_specification_to_location(labware_key, labware_index)
+        location = self._labware_specification_to_location(labware_id, labware_index)
         command = GOTO(
             location=location,
             path_type=self.default_path_type,
