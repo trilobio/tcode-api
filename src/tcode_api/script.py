@@ -7,36 +7,13 @@ import pathlib
 from difflib import get_close_matches
 from typing import Iterable, Protocol, cast
 
-from tcode_api.api import (
-    ASPIRATE,
-    CALIBRATE_FTS_NOISE_FLOOR,
-    DISPENSE,
-    GOTO,
-    PICK_UP_PIPETTE_TIP,
-    PROBE,
-    PUT_DOWN_PIPETTE_TIP,
-    RESET_FTS,
-    RETRIEVE_TOOL,
-    RETURN_TOOL,
-    Axes,
-    Fleet,
-    Labware,
-    Location,
-    LocationType,
-    Metadata,
-    PathType,
-    Robot,
-    TCodeAST,
-    Tool,
-    TrajectoryType,
-    ValueWithUnits,
-)
+import tcode_api.api as tc
 from tcode_api.error import IdExistsError, IdNotFoundError
 
 _logger = logging.getLogger("tcode_api.script")
 
 
-def load_tcode_json_file(file_path: pathlib.Path) -> TCodeAST:
+def load_tcode_json_file(file_path: pathlib.Path) -> tc.TCodeAST:
     """Load a TCode AST from a json file."""
     file_path = file_path.resolve()
     if not file_path.is_file():
@@ -51,7 +28,7 @@ def load_tcode_json_file(file_path: pathlib.Path) -> TCodeAST:
     with open(file_path, "r") as f:
         data = f.read()
 
-    return TCodeAST.model_validate_json(data)
+    return tc.TCodeAST.model_validate_json(data)
 
 
 class ModelWithId(Protocol):
@@ -68,23 +45,23 @@ class TCodeScriptBuilder:
         """Initialize a new TCode script builder with metadata."""
         self.reset(name, description)
 
-        self.default_path_type = PathType.SAFE
-        self.default_trajectory_type = TrajectoryType.JOINT_SQUARE
+        self.default_path_type = tc.PathType.SAFE
+        self.default_trajectory_type = tc.TrajectoryType.JOINT_SQUARE
         self.default_pipette_speed = 100.0  # uL/s
 
     # Input/output management methods #
 
     def reset(self, name: str, description: str | None = None) -> None:
         """Set up the builder to write a new script."""
-        metadata = Metadata(
+        metadata = tc.Metadata(
             name=name,
             description=description,
             timestamp=datetime.datetime.now().isoformat(),
             tcode_api_version=importlib.metadata.version("tcode_api"),
         )
-        self.ast = TCodeAST(metadata=metadata, fleet=Fleet(), tcode=[])
+        self.ast = tc.TCodeAST(metadata=metadata, fleet=tc.Fleet(), tcode=[])
 
-    def emit(self) -> TCodeAST:
+    def emit(self) -> tc.TCodeAST:
         """Return the current TCode script as an abstract syntax tree."""
         return self.ast.model_copy()
 
@@ -119,10 +96,10 @@ class TCodeScriptBuilder:
 
     def _labware_specification_to_location(
         self, labware_id: Id, index: int
-    ) -> Location:
+    ) -> tc.LocationAsLabwareIndex:
         """Turn builder's labware key and labware index into a TCode-compliant Location."""
         self._find_labware_by_id(labware_id)  # Check that the labware exists
-        return Location(type=LocationType.LABWARE_INDEX, data=(labware_id, index))
+        return tc.LocationAsLabwareIndex(data=(labware_id, index))
 
     def _find_model_by_id(
         self, model_id: Id, model_list: Iterable[ModelWithId]
@@ -144,22 +121,24 @@ class TCodeScriptBuilder:
 
         raise IdNotFoundError(model_id)
 
-    def _find_labware_by_id(self, labware_id: Id) -> Labware:
+    def _find_labware_by_id(self, labware_id: Id) -> tc.Labware:
         """Return the labware with the given id."""
-        return cast(Labware, self._find_model_by_id(labware_id, self.ast.fleet.labware))
+        return cast(
+            tc.Labware, self._find_model_by_id(labware_id, self.ast.fleet.labware)
+        )
 
-    def _find_tool_by_id(self, tool_id: Id) -> Tool:
+    def _find_tool_by_id(self, tool_id: Id) -> tc.Tool:
         """Return the tool with the given id."""
         return cast(
-            Tool,
+            tc.Tool,
             self._find_model_by_id(
                 tool_id, [t for r in self.ast.fleet.robots for t in r.tools]
             ),
         )
 
-    def _find_robot_by_id(self, robot_id: Id) -> Robot:
+    def _find_robot_by_id(self, robot_id: Id) -> tc.Robot:
         """Return the robot with the given id."""
-        return cast(Robot, self._find_model_by_id(robot_id, self.ast.fleet.robots))
+        return cast(tc.Robot, self._find_model_by_id(robot_id, self.ast.fleet.robots))
 
     # Component registration methods #
 
@@ -167,7 +146,7 @@ class TCodeScriptBuilder:
         """Add a new command to the TCode script."""
         self.ast.tcode.append(command)
 
-    def add_labware(self, labware: Labware) -> None:
+    def add_labware(self, labware: tc.Labware) -> None:
         """Add a new labware to the script."""
         try:
             discovered_model = self._find_labware_by_id(labware.id)
@@ -180,7 +159,7 @@ class TCodeScriptBuilder:
 
         self.ast.fleet.labware.append(labware)
 
-    def add_robot(self, robot: Robot) -> None:
+    def add_robot(self, robot: tc.Robot) -> None:
         """Add a new robot to the targeted fleet."""
         if len(robot.tools) > 0:
             raise NotImplementedError(
@@ -195,7 +174,7 @@ class TCodeScriptBuilder:
         except IdNotFoundError:
             self.ast.fleet.robots.append(robot)
 
-    def add_tool(self, robot_id: Id, tool: Tool) -> None:
+    def add_tool(self, robot_id: Id, tool: tc.Tool) -> None:
         """Add a new tool to the script on a specific robot."""
         try:
             discovered_model = self._find_tool_by_id(tool.id)
@@ -212,52 +191,56 @@ class TCodeScriptBuilder:
     def aspirate(self, volume: float, speed: float | None = None) -> None:
         """Wrapper for add_command(ASPIRATE) that auto-fills default values."""
         speed = speed if speed is not None else self.default_pipette_speed
-        command = ASPIRATE(
-            volume=ValueWithUnits(magnitude=volume, units="microliters"),
-            speed=ValueWithUnits(magnitude=speed, units="microliters/second"),
+        command = tc.ASPIRATE(
+            volume=tc.ValueWithUnits(magnitude=volume, units="microliters"),
+            speed=tc.ValueWithUnits(magnitude=speed, units="microliters/second"),
         )
         self.add_command(command)
 
-    def calibrate_fts_noise_floor(self, axes: Axes, snr: float) -> None:
+    def calibrate_fts_noise_floor(self, axes: tc.Axes, snr: float) -> None:
         """Wrapper for add_command(CALIBRATE_FTS_NOISE_FLOOR)."""
-        self.add_command(CALIBRATE_FTS_NOISE_FLOOR(axes=axes, snr=snr))
+        self.add_command(tc.CALIBRATE_FTS_NOISE_FLOOR(axes=axes, snr=snr))
+
+    def pause(self) -> None:
+        """Wrapper for add_command(PAUSE)."""
+        self.add_command(tc.PAUSE())
 
     def put_down_pipette_tip(self, labware_id: Id, labware_index: int) -> None:
         """Wrapper for add_command(PUT_DOWN_PIPETTE_TIP) that auto-fills default values."""
         location = self._labware_specification_to_location(labware_id, labware_index)
-        command = PUT_DOWN_PIPETTE_TIP(location=location)
+        command = tc.PUT_DOWN_PIPETTE_TIP(location=location)
         self.add_command(command)
 
     def return_tool(self) -> None:
         """Wrapper for add_command(RETURN_TOOL) that auto-fills default values."""
-        command = RETURN_TOOL()
+        command = tc.RETURN_TOOL()
         self.add_command(command)
 
     def dispense(self, volume: float, speed: float | None = None) -> None:
         """Wrapper for add_command(DISPENSE) that auto-fills default values."""
         speed = speed if speed is not None else self.default_pipette_speed
-        command = DISPENSE(
-            volume=ValueWithUnits(magnitude=volume, units="microliters"),
-            speed=ValueWithUnits(magnitude=speed, units="microliters/second"),
+        command = tc.DISPENSE(
+            volume=tc.ValueWithUnits(magnitude=volume, units="microliters"),
+            speed=tc.ValueWithUnits(magnitude=speed, units="microliters/second"),
         )
         self.add_command(command)
 
     def pick_up_pipette_tip(self, labware_id: Id, labware_index: int) -> None:
         """Wrapper for add_command(PICK_UP_PIPETTE_TIP) that auto-fills default values."""
         location = self._labware_specification_to_location(labware_id, labware_index)
-        command = PICK_UP_PIPETTE_TIP(location=location)
+        command = tc.PICK_UP_PIPETTE_TIP(location=location)
         self.add_command(command)
 
     def retrieve_tool(self, tool_id: Id) -> None:
         """Wrapper for add_command(RETRIEVE_TOOL) that auto-fills default values."""
         tool = self._find_tool_by_id(tool_id)
-        command = RETRIEVE_TOOL(id=tool.id)
+        command = tc.RETRIEVE_TOOL(id=tool.id)
         self.add_command(command)
 
     def goto_labware_index(self, labware_id: Id, labware_index: int) -> None:
         """Wrapper for add_command(GOTO) that auto-fills default values."""
         location = self._labware_specification_to_location(labware_id, labware_index)
-        command = GOTO(
+        command = tc.GOTO(
             location=location,
             path_type=self.default_path_type,
             trajectory_type=self.default_trajectory_type,
@@ -268,10 +251,10 @@ class TCodeScriptBuilder:
         self, node_id: str, backoff_distance: float, speed_fraction: float
     ) -> None:
         """Wrapper for add_command(PROBE) that auto-fills default values."""
-        location = Location(type=LocationType.NODE_ID, data=node_id)
-        command = PROBE(
+        location = tc.LocationAsNodeId(data=node_id)
+        command = tc.PROBE(
             location=location,
-            backoff_distance=ValueWithUnits(
+            backoff_distance=tc.ValueWithUnits(
                 magnitude=backoff_distance, units="millimeters"
             ),
             speed_fraction=speed_fraction,
@@ -280,4 +263,4 @@ class TCodeScriptBuilder:
 
     def reset_fts(self) -> None:
         """Wrapper for add_command(RESET_FTS)."""
-        self.add_command(RESET_FTS())
+        self.add_command(tc.RESET_FTS())
