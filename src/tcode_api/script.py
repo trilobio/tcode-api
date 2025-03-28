@@ -201,6 +201,10 @@ class TCodeScriptBuilder:
         """Wrapper for add_command(CALIBRATE_FTS_NOISE_FLOOR)."""
         self.add_command(tc.CALIBRATE_FTS_NOISE_FLOOR(axes=axes, snr=snr))
 
+    def pause(self) -> None:
+        """Wrapper for add_command(PAUSE)."""
+        self.add_command(tc.PAUSE())
+
     def put_down_pipette_tip(self, labware_id: Id, labware_index: int) -> None:
         """Wrapper for add_command(PUT_DOWN_PIPETTE_TIP) that auto-fills default values."""
         location = self._labware_specification_to_location(labware_id, labware_index)

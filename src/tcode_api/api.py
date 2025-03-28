@@ -214,6 +214,10 @@ class GOTO(_TCodeBase):
     trajectory_type: TrajectoryType | None = None
 
 
+class PAUSE(_TCodeBase):
+    type: Literal["PAUSE"] = "PAUSE"
+
+
 class PICK_UP_PIPETTE_TIP(_TCodeBase):
     type: Literal["PICK_UP_PIPETTE_TIP"] = "PICK_UP_PIPETTE_TIP"
     location: Location
@@ -272,6 +276,7 @@ TCode = Annotated[
     | DISCARD_PIPETTE_TIP_GROUP
     | DISPENSE
     | GOTO
+    | PAUSE
     | PICK_UP_PIPETTE_TIP
     | PICK_UP_TOOL
     | PROBE
