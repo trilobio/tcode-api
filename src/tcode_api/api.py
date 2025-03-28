@@ -69,24 +69,37 @@ def verify_positive_nonzero_int(value: int) -> int:
     return value
 
 
-class LocationType(_EnumWithDisplayName):
-    """Enumeration of different methods for specifying a location.
+class _Location(_BaseModelStrict):
+    """Base schema shared by all locations in the Location discriminated union."""
 
-    LABWARE_INDEX: tuple of (str, int); str corresponds to Labware.serial, int is index into labware's locations.
-    NODE_ID: identifier of a node in a fleet's Transform Tree.
-    MATRIX: transformation matrix relative to the fleet's root node.
-    """
-
-    LABWARE_INDEX = (1, "LabwareIndex")
-    NODE_ID = (2, "NodeId")
-    MATRIX = (3, "Matrix")
+    type: str
 
 
-class Location(_BaseModelStrict):
-    """Location schema."""
+class LocationAsNodeId(_Location):
+    """Location specified by a node ID in the fleet's transform tree."""
 
-    type: LocationType
-    data: tuple[str, int] | str | Matrix
+    type: Literal["NodeId"] = "NodeId"
+    data: str
+
+
+class LocationAsLabwareIndex(_Location):
+    """Location specified by a tuple of labware id and labware location index."""
+
+    type: Literal["LabwareIndex"] = "LabwareIndex"
+    data: tuple[str, int]  # (labware_id, location_index)
+
+
+class LocationAsMatrix(_Location):
+    """Location specified by a transformation matrix relative to the fleet's root node."""
+
+    type: Literal["Matrix"] = "Matrix"
+    data: Matrix  # 4x4 transformation matrix
+
+
+Location = Annotated[
+    LocationAsNodeId | LocationAsLabwareIndex | LocationAsMatrix,
+    Field(discriminator="type"),
+]
 
 
 class PipetteTipGroup(_BaseModelWithId):

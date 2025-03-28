@@ -21,8 +21,8 @@ from tcode_api.api import (
     Axes,
     Fleet,
     Labware,
-    Location,
-    LocationType,
+    LocationAsLabwareIndex,
+    LocationAsNodeId,
     Metadata,
     PathType,
     Robot,
@@ -119,10 +119,10 @@ class TCodeScriptBuilder:
 
     def _labware_specification_to_location(
         self, labware_id: Id, index: int
-    ) -> Location:
+    ) -> LocationAsLabwareIndex:
         """Turn builder's labware key and labware index into a TCode-compliant Location."""
         self._find_labware_by_id(labware_id)  # Check that the labware exists
-        return Location(type=LocationType.LABWARE_INDEX, data=(labware_id, index))
+        return LocationAsLabwareIndex(data=(labware_id, index))
 
     def _find_model_by_id(
         self, model_id: Id, model_list: Iterable[ModelWithId]
@@ -268,7 +268,7 @@ class TCodeScriptBuilder:
         self, node_id: str, backoff_distance: float, speed_fraction: float
     ) -> None:
         """Wrapper for add_command(PROBE) that auto-fills default values."""
-        location = Location(type=LocationType.NODE_ID, data=node_id)
+        location = LocationAsNodeId(data=node_id)
         command = PROBE(
             location=location,
             backoff_distance=ValueWithUnits(

@@ -6,8 +6,7 @@ import unittest
 
 from tcode_api.api import (
     PICK_UP_PIPETTE_TIP,
-    Location,
-    LocationType,
+    LocationAsLabwareIndex,
     PipetteTipRack,
     Robot,
     SingleChannelPipette,
@@ -93,7 +92,7 @@ class TestTCodeScriptBuilder(unittest.TestCase):
         builder.retrieve_tool(t0)
         builder.add_command(
             PICK_UP_PIPETTE_TIP(
-                location=Location(type=LocationType.LABWARE_INDEX, data=(l0, 1))
+                location=LocationAsLabwareIndex(data=(l0, 1)),
             )
         )
         builder.pick_up_pipette_tip(l0, 0)
