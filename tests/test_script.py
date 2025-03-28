@@ -4,15 +4,7 @@ import pathlib
 import tempfile
 import unittest
 
-from tcode_api.api import (
-    PICK_UP_PIPETTE_TIP,
-    LocationAsLabwareIndex,
-    PipetteTipRack,
-    Robot,
-    SingleChannelPipette,
-    ValueWithUnits,
-    WellPlate,
-)
+import tcode_api.api as tc
 from tcode_api.error import IdExistsError, IdNotFoundError
 from tcode_api.script import TCodeScriptBuilder
 
@@ -24,35 +16,35 @@ class TestTCodeScriptBuilder(unittest.TestCase):
         builder = TCodeScriptBuilder(name="test_bad_ids")
 
         r0, t0 = "ID-R0", "ID-T0"
-        builder.add_robot(Robot(id=r0))
-        builder.add_tool(r0, SingleChannelPipette(id=t0))
+        builder.add_robot(tc.Robot(id=r0))
+        builder.add_tool(r0, tc.SingleChannelPipette(id=t0))
 
         with self.subTest("Duplicate robot id"):
             with self.assertRaises(IdExistsError):
-                builder.add_robot(Robot(id=r0))
+                builder.add_robot(tc.Robot(id=r0))
 
         with self.subTest("Successful tool retrieval"):
             builder.retrieve_tool(t0)
 
         with self.subTest("Invalid robot id"):
             with self.assertRaises(IdNotFoundError):
-                builder.add_tool("ID-R1", SingleChannelPipette(id="ID-T1"))
+                builder.add_tool("ID-R1", tc.SingleChannelPipette(id="ID-T1"))
 
         with self.subTest("Duplicate tool id"):
             with self.assertRaises(IdExistsError):
-                builder.add_tool(r0, SingleChannelPipette(id=t0))
+                builder.add_tool(r0, tc.SingleChannelPipette(id=t0))
 
         with self.subTest("Missing tool id"):
             with self.assertRaises(IdNotFoundError):
                 builder.retrieve_tool("ID-T1")
 
         l0 = "ID-L0"
-        labware = WellPlate(
+        labware = tc.WellPlate(
             id=l0,
             row_count=8,
             column_count=12,
-            row_pitch=ValueWithUnits(magnitude=9.0, units="mm"),
-            column_pitch=ValueWithUnits(magnitude=9.0, units="mm"),
+            row_pitch=tc.ValueWithUnits(magnitude=9.0, units="mm"),
+            column_pitch=tc.ValueWithUnits(magnitude=9.0, units="mm"),
         )
         builder.add_labware(labware)
         with self.subTest("Duplicate labware id"):
@@ -69,30 +61,30 @@ class TestTCodeScriptBuilder(unittest.TestCase):
     def test_to_and_from_file(self) -> None:
         """Check that TCodeScripts read and write from file without modification."""
         r0, t0, l0, l1 = "ID-R0", "ID-T0", "ID-L0", "ID-L1"
-        tip_box = PipetteTipRack(
+        tip_box = tc.PipetteTipRack(
             id=l0,
             row_count=8,
             column_count=12,
-            row_pitch=ValueWithUnits(magnitude=9.0, units="mm"),
-            column_pitch=ValueWithUnits(magnitude=9.0, units="mm"),
+            row_pitch=tc.ValueWithUnits(magnitude=9.0, units="mm"),
+            column_pitch=tc.ValueWithUnits(magnitude=9.0, units="mm"),
             full=True,
         )
-        well_plate = WellPlate(
+        well_plate = tc.WellPlate(
             id=l1,
             row_count=8,
             column_count=12,
-            row_pitch=ValueWithUnits(magnitude=9.0, units="mm"),
-            column_pitch=ValueWithUnits(magnitude=9.0, units="mm"),
+            row_pitch=tc.ValueWithUnits(magnitude=9.0, units="mm"),
+            column_pitch=tc.ValueWithUnits(magnitude=9.0, units="mm"),
         )
         builder = TCodeScriptBuilder(name="test_to_and_from_file")
-        builder.add_robot(Robot(id=r0))
-        builder.add_tool(r0, SingleChannelPipette(id=t0))
+        builder.add_robot(tc.Robot(id=r0))
+        builder.add_tool(r0, tc.SingleChannelPipette(id=t0))
         builder.add_labware(tip_box)
         builder.add_labware(well_plate)
         builder.retrieve_tool(t0)
         builder.add_command(
-            PICK_UP_PIPETTE_TIP(
-                location=LocationAsLabwareIndex(data=(l0, 1)),
+            tc.PICK_UP_PIPETTE_TIP(
+                location=tc.LocationAsLabwareIndex(data=(l0, 1)),
             )
         )
         builder.pick_up_pipette_tip(l0, 0)

@@ -3,7 +3,8 @@
 import datetime
 import unittest
 
-from tcode_api.api import Fleet, Metadata, TCodeAST, _EnumWithDisplayName
+import tcode_api.api as tc
+from tcode_api.api import _EnumWithDisplayName
 
 
 class TestEnumWithDisplayName(unittest.TestCase):
@@ -42,13 +43,13 @@ class TestAPI(unittest.TestCase):
 
     def test_tcodeast(self) -> None:
         """Ensure that TCodeAST can be instantiated."""
-        ast = TCodeAST(
-            metadata=Metadata(
+        ast = tc.TCodeAST(
+            metadata=tc.Metadata(
                 name="unittest_instantiate",
                 timestamp=datetime.datetime.now().isoformat(),
                 tcode_api_version="0.1.0",
             ),
-            fleet=Fleet(),
+            fleet=tc.Fleet(),
             tcode=[],
         )
         self.assertEqual(len(ast.tcode), 0)
