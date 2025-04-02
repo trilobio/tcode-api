@@ -1,7 +1,7 @@
 """Pydantic BaseModel definitions of TCode API."""
 
 from enum import Enum
-from typing import Annotated, Literal, Self
+from typing import Annotated, Literal, Self, Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -86,7 +86,7 @@ class LocationAsLabwareIndex(_Location):
     """Location specified by a tuple of labware id and labware location index."""
 
     type: Literal["LabwareIndex"] = "LabwareIndex"
-    data: tuple[str, int]  # (labware_id, location_index)
+    data: tuple[str, int] | Any  # (labware_id, location_index)
 
 
 class LocationAsMatrix(_Location):
@@ -194,6 +194,11 @@ class CALIBRATE_FTS_NOISE_FLOOR(_TCodeBase):
     snr: float
 
 
+class COMMENTS(_TCodeBase):
+    type: Literal["COMMENTS"] = "COMMENTS"
+    text: str
+
+
 class DISCARD_PIPETTE_TIP_GROUP(_TCodeBase):
     type: Literal["DISCARD_PIPETTE_TIP_GROUP"] = "DISCARD_PIPETTE_TIP_GROUP"
 
@@ -273,6 +278,7 @@ class RETURN_TOOL(_TCodeBase):
 TCode = Annotated[
     ASPIRATE
     | CALIBRATE_FTS_NOISE_FLOOR
+    | COMMENTS
     | DISCARD_PIPETTE_TIP_GROUP
     | DISPENSE
     | GOTO
@@ -289,6 +295,7 @@ TCode = Annotated[
     | RETURN_TOOL,
     Field(discriminator="type"),
 ]
+
 
 # Various plate schemas #
 # Note: called Labware for historical reasons, but all correspond to the ANSI-SLAS format
@@ -322,6 +329,7 @@ Labware = Annotated[
     WellPlate | PipetteTipRack | Trash,
     Field(discriminator="type"),
 ]
+
 
 # Top-level component schemas
 
