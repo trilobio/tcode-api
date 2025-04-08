@@ -215,8 +215,8 @@ class GOTO(_TCodeBase):
     location_offset: Matrix = Field(default_factory=identity_transform_factory)
     flange: Location | None = None
     flange_offset: Matrix = Field(default_factory=identity_transform_factory)
-    path_type: PathType | None = None
-    trajectory_type: TrajectoryType | None = None
+    path_type: int | None = None# PathType | None = None
+    trajectory_type: int | None = None# TrajectoryType | None = None
 
 
 class PAUSE(_TCodeBase):
