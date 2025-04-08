@@ -145,7 +145,7 @@ Tool = Annotated[
 ]
 
 
-class PathType(_EnumWithDisplayName):
+class PathType(int, _EnumWithDisplayName):
     """Enumeration of robot path types.
 
     DIRECT: robot moves to the target location directly in jointspace.
@@ -158,7 +158,7 @@ class PathType(_EnumWithDisplayName):
     SHORTCUT = (3, "Shortcut")
 
 
-class TrajectoryType(_EnumWithDisplayName):
+class TrajectoryType(int, _EnumWithDisplayName):
     """Enumeration of trajectory types.
 
     JOINT_SQUARE: robot moves in joint space with square motor profiles.
