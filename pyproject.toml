@@ -8,13 +8,34 @@ authors = [
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
-    "mypy>=1.15.0",  # Installed to ensure type checking of pydantic
     "pydantic>=2.10.6",
+]
+
+[dependency-groups]
+dev = [
+    "black>=25.1.0",
+    "ipython>=9.1.0",
+    "isort>=6.0.1",
+    "mypy>=1.15.0",  # Installed to ensure type checking of pydantic
+    "ruff>=0.11.5",
 ]
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+[tool.black]
+line-length = 100
+
+[tool.isort]
+profile = "black"
+
 [tool.mypy]
 plugins = ['pydantic.mypy']
+# https://adamj.eu/tech/2021/05/25/python-type-hints-specific-type-ignore/
+show_error_codes = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+
+[tool.ruff]
+line-length = 100
