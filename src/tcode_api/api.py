@@ -223,6 +223,18 @@ class PAUSE(_TCodeBase):
     type: Literal["PAUSE"] = "PAUSE"
 
 
+class REMOVE_PLATE_LID(_TCodeBase):
+    type: Literal["REMOVE_PLATE_LID"] = "REMOVE_PLATE_LID"
+    plate_id: str
+    storage_location: Location | None = None
+
+
+class REPLACE_PLATE_LID(_TCodeBase):
+    type: Literal["REPLACE_PLATE_LID"] = "REPLACE_PLATE_LID"
+    plate_id: str
+    lid_id: str | None = None
+
+
 class PICK_UP_PIPETTE_TIP(_TCodeBase):
     type: Literal["PICK_UP_PIPETTE_TIP"] = "PICK_UP_PIPETTE_TIP"
     location: Location
@@ -308,6 +320,7 @@ class _LabwareBase(_BaseModelWithId):
     column_count: int
     row_pitch: ValueWithUnits
     column_pitch: ValueWithUnits
+    has_lid: bool
     tags: list[str] = Field(default_factory=list)
     named_tags: dict[str, str] = Field(default_factory=dict)
 
@@ -325,8 +338,12 @@ class Trash(_LabwareBase):
     type: Literal["Trash"] = "Trash"
 
 
+class Lid(_LabwareBase):
+    type: Literal["Lid"] = "Lid"
+
+
 Labware = Annotated[
-    WellPlate | PipetteTipRack | Trash,
+    WellPlate | PipetteTipRack | Trash | Lid,
     Field(discriminator="type"),
 ]
 
