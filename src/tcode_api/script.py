@@ -90,7 +90,7 @@ class TCodeScriptBuilder:
         self.ast.metadata.timestamp = datetime.datetime.now().isoformat()
 
         with file_path.open("w") as file:
-            file.write(self.ast.model_dump_json())
+            file.write(self.ast.model_dump_json(indent=4))
 
     # Private implementation methods #
 
