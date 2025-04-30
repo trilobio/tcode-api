@@ -1,7 +1,7 @@
 """Pydantic BaseModel definitions of TCode API."""
 
 from enum import Enum
-from typing import Annotated, Literal, Self, Any
+from typing import Annotated, Any, Literal, Self
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -215,8 +215,8 @@ class GOTO(_TCodeBase):
     location_offset: Matrix = Field(default_factory=identity_transform_factory)
     flange: Location | None = None
     flange_offset: Matrix = Field(default_factory=identity_transform_factory)
-    path_type: int | None = None# PathType | None = None
-    trajectory_type: int | None = None# TrajectoryType | None = None
+    path_type: int | None = None  # PathType | None = None
+    trajectory_type: int | None = None  # TrajectoryType | None = None
 
 
 class PAUSE(_TCodeBase):
