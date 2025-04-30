@@ -231,6 +231,23 @@ class TCodeScriptBuilder:
         command = tc.PICK_UP_PIPETTE_TIP(location=location)
         self.add_command(command)
 
+    def remove_plate_lid(
+        self, plate_id: Id, location_node_id: str | None = None
+    ) -> None:
+        """Wrapper for add_command(REMOVE_PLATE_LID) that auto-fills default values."""
+        storage_location = (
+            tc.LocationAsNodeId(data=location_node_id) if location_node_id else None
+        )
+        command = tc.REMOVE_PLATE_LID(
+            plate_id=plate_id, storage_location=storage_location
+        )
+        self.add_command(command)
+
+    def replace_plate_lid(self, plate_id: Id, lid_id: Id | None = None) -> None:
+        """Wrapper for add_command(REPLACE_PLATE_LID) that auto-fills default values."""
+        command = tc.REPLACE_PLATE_LID(plate_id=plate_id, lid_id=lid_id)
+        self.add_command(command)
+
     def retrieve_tool(self, tool_id: Id) -> None:
         """Wrapper for add_command(RETRIEVE_TOOL) that auto-fills default values."""
         tool = self._find_tool_by_id(tool_id)
