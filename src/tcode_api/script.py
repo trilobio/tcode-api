@@ -201,6 +201,10 @@ class TCodeScriptBuilder:
         """Wrapper for add_command(CALIBRATE_FTS_NOISE_FLOOR)."""
         self.add_command(tc.CALIBRATE_FTS_NOISE_FLOOR(axes=axes, snr=snr))
 
+    def comment(self, text: str) -> None:
+        """Wrapper for add_command(COMMENT)."""
+        self.add_command(tc.COMMENTS(text=text))
+
     def pause(self) -> None:
         """Wrapper for add_command(PAUSE)."""
         self.add_command(tc.PAUSE())
