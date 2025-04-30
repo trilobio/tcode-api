@@ -2,6 +2,8 @@
 
 import datetime
 import unittest
+import warnings
+from typing import get_args
 
 import tcode_api.api as tc
 from tcode_api.api import _EnumWithDisplayName
@@ -53,6 +55,78 @@ class TestAPI(unittest.TestCase):
             tcode=[],
         )
         self.assertEqual(len(ast.tcode), 0)
+
+    def test_serialize(self) -> None:
+        """Test TCodeAST is serializable with all possible commands."""
+        ast = tc.TCodeAST(
+            metadata=tc.Metadata(
+                name="unittest_serialize",
+                timestamp=datetime.datetime.now().isoformat(),
+                tcode_api_version="0.1.0",
+            ),
+            fleet=tc.Fleet(),
+            tcode=[],
+        )
+
+        command_instances_to_test: list[tc.TCode] = [
+            tc.ASPIRATE(
+                volume=tc.ValueWithUnits(magnitude=0.0, units="uL"),
+                speed=tc.ValueWithUnits(magnitude=0.0, units="uL/s"),
+            ),
+            tc.CALIBRATE_FTS_NOISE_FLOOR(axes="xyz", snr=0.0),
+            tc.COMMENTS(text="test comment"),
+            tc.DISPENSE(
+                volume=tc.ValueWithUnits(magnitude=0.0, units="uL"),
+                speed=tc.ValueWithUnits(magnitude=0.0, units="uL/s"),
+            ),
+            tc.DISCARD_PIPETTE_TIP_GROUP(),
+            tc.GOTO(location=tc.LocationAsNodeId(data="test_node_id")),
+            tc.PAUSE(),
+            tc.PICK_UP_PIPETTE_TIP(
+                location=tc.LocationAsLabwareIndex(data=("test_labware_id", 0))
+            ),
+            tc.PICK_UP_TOOL(location=tc.LocationAsNodeId(data="test_node_id")),
+            tc.PROBE(
+                location=tc.LocationAsLabwareIndex(data=("test_labware_id", 0)),
+                speed_fraction=1.0,
+                backoff_distance=tc.ValueWithUnits(magnitude=1.0, units="mm"),
+            ),
+            tc.PUT_DOWN_PIPETTE_TIP(location=tc.LocationAsNodeId(data="test_node_id")),
+            tc.PUT_DOWN_TOOL(location=tc.LocationAsNodeId(data="test_node_id")),
+            tc.REMOVE_PLATE_LID(plate_id="test_plate"),
+            tc.REPLACE_PLATE_LID(plate_id="test_plate"),
+            tc.RESET_FTS(),
+            tc.RETRIEVE_PIPETTE_TIP_GROUP(id="test_tip_id"),
+            tc.RETRIEVE_TOOL(id="test_tool_id"),
+            tc.RETURN_PIPETTE_TIP_GROUP(),
+            tc.RETURN_TOOL(),
+        ]
+
+        # Check that all command types are tested
+        with self.subTest("Check test validity"):
+            untested_command_types = []
+            for command_type in get_args(get_args(tc.TCode)[0]):
+                found_match = False
+                for command in command_instances_to_test:
+                    if isinstance(command, command_type):
+                        found_match = True
+                        break
+
+                if not found_match:
+                    untested_command_types.append(command_type)
+
+            assert (
+                len(untested_command_types) == 0
+            ), f"Serialization of commands {untested_command_types} not tested in test_api.py"
+
+        for command in command_instances_to_test:
+            with self.subTest(command=command):
+                ast.tcode = [command]
+                with warnings.catch_warnings(record=True) as w_list:
+                    ast.model_dump()
+                self.assertEqual(
+                    len(w_list), 0, f"warning raised on serializing command {command}"
+                )
 
 
 if __name__ == "__main__":
