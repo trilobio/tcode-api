@@ -1,7 +1,7 @@
 """Pydantic BaseModel definitions of TCode API."""
 
 from enum import Enum
-from typing import Annotated, Any, Literal, Self
+from typing import Annotated, Literal, Self
 
 from pydantic import BaseModel, ConfigDict, Field
 
