@@ -87,7 +87,7 @@ class TestTCodeScriptBuilder(unittest.TestCase):
         builder.retrieve_tool(t0)
         builder.add_command(
             tc.PICK_UP_PIPETTE_TIP(
-                location=tc.LocationAsLabwareIndex(data=(l0, 1)),
+                location=tc.LocationAsLabwareIndex(labware_id=l0, location_index=1),
             )
         )
         builder.pick_up_pipette_tip(l0, 0)

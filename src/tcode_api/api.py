@@ -75,25 +75,19 @@ class _Location(_BaseModelStrict):
     type: str
 
 
-class LocationAsNodeId(_Location):
-    """Location specified by a node ID in the fleet's transform tree."""
-
-    type: Literal["NodeId"] = "NodeId"
-    data: str
-
-
 class LocationAsLabwareIndex(_Location):
     """Location specified by a tuple of labware id and labware location index."""
 
-    type: Literal["LabwareIndex"] = "LabwareIndex"
-    data: tuple[str, int] | Any  # (labware_id, location_index)
+    type: Literal["LocationAsLabwareIndex"] = "LocationAsLabwareIndex"
+    labware_id: str
+    location_index: int
 
 
-class LocationAsMatrix(_Location):
-    """Location specified by a transformation matrix relative to the fleet's root node."""
+class LocationAsNodeId(_Location):
+    """Location specified by a node ID in the fleet's transform tree."""
 
-    type: Literal["Matrix"] = "Matrix"
-    data: Matrix  # 4x4 transformation matrix
+    type: Literal["LocationAsNodeId"] = "LocationAsNodeId"
+    node_id: str
 
 
 class LocationRelativeToLabware(_Location):
@@ -104,11 +98,18 @@ class LocationRelativeToLabware(_Location):
     matrix: Matrix  # 4x4 transformation matrix
 
 
+class LocationRelativeToWorld(_Location):
+    """Location specified by a transformation matrix relative to the fleet's root node."""
+
+    type: Literal["LocationRelativeToWorld"] = "LocationRelativeToWorld"
+    matrix: Matrix  # 4x4 transformation matrix
+
+
 Location = Annotated[
-    LocationAsNodeId
-    | LocationAsLabwareIndex
-    | LocationAsMatrix
-    | LocationRelativeToLabware,
+    LocationAsLabwareIndex
+    | LocationAsNodeId
+    | LocationRelativeToLabware
+    | LocationRelativeToWorld,
     Field(discriminator="type"),
 ]
 
@@ -205,15 +206,15 @@ class CALIBRATE_FTS_NOISE_FLOOR(_TCodeBase):
     snr: float
 
 
+class CALIBRATE_LABWARE_HEIGHT(_TCodeBase):
+    type: Literal["CALIBRATE_LABWARE_HEIGHT"] = "CALIBRATE_LABWARE_HEIGHT"
+    location: Location
+
+
 class CALIBRATE_LABWARE_WELL_DEPTH(_TCodeBase):
     type: Literal["CALIBRATE_LABWARE_WELL_DEPTH"] = "CALIBRATE_LABWARE_WELL_DEPTH"
     location: Location
     modify_all_wells: bool = True
-
-
-class CALIBRATE_LABWARE_HEIGHT(_TCodeBase):
-    type: Literal["CALIBRATE_LABWARE_HEIGHT"] = "CALIBRATE_LABWARE_HEIGHT"
-    location: Location
 
 
 class COMMENTS(_TCodeBase):
