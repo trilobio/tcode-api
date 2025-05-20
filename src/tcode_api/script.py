@@ -99,7 +99,7 @@ class TCodeScriptBuilder:
     ) -> tc.LocationAsLabwareIndex:
         """Turn builder's labware key and labware index into a TCode-compliant Location."""
         self._find_labware_by_id(labware_id)  # Check that the labware exists
-        return tc.LocationAsLabwareIndex(data=(labware_id, index))
+        return tc.LocationAsLabwareIndex(labware_id=labware_id, location_index=index)
 
     def _find_model_by_id(
         self, model_id: Id, model_list: Iterable[ModelWithId]
@@ -251,7 +251,7 @@ class TCodeScriptBuilder:
         self, node_id: str, backoff_distance: float, speed_fraction: float
     ) -> None:
         """Wrapper for add_command(PROBE) that auto-fills default values."""
-        location = tc.LocationAsNodeId(data=node_id)
+        location = tc.LocationAsNodeId(node_id=node_id)
         command = tc.PROBE(
             location=location,
             backoff_distance=tc.ValueWithUnits(

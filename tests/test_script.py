@@ -45,6 +45,7 @@ class TestTCodeScriptBuilder(unittest.TestCase):
             column_count=12,
             row_pitch=tc.ValueWithUnits(magnitude=9.0, units="mm"),
             column_pitch=tc.ValueWithUnits(magnitude=9.0, units="mm"),
+            has_lid=False,
         )
         builder.add_labware(labware)
         with self.subTest("Duplicate labware id"):
@@ -68,6 +69,7 @@ class TestTCodeScriptBuilder(unittest.TestCase):
             row_pitch=tc.ValueWithUnits(magnitude=9.0, units="mm"),
             column_pitch=tc.ValueWithUnits(magnitude=9.0, units="mm"),
             full=True,
+            has_lid=False,
         )
         well_plate = tc.WellPlate(
             id=l1,
@@ -75,6 +77,7 @@ class TestTCodeScriptBuilder(unittest.TestCase):
             column_count=12,
             row_pitch=tc.ValueWithUnits(magnitude=9.0, units="mm"),
             column_pitch=tc.ValueWithUnits(magnitude=9.0, units="mm"),
+            has_lid=False,
         )
         builder = TCodeScriptBuilder(name="test_to_and_from_file")
         builder.add_robot(tc.Robot(id=r0))
@@ -84,7 +87,7 @@ class TestTCodeScriptBuilder(unittest.TestCase):
         builder.retrieve_tool(t0)
         builder.add_command(
             tc.PICK_UP_PIPETTE_TIP(
-                location=tc.LocationAsLabwareIndex(data=(l0, 1)),
+                location=tc.LocationAsLabwareIndex(labware_id=l0, location_index=1),
             )
         )
         builder.pick_up_pipette_tip(l0, 0)

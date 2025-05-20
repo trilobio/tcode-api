@@ -1,7 +1,7 @@
 """Pydantic BaseModel definitions of TCode API."""
 
 from enum import Enum
-from typing import Annotated, Literal, Self, Any
+from typing import Annotated, Literal, Self
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -75,29 +75,41 @@ class _Location(_BaseModelStrict):
     type: str
 
 
-class LocationAsNodeId(_Location):
-    """Location specified by a node ID in the fleet's transform tree."""
-
-    type: Literal["NodeId"] = "NodeId"
-    data: str
-
-
 class LocationAsLabwareIndex(_Location):
     """Location specified by a tuple of labware id and labware location index."""
 
-    type: Literal["LabwareIndex"] = "LabwareIndex"
-    data: tuple[str, int] | Any  # (labware_id, location_index)
+    type: Literal["LocationAsLabwareIndex"] = "LocationAsLabwareIndex"
+    labware_id: str
+    location_index: int
 
 
-class LocationAsMatrix(_Location):
+class LocationAsNodeId(_Location):
+    """Location specified by a node ID in the fleet's transform tree."""
+
+    type: Literal["LocationAsNodeId"] = "LocationAsNodeId"
+    node_id: str
+
+
+class LocationRelativeToLabware(_Location):
+    """Location specified by a transformation matrix relative to a labware's base node."""
+
+    type: Literal["LocationRelativeToLabware"] = "LocationRelativeToLabware"
+    labware_id: str
+    matrix: Matrix  # 4x4 transformation matrix
+
+
+class LocationRelativeToWorld(_Location):
     """Location specified by a transformation matrix relative to the fleet's root node."""
 
-    type: Literal["Matrix"] = "Matrix"
-    data: Matrix  # 4x4 transformation matrix
+    type: Literal["LocationRelativeToWorld"] = "LocationRelativeToWorld"
+    matrix: Matrix  # 4x4 transformation matrix
 
 
 Location = Annotated[
-    LocationAsNodeId | LocationAsLabwareIndex | LocationAsMatrix,
+    LocationAsLabwareIndex
+    | LocationAsNodeId
+    | LocationRelativeToLabware
+    | LocationRelativeToWorld,
     Field(discriminator="type"),
 ]
 
@@ -194,6 +206,59 @@ class CALIBRATE_FTS_NOISE_FLOOR(_TCodeBase):
     snr: float
 
 
+class CALIBRATE_LABWARE_HEIGHT(_TCodeBase):
+    """TCode command to use the currently held tool to tune the height of a target labware by probing.
+
+    :param location: The location attribute specifes which labware and where on the labware to probe. Unlike
+    other location-based commands (ex. :class: GOTO), :class: CALIBRATE_LABWARE_HEIGHT only supports locations
+    that hold references to a labware.
+    """
+
+    type: Literal["CALIBRATE_LABWARE_HEIGHT"] = "CALIBRATE_LABWARE_HEIGHT"
+    location: LocationAsLabwareIndex | LocationRelativeToLabware
+
+
+class CALIBRATE_LABWARE_WELL_DEPTH(_TCodeBase):
+    """TCode command to use the currently held tool to tune the depth of a target labware's well by probing.
+
+    An example TCode snippet to calibrate using a pipette tip is here:
+    ```
+    RETRIEVE_TOOL(id=...)
+    RETRIEVE_PIPETTE_TIP_GROUP(id=...)
+    CALIBRATE_PIPETTE_TIP_LENGTH()
+    CALIBRATE_LABWARE_WELL_DEPTH(location=LocationAsLabwareIndex(labware_id=..., location_index=...))
+    ```
+
+    :param location: The location attribute specifes which labware and where on the labware to probe. Unlike
+    other location-based commands (ex. :class: GOTO), :class: CALIBRATE_LABWARE_WELL_DEPTH only supports locations
+    that hold references to a labware.
+    :param modify_all_wells: This flag indicates whether only the probed well's depth should be modified, or
+    if the depths of all of the wells in the labware should be modified. Defaults to modifying all of the wells.
+    """
+
+    type: Literal["CALIBRATE_LABWARE_WELL_DEPTH"] = "CALIBRATE_LABWARE_WELL_DEPTH"
+    location: LocationAsLabwareIndex | LocationRelativeToLabware
+    modify_all_wells: bool = True
+
+
+class CALIBRATE_PIPETTE_TIP_LENGTH(_TCodeBase):
+    """TCode command to tune the overlap of a pipette tip and a manifold along the z-axis.
+
+    An example TCode snippet showing basic usage is as follows:
+    ```
+    RETRIEVE_TOOL(id=...)               # This must be a single channel pipette
+    RETRIEVE_PIPETTE_TIP_GROUP(id=...)  # This must be a single tip
+    CALIBRATE_PIPETTE_TIP_LENGTH()
+
+    :param modify_all_tips: This flag indicates whether only the individual pipette tip's overlap
+    should be modified, or if the overlap of all of the pipette tips of the same type and brand
+    for that manifold should be modified. Defaults to modifying all of the tips of that brand.
+    """
+
+    type: Literal["CALIBRATE_PIPETTE_TIP_LENGTH"] = "CALIBRATE_PIPETTE_TIP_LENGTH"
+    modify_all_tips: bool = True
+
+
 class COMMENTS(_TCodeBase):
     type: Literal["COMMENTS"] = "COMMENTS"
     text: str
@@ -215,8 +280,8 @@ class GOTO(_TCodeBase):
     location_offset: Matrix = Field(default_factory=identity_transform_factory)
     flange: Location | None = None
     flange_offset: Matrix = Field(default_factory=identity_transform_factory)
-    path_type: int | None = None# PathType | None = None
-    trajectory_type: int | None = None# TrajectoryType | None = None
+    path_type: int | None = None  # PathType | None = None
+    trajectory_type: int | None = None  # TrajectoryType | None = None
 
 
 class PAUSE(_TCodeBase):
@@ -290,6 +355,9 @@ class RETURN_TOOL(_TCodeBase):
 TCode = Annotated[
     ASPIRATE
     | CALIBRATE_FTS_NOISE_FLOOR
+    | CALIBRATE_LABWARE_WELL_DEPTH
+    | CALIBRATE_LABWARE_HEIGHT
+    | CALIBRATE_PIPETTE_TIP_LENGTH
     | COMMENTS
     | DISCARD_PIPETTE_TIP_GROUP
     | DISPENSE
