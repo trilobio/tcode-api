@@ -96,8 +96,19 @@ class LocationAsMatrix(_Location):
     data: Matrix  # 4x4 transformation matrix
 
 
+class LocationRelativeToLabware(_Location):
+    """Location specified by a transformation matrix relative to a labware's base node."""
+
+    type: Literal["LocationRelativeToLabware"] = "LocationRelativeToLabware"
+    labware_id: str
+    matrix: Matrix  # 4x4 transformation matrix
+
+
 Location = Annotated[
-    LocationAsNodeId | LocationAsLabwareIndex | LocationAsMatrix,
+    LocationAsNodeId
+    | LocationAsLabwareIndex
+    | LocationAsMatrix
+    | LocationRelativeToLabware,
     Field(discriminator="type"),
 ]
 
@@ -192,6 +203,17 @@ class CALIBRATE_FTS_NOISE_FLOOR(_TCodeBase):
     type: Literal["CALIBRATE_FTS_NOISE_FLOOR"] = "CALIBRATE_FTS_NOISE_FLOOR"
     axes: Axes
     snr: float
+
+
+class CALIBRATE_LABWARE_WELL_DEPTH(_TCodeBase):
+    type: Literal["CALIBRATE_LABWARE_WELL_DEPTH"] = "CALIBRATE_LABWARE_WELL_DEPTH"
+    location: Location
+    modify_all_wells: bool = True
+
+
+class CALIBRATE_LABWARE_HEIGHT(_TCodeBase):
+    type: Literal["CALIBRATE_LABWARE_HEIGHT"] = "CALIBRATE_LABWARE_HEIGHT"
+    location: Location
 
 
 class COMMENTS(_TCodeBase):
@@ -290,6 +312,8 @@ class RETURN_TOOL(_TCodeBase):
 TCode = Annotated[
     ASPIRATE
     | CALIBRATE_FTS_NOISE_FLOOR
+    | CALIBRATE_LABWARE_WELL_DEPTH
+    | CALIBRATE_LABWARE_HEIGHT
     | COMMENTS
     | DISCARD_PIPETTE_TIP_GROUP
     | DISPENSE
