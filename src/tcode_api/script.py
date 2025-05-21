@@ -106,20 +106,17 @@ class TCodeScriptBuilder:
     ) -> ModelWithId:
         """Return the model with the given id."""
         models = [model for model in model_list if model.id == model_id]
+        _logger.debug('{"model_id": %s, "models": %s, "matching_models": %s}', model_id, model_list, models)
         match len(models):
-            case 0:
-                _logger.error("No matching model in %s", model_list)
             case 1:
                 return models[0]
+            case 0:
+                raise IdNotFoundError(model_id)
             case _:
-                _logger.error(
-                    "Multiple models with id %s in %s: %s",
-                    model_id,
-                    model_list,
-                    models,
+                raise AssertionError(
+                    "Multiple models with the same id found. This should not happen."
                 )
 
-        raise IdNotFoundError(model_id)
 
     def _find_labware_by_id(self, labware_id: Id) -> tc.Labware:
         """Return the labware with the given id."""
