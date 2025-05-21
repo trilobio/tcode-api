@@ -136,6 +136,10 @@ class Probe(_ToolBase):
     type: Literal["Probe"] = "Probe"
 
 
+class Gripper(_ToolBase):
+    type: Literal["Gripper"] = "Gripper"
+
+
 class _PipetteCommon(_ToolBase):
     min_volume: ValueWithUnits | None = Field(default=None)
     max_volume: ValueWithUnits | None = Field(default=None)
@@ -152,7 +156,7 @@ class EightChannelPipette(_PipetteCommon):
 
 # Define the Tool discriminated union
 Tool = Annotated[
-    SingleChannelPipette | EightChannelPipette | Probe,
+    SingleChannelPipette | EightChannelPipette | Probe | Gripper,
     Field(discriminator="type"),
 ]
 
