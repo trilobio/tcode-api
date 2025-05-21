@@ -10,7 +10,7 @@ from typing import Iterable, Protocol, cast
 import tcode_api.api as tc
 from tcode_api.error import IdExistsError, IdNotFoundError
 
-_logger = logging.getLogger("tcode_api.script")
+_logger = logging.getLogger(__name__)
 
 
 def load_tcode_json_file(file_path: pathlib.Path) -> tc.TCodeAST:
@@ -198,6 +198,10 @@ class TCodeScriptBuilder:
         """Wrapper for add_command(CALIBRATE_FTS_NOISE_FLOOR)."""
         self.add_command(tc.CALIBRATE_FTS_NOISE_FLOOR(axes=axes, snr=snr))
 
+    def comment(self, text: str) -> None:
+        """Wrapper for add_command(COMMENT)."""
+        self.add_command(tc.COMMENTS(text=text))
+
     def pause(self) -> None:
         """Wrapper for add_command(PAUSE)."""
         self.add_command(tc.PAUSE())
@@ -206,6 +210,16 @@ class TCodeScriptBuilder:
         """Wrapper for add_command(PUT_DOWN_PIPETTE_TIP) that auto-fills default values."""
         location = self._labware_specification_to_location(labware_id, labware_index)
         command = tc.PUT_DOWN_PIPETTE_TIP(location=location)
+        self.add_command(command)
+
+    def remove_plate_lid(self, labware_id: Id, storage_location: tc.Location | None = None) -> None:
+        """Wrapper for add_command(REMOVE_PLATE_LID) that auto-fills default values."""
+        command = tc.REMOVE_PLATE_LID(plate_id=labware_id, storage_location=storage_location)
+        self.add_command(command)
+
+    def replace_plate_lid(self, labware_id: Id, lid_id: Id | None = None) -> None:
+        """Wrapper for add_command(REPLACE_PLATE_LID) that auto-fills default values."""
+        command = tc.REPLACE_PLATE_LID(plate_id=labware_id, lid_id=lid_id)
         self.add_command(command)
 
     def return_tool(self) -> None:
