@@ -106,7 +106,12 @@ class TCodeScriptBuilder:
     ) -> ModelWithId:
         """Return the model with the given id."""
         models = [model for model in model_list if model.id == model_id]
-        _logger.debug('{"model_id": %s, "models": %s, "matching_models": %s}', model_id, model_list, models)
+        _logger.debug(
+            '{"model_id": %s, "models": %s, "matching_models": %s}',
+            model_id,
+            model_list,
+            models,
+        )
         match len(models):
             case 1:
                 return models[0]
@@ -116,7 +121,6 @@ class TCodeScriptBuilder:
                 raise AssertionError(
                     "Multiple models with the same id found. This should not happen."
                 )
-
 
     def _find_labware_by_id(self, labware_id: Id) -> tc.Labware:
         """Return the labware with the given id."""
@@ -212,9 +216,13 @@ class TCodeScriptBuilder:
         command = tc.PUT_DOWN_PIPETTE_TIP(location=location)
         self.add_command(command)
 
-    def remove_plate_lid(self, labware_id: Id, storage_location: tc.Location | None = None) -> None:
+    def remove_plate_lid(
+        self, labware_id: Id, storage_location: tc.Location | None = None
+    ) -> None:
         """Wrapper for add_command(REMOVE_PLATE_LID) that auto-fills default values."""
-        command = tc.REMOVE_PLATE_LID(plate_id=labware_id, storage_location=storage_location)
+        command = tc.REMOVE_PLATE_LID(
+            plate_id=labware_id, storage_location=storage_location
+        )
         self.add_command(command)
 
     def replace_plate_lid(self, labware_id: Id, lid_id: Id | None = None) -> None:
