@@ -10,7 +10,7 @@ from typing import Iterable, Protocol, cast
 import tcode_api.api as tc
 from tcode_api.error import IdExistsError, IdNotFoundError
 
-_logger = logging.getLogger("tcode_api.script")
+_logger = logging.getLogger(__name__)
 
 
 def load_tcode_json_file(file_path: pathlib.Path) -> tc.TCodeAST:
@@ -106,20 +106,21 @@ class TCodeScriptBuilder:
     ) -> ModelWithId:
         """Return the model with the given id."""
         models = [model for model in model_list if model.id == model_id]
+        _logger.debug(
+            '{"model_id": %s, "models": %s, "matching_models": %s}',
+            model_id,
+            model_list,
+            models,
+        )
         match len(models):
-            case 0:
-                _logger.error("No matching model in %s", model_list)
             case 1:
                 return models[0]
+            case 0:
+                raise IdNotFoundError(model_id)
             case _:
-                _logger.error(
-                    "Multiple models with id %s in %s: %s",
-                    model_id,
-                    model_list,
-                    models,
+                raise AssertionError(
+                    "Multiple models with the same id found. This should not happen."
                 )
-
-        raise IdNotFoundError(model_id)
 
     def _find_labware_by_id(self, labware_id: Id) -> tc.Labware:
         """Return the labware with the given id."""
@@ -201,6 +202,10 @@ class TCodeScriptBuilder:
         """Wrapper for add_command(CALIBRATE_FTS_NOISE_FLOOR)."""
         self.add_command(tc.CALIBRATE_FTS_NOISE_FLOOR(axes=axes, snr=snr))
 
+    def comment(self, text: str) -> None:
+        """Wrapper for add_command(COMMENT)."""
+        self.add_command(tc.COMMENTS(text=text))
+
     def pause(self) -> None:
         """Wrapper for add_command(PAUSE)."""
         self.add_command(tc.PAUSE())
@@ -209,6 +214,20 @@ class TCodeScriptBuilder:
         """Wrapper for add_command(PUT_DOWN_PIPETTE_TIP) that auto-fills default values."""
         location = self._labware_specification_to_location(labware_id, labware_index)
         command = tc.PUT_DOWN_PIPETTE_TIP(location=location)
+        self.add_command(command)
+
+    def remove_plate_lid(
+        self, labware_id: Id, storage_location: tc.Location | None = None
+    ) -> None:
+        """Wrapper for add_command(REMOVE_PLATE_LID) that auto-fills default values."""
+        command = tc.REMOVE_PLATE_LID(
+            plate_id=labware_id, storage_location=storage_location
+        )
+        self.add_command(command)
+
+    def replace_plate_lid(self, labware_id: Id, lid_id: Id | None = None) -> None:
+        """Wrapper for add_command(REPLACE_PLATE_LID) that auto-fills default values."""
+        command = tc.REPLACE_PLATE_LID(plate_id=labware_id, lid_id=lid_id)
         self.add_command(command)
 
     def return_tool(self) -> None:
