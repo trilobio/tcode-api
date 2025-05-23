@@ -283,3 +283,10 @@ class TCodeScriptBuilder:
     def reset_fts(self) -> None:
         """Wrapper for add_command(RESET_FTS)."""
         self.add_command(tc.RESET_FTS())
+
+    def wait(self, duration: float) -> None:
+        """Wrapper for add_command(WAIT) that auto-fills default values."""
+        command = tc.WAIT(
+            duration=tc.ValueWithUnits(magnitude=duration, units="seconds")
+        )
+        self.add_command(command)
