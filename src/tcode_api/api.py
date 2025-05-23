@@ -356,6 +356,11 @@ class RETURN_TOOL(_TCodeBase):
     type: Literal["RETURN_TOOL"] = "RETURN_TOOL"
 
 
+class WAIT(_TCodeBase):
+    type: Literal["WAIT"] = "WAIT"
+    duration: ValueWithUnits
+
+
 TCode = Annotated[
     ASPIRATE
     | CALIBRATE_FTS_NOISE_FLOOR
@@ -372,11 +377,14 @@ TCode = Annotated[
     | PROBE
     | PUT_DOWN_PIPETTE_TIP
     | PUT_DOWN_TOOL
+    | REMOVE_PLATE_LID
+    | REPLACE_PLATE_LID
     | RESET_FTS
     | RETRIEVE_PIPETTE_TIP_GROUP
     | RETRIEVE_TOOL
     | RETURN_PIPETTE_TIP_GROUP
-    | RETURN_TOOL,
+    | RETURN_TOOL
+    | WAIT,
     Field(discriminator="type"),
 ]
 
