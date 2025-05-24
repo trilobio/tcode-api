@@ -94,12 +94,19 @@ class TCodeScriptBuilder:
 
     # Private implementation methods #
 
-    def _labware_specification_to_location(
+    def _location_as_labware_index(
         self, labware_id: Id, index: int
     ) -> tc.LocationAsLabwareIndex:
         """Turn builder's labware key and labware index into a TCode-compliant Location."""
         self._find_labware_by_id(labware_id)  # Check that the labware exists
         return tc.LocationAsLabwareIndex(labware_id=labware_id, location_index=index)
+
+    def _location_relative_to_labware(
+        self, labware_id: Id, matrix: tc.Matrix
+    ) -> tc.LocationRelativeToLabware:
+        """Turn builder's labware key and matrix into a TCode-compliant Location."""
+        self._find_labware_by_id(labware_id)  # Check that the labware exists
+        return tc.LocationRelativeToLabware(labware_id=labware_id, matrix=matrix)
 
     def _find_model_by_id(
         self, model_id: Id, model_list: Iterable[ModelWithId]
@@ -198,21 +205,81 @@ class TCodeScriptBuilder:
         )
         self.add_command(command)
 
-    def calibrate_fts_noise_floor(self, axes: tc.Axes, snr: float) -> None:
-        """Wrapper for add_command(CALIBRATE_FTS_NOISE_FLOOR)."""
-        self.add_command(tc.CALIBRATE_FTS_NOISE_FLOOR(axes=axes, snr=snr))
+    def calibrate_labware_height(
+        self, labware_id: Id, matrix: tc.Matrix, persistent: bool = False
+    ) -> None:
+        """Wrapper for add_command(CALIBRATE_LABWARE_HEIGHT) that auto-fills default values."""
+        location = self._location_relative_to_labware(labware_id, matrix)
+        command = tc.CALIBRATE_LABWARE_HEIGHT(
+            location=location,
+            persistent=persistent,
+        )
+        self.add_command(command)
+
+    def calibrate_labware_well_depth(
+        self,
+        labware_id: Id,
+        labware_index: int,
+        modify_all_wells: bool = False,
+        persistent: bool = False,
+    ) -> None:
+        """Wrapper for add_command(CALIBRATE_LABWARE_WELL_DEPTH) that auto-fills default values."""
+        location = self._location_as_labware_index(labware_id, labware_index)
+        command = tc.CALIBRATE_LABWARE_WELL_DEPTH(
+            location=location,
+            modify_all_wells=modify_all_wells,
+            persistent=persistent,
+        )
+        self.add_command(command)
+
+    def calibrate_tool_for_probing(
+        self,
+        z_only: bool,
+        persistent: bool = False,
+    ) -> None:
+        """Wrapper for add_command(CALIBRATE_TOOL_FOR_PROBING) that auto-fills default values."""
+        command = tc.CALIBRATE_TOOL_FOR_PROBING(
+            z_only=z_only,
+            persistent=persistent,
+        )
+        self.add_command(command)
 
     def comment(self, text: str) -> None:
         """Wrapper for add_command(COMMENT)."""
         self.add_command(tc.COMMENTS(text=text))
 
+    def dispense(self, volume: float, speed: float | None = None) -> None:
+        """Wrapper for add_command(DISPENSE) that auto-fills default values."""
+        speed = speed if speed is not None else self.default_pipette_speed
+        command = tc.DISPENSE(
+            volume=tc.ValueWithUnits(magnitude=volume, units="microliters"),
+            speed=tc.ValueWithUnits(magnitude=speed, units="microliters/second"),
+        )
+        self.add_command(command)
+
+    def goto_labware_index(self, labware_id: Id, labware_index: int) -> None:
+        """Wrapper for add_command(GOTO) that auto-fills default values."""
+        location = self._location_as_labware_index(labware_id, labware_index)
+        command = tc.GOTO(
+            location=location,
+            path_type=self.default_path_type,
+            trajectory_type=self.default_trajectory_type,
+        )
+        self.add_command(command)
+
     def pause(self) -> None:
         """Wrapper for add_command(PAUSE)."""
         self.add_command(tc.PAUSE())
 
+    def pick_up_pipette_tip(self, labware_id: Id, labware_index: int) -> None:
+        """Wrapper for add_command(PICK_UP_PIPETTE_TIP) that auto-fills default values."""
+        location = self._location_as_labware_index(labware_id, labware_index)
+        command = tc.PICK_UP_PIPETTE_TIP(location=location)
+        self.add_command(command)
+
     def put_down_pipette_tip(self, labware_id: Id, labware_index: int) -> None:
         """Wrapper for add_command(PUT_DOWN_PIPETTE_TIP) that auto-fills default values."""
-        location = self._labware_specification_to_location(labware_id, labware_index)
+        location = self._location_as_labware_index(labware_id, labware_index)
         command = tc.PUT_DOWN_PIPETTE_TIP(location=location)
         self.add_command(command)
 
@@ -230,59 +297,16 @@ class TCodeScriptBuilder:
         command = tc.REPLACE_PLATE_LID(plate_id=labware_id, lid_id=lid_id)
         self.add_command(command)
 
-    def return_tool(self) -> None:
-        """Wrapper for add_command(RETURN_TOOL) that auto-fills default values."""
-        command = tc.RETURN_TOOL()
-        self.add_command(command)
-
-    def dispense(self, volume: float, speed: float | None = None) -> None:
-        """Wrapper for add_command(DISPENSE) that auto-fills default values."""
-        speed = speed if speed is not None else self.default_pipette_speed
-        command = tc.DISPENSE(
-            volume=tc.ValueWithUnits(magnitude=volume, units="microliters"),
-            speed=tc.ValueWithUnits(magnitude=speed, units="microliters/second"),
-        )
-        self.add_command(command)
-
-    def pick_up_pipette_tip(self, labware_id: Id, labware_index: int) -> None:
-        """Wrapper for add_command(PICK_UP_PIPETTE_TIP) that auto-fills default values."""
-        location = self._labware_specification_to_location(labware_id, labware_index)
-        command = tc.PICK_UP_PIPETTE_TIP(location=location)
-        self.add_command(command)
-
     def retrieve_tool(self, tool_id: Id) -> None:
         """Wrapper for add_command(RETRIEVE_TOOL) that auto-fills default values."""
         tool = self._find_tool_by_id(tool_id)
         command = tc.RETRIEVE_TOOL(id=tool.id)
         self.add_command(command)
 
-    def goto_labware_index(self, labware_id: Id, labware_index: int) -> None:
-        """Wrapper for add_command(GOTO) that auto-fills default values."""
-        location = self._labware_specification_to_location(labware_id, labware_index)
-        command = tc.GOTO(
-            location=location,
-            path_type=self.default_path_type,
-            trajectory_type=self.default_trajectory_type,
-        )
+    def return_tool(self) -> None:
+        """Wrapper for add_command(RETURN_TOOL) that auto-fills default values."""
+        command = tc.RETURN_TOOL()
         self.add_command(command)
-
-    def probe(
-        self, node_id: str, backoff_distance: float, speed_fraction: float
-    ) -> None:
-        """Wrapper for add_command(PROBE) that auto-fills default values."""
-        location = tc.LocationAsNodeId(node_id=node_id)
-        command = tc.PROBE(
-            location=location,
-            backoff_distance=tc.ValueWithUnits(
-                magnitude=backoff_distance, units="millimeters"
-            ),
-            speed_fraction=speed_fraction,
-        )
-        self.add_command(command)
-
-    def reset_fts(self) -> None:
-        """Wrapper for add_command(RESET_FTS)."""
-        self.add_command(tc.RESET_FTS())
 
     def wait(self, duration: float) -> None:
         """Wrapper for add_command(WAIT) that auto-fills default values."""
