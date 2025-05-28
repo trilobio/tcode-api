@@ -1,6 +1,6 @@
 [project]
 name = "tcode-api"
-version = "1.14.0"
+version = "1.15.0"
 description = "TCode API specification implemented in pydantic"
 authors = [
     { name = "Connor Novak", email = "connor@trilo.bio" }
@@ -18,3 +18,17 @@ build-backend = "hatchling.build"
 
 [tool.mypy]
 plugins = ['pydantic.mypy']
+
+[dependency-groups]
+dev = [
+    "coverage>=7.8.2",
+]
+
+
+[tool.coverage.run]
+branch = true
+command_line = "-m unittest discover -s tests"
+omit = [
+  "tests/*",
+  "__init__.py",
+]

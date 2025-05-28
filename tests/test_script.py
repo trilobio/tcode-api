@@ -112,6 +112,35 @@ class TestTCodeScriptBuilder(unittest.TestCase):
         # Check that the ASTs are equal
         self.assertEqual(ast, new_ast)
 
+    def test_reset(self) -> None:
+        """Check that reset() treats the name attribute appropriately."""
+        name_a, name_b = "test_reset-a", "test_reset-b"
+        desc_a, desc_b = "test_reset-a description", "test_reset-b description"
+        builder = TCodeScriptBuilder(name=name_a, description=desc_a)
+        ast = builder.emit()
+        self.assertEqual(ast.metadata.name, name_a)
+        self.assertEqual(ast.metadata.description, desc_a)
+        name, desc = None, None
+        with self.subTest(name=name, description=desc):
+            builder.reset(name=name, description=desc)
+            ast = builder.emit()
+            self.assertEqual(ast.metadata.name, name_a)
+            self.assertEqual(ast.metadata.description, None)
+
+        desc = desc_b
+        with self.subTest(name=name, description=desc):
+            builder.reset(name=name, description=desc)
+            ast = builder.emit()
+            self.assertEqual(ast.metadata.name, name_a)
+            self.assertEqual(ast.metadata.description, desc_b)
+
+        name, desc = name_b, None
+        with self.subTest(name=name, description=desc):
+            builder.reset(name=name, description=desc)
+            ast = builder.emit()
+            self.assertEqual(ast.metadata.name, name_b)
+            self.assertEqual(ast.metadata.description, None)
+
 
 if __name__ == "__main__":
     unittest.main()

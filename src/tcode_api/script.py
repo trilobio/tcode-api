@@ -9,6 +9,7 @@ from typing import Iterable, Protocol, cast
 
 import tcode_api.api as tc
 from tcode_api.error import IdExistsError, IdNotFoundError
+from tcode_api.utilities import generate_id
 
 _logger = logging.getLogger(__name__)
 
@@ -43,6 +44,7 @@ class TCodeScriptBuilder:
 
     def __init__(self, name: str, description: str | None = None) -> None:
         """Initialize a new TCode script builder with metadata."""
+        self.ast: tc.TCodeAST
         self.reset(name, description)
 
         self.default_path_type = tc.PathType.SAFE
@@ -51,8 +53,15 @@ class TCodeScriptBuilder:
 
     # Input/output management methods #
 
-    def reset(self, name: str, description: str | None = None) -> None:
+    def reset(self, name: str | None = None, description: str | None = None) -> None:
         """Set up the builder to write a new script."""
+        if name is None:
+            if hasattr(self, "ast"):
+                name = self.ast.metadata.name
+            else:
+                raise AssertionError(
+                    "Cannot call reset() before __init__ with name=None"
+                )
         metadata = tc.Metadata(
             name=name,
             description=description,
@@ -94,12 +103,19 @@ class TCodeScriptBuilder:
 
     # Private implementation methods #
 
-    def _labware_specification_to_location(
+    def _location_as_labware_index(
         self, labware_id: Id, index: int
     ) -> tc.LocationAsLabwareIndex:
         """Turn builder's labware key and labware index into a TCode-compliant Location."""
         self._find_labware_by_id(labware_id)  # Check that the labware exists
         return tc.LocationAsLabwareIndex(labware_id=labware_id, location_index=index)
+
+    def _location_relative_to_labware(
+        self, labware_id: Id, matrix: tc.Matrix
+    ) -> tc.LocationRelativeToLabware:
+        """Turn builder's labware key and matrix into a TCode-compliant Location."""
+        self._find_labware_by_id(labware_id)  # Check that the labware exists
+        return tc.LocationRelativeToLabware(labware_id=labware_id, matrix=matrix)
 
     def _find_model_by_id(
         self, model_id: Id, model_list: Iterable[ModelWithId]
@@ -140,6 +156,15 @@ class TCodeScriptBuilder:
     def _find_robot_by_id(self, robot_id: Id) -> tc.Robot:
         """Return the robot with the given id."""
         return cast(tc.Robot, self._find_model_by_id(robot_id, self.ast.fleet.robots))
+
+    def _find_pipette_tip_group_by_id(
+        self, pipette_tip_group_id: Id
+    ) -> tc.PipetteTipGroup:
+        """Return the pipette tip group with the given id."""
+        return cast(
+            tc.PipetteTipGroup,
+            self._find_model_by_id(pipette_tip_group_id, self.ast.pipette_tips),
+        )
 
     # Component registration methods #
 
@@ -187,6 +212,18 @@ class TCodeScriptBuilder:
             robot = self._find_robot_by_id(robot_id)
             robot.tools.append(tool)
 
+    def add_pipette_tip_group(self, pipette_tip_group: tc.PipetteTipGroup) -> None:
+        try:
+            discovered_model = self._find_pipette_tip_group_by_id(pipette_tip_group.id)
+            _logger.error(
+                "Pipette tip group with id %s already exists: %s",
+                pipette_tip_group.id,
+                discovered_model,
+            )
+            raise IdExistsError(pipette_tip_group.id)
+        except IdNotFoundError:
+            self.ast.pipette_tips.append(pipette_tip_group)
+
     # TCode command methods #
 
     def aspirate(self, volume: float, speed: float | None = None) -> None:
@@ -198,21 +235,81 @@ class TCodeScriptBuilder:
         )
         self.add_command(command)
 
-    def calibrate_fts_noise_floor(self, axes: tc.Axes, snr: float) -> None:
-        """Wrapper for add_command(CALIBRATE_FTS_NOISE_FLOOR)."""
-        self.add_command(tc.CALIBRATE_FTS_NOISE_FLOOR(axes=axes, snr=snr))
+    def calibrate_labware_height(
+        self, labware_id: Id, matrix: tc.Matrix, persistent: bool = False
+    ) -> None:
+        """Wrapper for add_command(CALIBRATE_LABWARE_HEIGHT) that auto-fills default values."""
+        location = self._location_relative_to_labware(labware_id, matrix)
+        command = tc.CALIBRATE_LABWARE_HEIGHT(
+            location=location,
+            persistent=persistent,
+        )
+        self.add_command(command)
+
+    def calibrate_labware_well_depth(
+        self,
+        labware_id: Id,
+        labware_index: int,
+        modify_all_wells: bool = False,
+        persistent: bool = False,
+    ) -> None:
+        """Wrapper for add_command(CALIBRATE_LABWARE_WELL_DEPTH) that auto-fills default values."""
+        location = self._location_as_labware_index(labware_id, labware_index)
+        command = tc.CALIBRATE_LABWARE_WELL_DEPTH(
+            location=location,
+            modify_all_wells=modify_all_wells,
+            persistent=persistent,
+        )
+        self.add_command(command)
+
+    def calibrate_tool_for_probing(
+        self,
+        z_only: bool,
+        persistent: bool = False,
+    ) -> None:
+        """Wrapper for add_command(CALIBRATE_TOOL_FOR_PROBING) that auto-fills default values."""
+        command = tc.CALIBRATE_TOOL_FOR_PROBING(
+            z_only=z_only,
+            persistent=persistent,
+        )
+        self.add_command(command)
 
     def comment(self, text: str) -> None:
         """Wrapper for add_command(COMMENT)."""
         self.add_command(tc.COMMENTS(text=text))
 
+    def dispense(self, volume: float, speed: float | None = None) -> None:
+        """Wrapper for add_command(DISPENSE) that auto-fills default values."""
+        speed = speed if speed is not None else self.default_pipette_speed
+        command = tc.DISPENSE(
+            volume=tc.ValueWithUnits(magnitude=volume, units="microliters"),
+            speed=tc.ValueWithUnits(magnitude=speed, units="microliters/second"),
+        )
+        self.add_command(command)
+
+    def goto_labware_index(self, labware_id: Id, labware_index: int) -> None:
+        """Wrapper for add_command(GOTO) that auto-fills default values."""
+        location = self._location_as_labware_index(labware_id, labware_index)
+        command = tc.GOTO(
+            location=location,
+            path_type=self.default_path_type,
+            trajectory_type=self.default_trajectory_type,
+        )
+        self.add_command(command)
+
     def pause(self) -> None:
         """Wrapper for add_command(PAUSE)."""
         self.add_command(tc.PAUSE())
 
+    def pick_up_pipette_tip(self, labware_id: Id, labware_index: int) -> None:
+        """Wrapper for add_command(PICK_UP_PIPETTE_TIP) that auto-fills default values."""
+        location = self._location_as_labware_index(labware_id, labware_index)
+        command = tc.PICK_UP_PIPETTE_TIP(location=location)
+        self.add_command(command)
+
     def put_down_pipette_tip(self, labware_id: Id, labware_index: int) -> None:
         """Wrapper for add_command(PUT_DOWN_PIPETTE_TIP) that auto-fills default values."""
-        location = self._labware_specification_to_location(labware_id, labware_index)
+        location = self._location_as_labware_index(labware_id, labware_index)
         command = tc.PUT_DOWN_PIPETTE_TIP(location=location)
         self.add_command(command)
 
@@ -230,24 +327,35 @@ class TCodeScriptBuilder:
         command = tc.REPLACE_PLATE_LID(plate_id=labware_id, lid_id=lid_id)
         self.add_command(command)
 
-    def return_tool(self) -> None:
-        """Wrapper for add_command(RETURN_TOOL) that auto-fills default values."""
-        command = tc.RETURN_TOOL()
-        self.add_command(command)
+    def retrieve_pipette_tip_group(
+        self, pipette_tip_group_id: str | None = None, make_new_group: bool = False
+    ) -> None:
+        """Wrapper for add_command(RETRIEVE_PIPETTE_TIP_GROUP) that auto-fills default values."""
+        if make_new_group:
+            if pipette_tip_group_id is None:
+                pipette_tip_group_id = generate_id()
+            self.add_pipette_tip_group(
+                tc.PipetteTipGroup(
+                    id=pipette_tip_group_id,
+                    row_count=1,
+                    column_count=1,
+                )
+            )
 
-    def dispense(self, volume: float, speed: float | None = None) -> None:
-        """Wrapper for add_command(DISPENSE) that auto-fills default values."""
-        speed = speed if speed is not None else self.default_pipette_speed
-        command = tc.DISPENSE(
-            volume=tc.ValueWithUnits(magnitude=volume, units="microliters"),
-            speed=tc.ValueWithUnits(magnitude=speed, units="microliters/second"),
-        )
-        self.add_command(command)
+        else:
+            if pipette_tip_group_id is None:
+                raise ValueError(
+                    "pipette_tip_group_id must be provided if make_new_group is False."
+                )
+            try:
+                self._find_pipette_tip_group_by_id(pipette_tip_group_id)
+            except IdNotFoundError:
+                _logger.error(
+                    "Pipette tip group with id %s does not exist.", pipette_tip_group_id
+                )
+                raise IdNotFoundError(pipette_tip_group_id)
 
-    def pick_up_pipette_tip(self, labware_id: Id, labware_index: int) -> None:
-        """Wrapper for add_command(PICK_UP_PIPETTE_TIP) that auto-fills default values."""
-        location = self._labware_specification_to_location(labware_id, labware_index)
-        command = tc.PICK_UP_PIPETTE_TIP(location=location)
+        command = tc.RETRIEVE_PIPETTE_TIP_GROUP(id=pipette_tip_group_id)
         self.add_command(command)
 
     def retrieve_tool(self, tool_id: Id) -> None:
@@ -256,33 +364,10 @@ class TCodeScriptBuilder:
         command = tc.RETRIEVE_TOOL(id=tool.id)
         self.add_command(command)
 
-    def goto_labware_index(self, labware_id: Id, labware_index: int) -> None:
-        """Wrapper for add_command(GOTO) that auto-fills default values."""
-        location = self._labware_specification_to_location(labware_id, labware_index)
-        command = tc.GOTO(
-            location=location,
-            path_type=self.default_path_type,
-            trajectory_type=self.default_trajectory_type,
-        )
+    def return_tool(self) -> None:
+        """Wrapper for add_command(RETURN_TOOL) that auto-fills default values."""
+        command = tc.RETURN_TOOL()
         self.add_command(command)
-
-    def probe(
-        self, node_id: str, backoff_distance: float, speed_fraction: float
-    ) -> None:
-        """Wrapper for add_command(PROBE) that auto-fills default values."""
-        location = tc.LocationAsNodeId(node_id=node_id)
-        command = tc.PROBE(
-            location=location,
-            backoff_distance=tc.ValueWithUnits(
-                magnitude=backoff_distance, units="millimeters"
-            ),
-            speed_fraction=speed_fraction,
-        )
-        self.add_command(command)
-
-    def reset_fts(self) -> None:
-        """Wrapper for add_command(RESET_FTS)."""
-        self.add_command(tc.RESET_FTS())
 
     def wait(self, duration: float) -> None:
         """Wrapper for add_command(WAIT) that auto-fills default values."""

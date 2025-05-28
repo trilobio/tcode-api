@@ -201,25 +201,21 @@ class ASPIRATE(_TCodeBase):
     speed: ValueWithUnits
 
 
-Axes = Literal["x", "y", "z", "xy", "xz", "yz", "xyz"]
-
-
-class CALIBRATE_FTS_NOISE_FLOOR(_TCodeBase):
-    type: Literal["CALIBRATE_FTS_NOISE_FLOOR"] = "CALIBRATE_FTS_NOISE_FLOOR"
-    axes: Axes
-    snr: float
-
-
 class CALIBRATE_LABWARE_HEIGHT(_TCodeBase):
     """TCode command to use the currently held tool to tune the height of a target labware by probing.
 
-    :param location: The location attribute specifes which labware and where on the labware to probe. Unlike
-    other location-based commands (ex. :class: GOTO), :class: CALIBRATE_LABWARE_HEIGHT only supports locations
-    that hold references to a labware.
+    :param location: The location attribute specifes which labware and where on the labware to probe.
+        Unlike other location-based commands (ex. :class: GOTO), :class: CALIBRATE_LABWARE_HEIGHT
+        only supports locations that hold references to a labware.
+    :param persistent: When raised, all labware of the same type and brand will be modified. This
+        calibration DOES NOT APPLY
+        If not raised, only the current in-place transform is applied. Restarting the tcode
+        server will reset the calibration.
     """
 
     type: Literal["CALIBRATE_LABWARE_HEIGHT"] = "CALIBRATE_LABWARE_HEIGHT"
     location: LocationAsLabwareIndex | LocationRelativeToLabware
+    persistent: bool
 
 
 class CALIBRATE_LABWARE_WELL_DEPTH(_TCodeBase):
@@ -233,34 +229,42 @@ class CALIBRATE_LABWARE_WELL_DEPTH(_TCodeBase):
     CALIBRATE_LABWARE_WELL_DEPTH(location=LocationAsLabwareIndex(labware_id=..., location_index=...))
     ```
 
-    :param location: The location attribute specifes which labware and where on the labware to probe. Unlike
-    other location-based commands (ex. :class: GOTO), :class: CALIBRATE_LABWARE_WELL_DEPTH only supports locations
-    that hold references to a labware.
-    :param modify_all_wells: This flag indicates whether only the probed well's depth should be modified, or
-    if the depths of all of the wells in the labware should be modified. Defaults to modifying all of the wells.
+    :param location: The location attribute specifes which labware and where on the labware to probe.
+        Unlike other location-based commands (ex. :class: GOTO), :class: CALIBRATE_LABWARE_WELL_DEPTH
+        only supports locations that hold references to a labware.
+    :param modify_all_wells: This flag indicates whether only the probed well's depth should be modified,
+        or if the depths of all of the wells in the labware should be modified.
+        Defaults to modifying all of the wells.
+    :param persistent: When raised, all labware of the same type and brand will be modified. This
+        calibration DOES NOT APPLY
+        If not raised, only the current in-place transform is applied. Restarting the tcode
+        server will reset the calibration.
     """
 
     type: Literal["CALIBRATE_LABWARE_WELL_DEPTH"] = "CALIBRATE_LABWARE_WELL_DEPTH"
     location: LocationAsLabwareIndex | LocationRelativeToLabware
     modify_all_wells: bool = True
+    persistent: bool
 
 
-class CALIBRATE_PIPETTE_TIP_LENGTH(_TCodeBase):
-    """TCode command to tune the overlap of a pipette tip and a manifold along the z-axis.
+class CALIBRATE_TOOL_FOR_PROBING(_TCodeBase):
+    """TCode comand to calibrate the tool for probing.
 
-    An example TCode snippet showing basic usage is as follows:
-    ```
-    RETRIEVE_TOOL(id=...)               # This must be a single channel pipette
-    RETRIEVE_PIPETTE_TIP_GROUP(id=...)  # This must be a single tip
-    CALIBRATE_PIPETTE_TIP_LENGTH()
+    If a bare tool is held, the tool's transform will be calibrated. If a pipette tip is held, the
+    pipette tip's relationship to the tool will be calibrated.
 
-    :param modify_all_tips: This flag indicates whether only the individual pipette tip's overlap
-    should be modified, or if the overlap of all of the pipette tips of the same type and brand
-    for that manifold should be modified. Defaults to modifying all of the tips of that brand.
+    :param z_only: When raised, tool is only calibrated for z-axis probing. If not raised,
+        tool is calibrated for x, y, and z.
+    :param persistent: When raised, the behavior is dependent on the tool mounted.
+        If a bare tool is mounted, the transform is saved to the tool's configuration.
+        If a pipette tip is mounted, the transform is applied to all pipette tips of that brand.
+        If not raised, only the currently in-place transform is applied. Restarting the tcode
+        server will reset the calibration.
     """
 
-    type: Literal["CALIBRATE_PIPETTE_TIP_LENGTH"] = "CALIBRATE_PIPETTE_TIP_LENGTH"
-    modify_all_tips: bool = True
+    type: Literal["CALIBRATE_TOOL_FOR_PROBING"] = "CALIBRATE_TOOL_FOR_PROBING"
+    z_only: bool
+    persistent: bool = False
 
 
 class COMMENTS(_TCodeBase):
@@ -309,33 +313,9 @@ class PICK_UP_PIPETTE_TIP(_TCodeBase):
     location: Location
 
 
-class PICK_UP_TOOL(_TCodeBase):
-    type: Literal["PICK_UP_TOOL"] = "PICK_UP_TOOL"
-    location: Location
-
-
-class PROBE(_TCodeBase):
-    type: Literal["PROBE"] = "PROBE"
-    location: Location
-    location_offset: Matrix = Field(default_factory=identity_transform_factory)
-    flange: Location | None = None
-    flange_offset: Matrix = Field(default_factory=identity_transform_factory)
-    speed_fraction: float
-    backoff_distance: ValueWithUnits
-
-
 class PUT_DOWN_PIPETTE_TIP(_TCodeBase):
     type: Literal["PUT_DOWN_PIPETTE_TIP"] = "PUT_DOWN_PIPETTE_TIP"
     location: Location
-
-
-class PUT_DOWN_TOOL(_TCodeBase):
-    type: Literal["PUT_DOWN_TOOL"] = "PUT_DOWN_TOOL"
-    location: Location
-
-
-class RESET_FTS(_TCodeBase):
-    type: Literal["RESET_FTS"] = "RESET_FTS"
 
 
 class RETRIEVE_PIPETTE_TIP_GROUP(_TCodeBase):
@@ -363,23 +343,17 @@ class WAIT(_TCodeBase):
 
 TCode = Annotated[
     ASPIRATE
-    | CALIBRATE_FTS_NOISE_FLOOR
     | CALIBRATE_LABWARE_WELL_DEPTH
     | CALIBRATE_LABWARE_HEIGHT
-    | CALIBRATE_PIPETTE_TIP_LENGTH
     | COMMENTS
     | DISCARD_PIPETTE_TIP_GROUP
     | DISPENSE
     | GOTO
     | PAUSE
     | PICK_UP_PIPETTE_TIP
-    | PICK_UP_TOOL
-    | PROBE
     | PUT_DOWN_PIPETTE_TIP
-    | PUT_DOWN_TOOL
     | REMOVE_PLATE_LID
     | REPLACE_PLATE_LID
-    | RESET_FTS
     | RETRIEVE_PIPETTE_TIP_GROUP
     | RETRIEVE_TOOL
     | RETURN_PIPETTE_TIP_GROUP
