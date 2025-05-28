@@ -97,9 +97,8 @@ class TCodeScriptBuilder:
                 )
 
         self.ast.metadata.timestamp = datetime.datetime.now().isoformat()
-
         with file_path.open("w") as file:
-            file.write(self.ast.model_dump_json())
+            file.write(self.ast.model_dump_json(indent=4))
 
     # Private implementation methods #
 
@@ -278,6 +277,10 @@ class TCodeScriptBuilder:
         """Wrapper for add_command(COMMENT)."""
         self.add_command(tc.COMMENTS(text=text))
 
+    def discard_pipette_tip_group(self) -> None:
+        """Wrapper for add_command(DISCARD_PIPETTE_TIP_GROUP)."""
+        return self.add_command(tc.DISCARD_PIPETTE_TIP_GROUP())
+
     def dispense(self, volume: float, speed: float | None = None) -> None:
         """Wrapper for add_command(DISPENSE) that auto-fills default values."""
         speed = speed if speed is not None else self.default_pipette_speed
@@ -357,6 +360,10 @@ class TCodeScriptBuilder:
 
         command = tc.RETRIEVE_PIPETTE_TIP_GROUP(id=pipette_tip_group_id)
         self.add_command(command)
+
+    def return_pipette_tip_group(self) -> None:
+        """Wrapper for add_command(RETURN_PIPETTE_TIP_GROUP)."""
+        self.add_command(tc.RETURN_PIPETTE_TIP_GROUP())
 
     def retrieve_tool(self, tool_id: Id) -> None:
         """Wrapper for add_command(RETRIEVE_TOOL) that auto-fills default values."""
