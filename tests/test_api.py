@@ -70,7 +70,11 @@ class TestTCodeEndpoints(unittest.TestCase):
         type_options = get_args(get_args(tc.TCode)[0])
         for endpoint in endpoints:
             with self.subTest(endpoint=endpoint):
-                self.assertIn(endpoint, type_options, f"\n\nACTION ITEM: Add {endpoint} to tcode_api.api.TCode type")
+                self.assertIn(
+                    endpoint,
+                    type_options,
+                    f"\n\nACTION ITEM: Add {endpoint} to tcode_api.api.TCode type",
+                )
 
 
 if __name__ == "__main__":
