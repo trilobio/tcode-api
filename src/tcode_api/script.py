@@ -9,6 +9,7 @@ from typing import Iterable, Protocol, cast
 
 import tcode_api.api as tc
 from tcode_api.error import IdExistsError, IdNotFoundError
+from tcode_api.utilities import generate_id
 
 _logger = logging.getLogger(__name__)
 
@@ -43,6 +44,7 @@ class TCodeScriptBuilder:
 
     def __init__(self, name: str, description: str | None = None) -> None:
         """Initialize a new TCode script builder with metadata."""
+        self.ast: tc.TCodeAST
         self.reset(name, description)
 
         self.default_path_type = tc.PathType.SAFE
@@ -51,8 +53,15 @@ class TCodeScriptBuilder:
 
     # Input/output management methods #
 
-    def reset(self, name: str, description: str | None = None) -> None:
+    def reset(self, name: str | None = None, description: str | None = None) -> None:
         """Set up the builder to write a new script."""
+        if name is None:
+            if hasattr(self, "ast"):
+                name = self.ast.metadata.name
+            else:
+                raise AssertionError(
+                    "Cannot call reset() before __init__ with name=None"
+                )
         metadata = tc.Metadata(
             name=name,
             description=description,
@@ -148,6 +157,15 @@ class TCodeScriptBuilder:
         """Return the robot with the given id."""
         return cast(tc.Robot, self._find_model_by_id(robot_id, self.ast.fleet.robots))
 
+    def _find_pipette_tip_group_by_id(
+        self, pipette_tip_group_id: Id
+    ) -> tc.PipetteTipGroup:
+        """Return the pipette tip group with the given id."""
+        return cast(
+            tc.PipetteTipGroup,
+            self._find_model_by_id(pipette_tip_group_id, self.ast.pipette_tips),
+        )
+
     # Component registration methods #
 
     def add_command(self, command) -> None:
@@ -193,6 +211,18 @@ class TCodeScriptBuilder:
         except IdNotFoundError:
             robot = self._find_robot_by_id(robot_id)
             robot.tools.append(tool)
+
+    def add_pipette_tip_group(self, pipette_tip_group: tc.PipetteTipGroup) -> None:
+        try:
+            discovered_model = self._find_pipette_tip_group_by_id(pipette_tip_group.id)
+            _logger.error(
+                "Pipette tip group with id %s already exists: %s",
+                pipette_tip_group.id,
+                discovered_model,
+            )
+            raise IdExistsError(pipette_tip_group.id)
+        except IdNotFoundError:
+            self.ast.pipette_tips.append(pipette_tip_group)
 
     # TCode command methods #
 
@@ -295,6 +325,37 @@ class TCodeScriptBuilder:
     def replace_plate_lid(self, labware_id: Id, lid_id: Id | None = None) -> None:
         """Wrapper for add_command(REPLACE_PLATE_LID) that auto-fills default values."""
         command = tc.REPLACE_PLATE_LID(plate_id=labware_id, lid_id=lid_id)
+        self.add_command(command)
+
+    def retrieve_pipette_tip_group(
+        self, pipette_tip_group_id: str | None = None, make_new_group: bool = False
+    ) -> None:
+        """Wrapper for add_command(RETRIEVE_PIPETTE_TIP_GROUP) that auto-fills default values."""
+        if make_new_group:
+            if pipette_tip_group_id is None:
+                pipette_tip_group_id = generate_id()
+            self.add_pipette_tip_group(
+                tc.PipetteTipGroup(
+                    id=pipette_tip_group_id,
+                    row_count=1,
+                    column_count=1,
+                )
+            )
+
+        else:
+            if pipette_tip_group_id is None:
+                raise ValueError(
+                    "pipette_tip_group_id must be provided if make_new_group is False."
+                )
+            try:
+                self._find_pipette_tip_group_by_id(pipette_tip_group_id)
+            except IdNotFoundError:
+                _logger.error(
+                    "Pipette tip group with id %s does not exist.", pipette_tip_group_id
+                )
+                raise IdNotFoundError(pipette_tip_group_id)
+
+        command = tc.RETRIEVE_PIPETTE_TIP_GROUP(id=pipette_tip_group_id)
         self.add_command(command)
 
     def retrieve_tool(self, tool_id: Id) -> None:
