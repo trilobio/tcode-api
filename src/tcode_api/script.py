@@ -137,10 +137,11 @@ class TCodeScriptBuilder:
                     "Multiple models with the same id found. This should not happen."
                 )
 
-    def _find_labware_by_id(self, labware_id: Id) -> tc.Labware:
+    def _find_labware_by_id(self, labware_id: Id) -> tc.LabwareDescriptor:
         """Return the labware with the given id."""
         return cast(
-            tc.Labware, self._find_model_by_id(labware_id, self.ast.fleet.labware)
+            tc.LabwareDescriptor,
+            self._find_model_by_id(labware_id, self.ast.fleet.labware),
         )
 
     def _find_tool_by_id(self, tool_id: Id) -> tc.Tool:
@@ -171,7 +172,7 @@ class TCodeScriptBuilder:
         """Add a new command to the TCode script."""
         self.ast.tcode.append(command)
 
-    def add_labware(self, labware: tc.Labware) -> None:
+    def add_labware(self, labware: tc.LabwareDescriptor) -> None:
         """Add a new labware to the script."""
         try:
             discovered_model = self._find_labware_by_id(labware.id)
