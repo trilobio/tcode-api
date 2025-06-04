@@ -364,41 +364,48 @@ TCode = Annotated[
 ]
 
 
-# Various plate schemas #
-# Note: called Labware for historical reasons, but all correspond to the ANSI-SLAS format
-
-
-class _LabwareBase(_BaseModelWithId):
+# Labware Descriptors
+# These schemas are NOT intended to fully represent a labware, but instead to
+# contain a minimal representation of required features for a labware.
+class _LabwareDescriptorBase(_BaseModelWithId):
     """Base schema shared by all labware in the Labware discriminated union."""
 
-    row_count: int
-    column_count: int
-    row_pitch: ValueWithUnits
-    column_pitch: ValueWithUnits
-    has_lid: bool
+    row_count: int | None = None
+    column_count: int | None = None
+    row_pitch: ValueWithUnits | None = None
+    column_pitch: ValueWithUnits | None = None
+    has_lid: bool = False
     tags: list[str] = Field(default_factory=list)
     named_tags: dict[str, str] = Field(default_factory=dict)
 
 
-class WellPlate(_LabwareBase):
-    type: Literal["WellPlate"] = "WellPlate"
+class WellPlateDescriptor(_LabwareDescriptorBase):
+    """A descriptor of the minimal features required by protocol-specified well plate."""
+
+    type: Literal["WellPlateDescriptor"] = "WellPlateDescriptor"
 
 
-class PipetteTipRack(_LabwareBase):
-    type: Literal["PipetteTipRack"] = "PipetteTipRack"
+class PipetteTipRackDescriptor(_LabwareDescriptorBase):
+    """A descriptor of the minimal features required by protocol-specified pipette tip rack."""
+
+    type: Literal["PipetteTipRackDescriptor"] = "PipetteTipRackDescriptor"
     full: bool = True
 
 
-class Trash(_LabwareBase):
-    type: Literal["Trash"] = "Trash"
+class TrashDescriptor(_LabwareDescriptorBase):
+    """A descriptor of the minimal features required by protocol-specified waste disposal container."""
+
+    type: Literal["TrashDescriptor"] = "TrashDescriptor"
 
 
-class Lid(_LabwareBase):
-    type: Literal["Lid"] = "Lid"
+class LidDescriptor(_LabwareDescriptorBase):
+    """A descriptor of the minimal features required by protocol-specified plate lid."""
+
+    type: Literal["LidDescriptor"] = "LidDescriptor"
 
 
-Labware = Annotated[
-    WellPlate | PipetteTipRack | Trash | Lid,
+LabwareDescriptor = Annotated[
+    WellPlateDescriptor | PipetteTipRackDescriptor | TrashDescriptor | LidDescriptor,
     Field(discriminator="type"),
 ]
 
@@ -412,7 +419,7 @@ class Robot(_BaseModelWithId):
 
 class Fleet(_BaseModelStrict):
     robots: list[Robot] = Field(default_factory=list)
-    labware: list[Labware] = Field(default_factory=list)
+    labware: list[LabwareDescriptor] = Field(default_factory=list)
 
 
 class Metadata(_BaseModelStrict):

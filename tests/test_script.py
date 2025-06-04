@@ -39,7 +39,7 @@ class TestTCodeScriptBuilder(unittest.TestCase):
                 builder.retrieve_tool("ID-T1")
 
         l0 = "ID-L0"
-        labware = tc.WellPlate(
+        labware = tc.WellPlateDescriptor(
             id=l0,
             row_count=8,
             column_count=12,
@@ -62,7 +62,7 @@ class TestTCodeScriptBuilder(unittest.TestCase):
     def test_to_and_from_file(self) -> None:
         """Check that TCodeScripts read and write from file without modification."""
         r0, t0, l0, l1 = "ID-R0", "ID-T0", "ID-L0", "ID-L1"
-        tip_box = tc.PipetteTipRack(
+        tip_box = tc.PipetteTipRackDescriptor(
             id=l0,
             row_count=8,
             column_count=12,
@@ -71,7 +71,7 @@ class TestTCodeScriptBuilder(unittest.TestCase):
             full=True,
             has_lid=False,
         )
-        well_plate = tc.WellPlate(
+        well_plate = tc.WellPlateDescriptor(
             id=l1,
             row_count=8,
             column_count=12,
