@@ -6,6 +6,7 @@ from typing import get_args
 
 import tcode_api.api as tc
 from tcode_api.api import _EnumWithDisplayName
+from tcode_api.utilities import generate_id
 
 
 class TestEnumWithDisplayName(unittest.TestCase):
@@ -54,6 +55,13 @@ class TestAPI(unittest.TestCase):
             tcode=[],
         )
         self.assertEqual(len(ast.tcode), 0)
+
+    def test_descriptors(self) -> None:
+        """Ensure that LabwareDescriptors can be instantiated without specifying certain attributes."""
+        tc.WellPlateDescriptor(id=generate_id())
+        tc.PipetteTipRackDescriptor(id=generate_id())
+        tc.LidDescriptor(id=generate_id())
+        tc.TrashDescriptor(id=generate_id())
 
 
 class TestTCodeEndpoints(unittest.TestCase):
