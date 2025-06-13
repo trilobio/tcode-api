@@ -16,23 +16,23 @@ class TestTCodeScriptBuilder(unittest.TestCase):
         builder = TCodeScriptBuilder(name="test_bad_ids")
 
         r0, t0 = "ID-R0", "ID-T0"
-        builder.add_robot(tc.Robot(id=r0))
-        builder.add_tool(r0, tc.SingleChannelPipette(id=t0))
+        builder.add_robot_to_ast(tc.Robot(id=r0))
+        builder.add_tool_to_ast(r0, tc.SingleChannelPipette(id=t0))
 
         with self.subTest("Duplicate robot id"):
             with self.assertRaises(IdExistsError):
-                builder.add_robot(tc.Robot(id=r0))
+                builder.add_robot_to_ast(tc.Robot(id=r0))
 
         with self.subTest("Successful tool retrieval"):
             builder.retrieve_tool(t0)
 
         with self.subTest("Invalid robot id"):
             with self.assertRaises(IdNotFoundError):
-                builder.add_tool("ID-R1", tc.SingleChannelPipette(id="ID-T1"))
+                builder.add_tool_to_ast("ID-R1", tc.SingleChannelPipette(id="ID-T1"))
 
         with self.subTest("Duplicate tool id"):
             with self.assertRaises(IdExistsError):
-                builder.add_tool(r0, tc.SingleChannelPipette(id=t0))
+                builder.add_tool_to_ast(r0, tc.SingleChannelPipette(id=t0))
 
         with self.subTest("Missing tool id"):
             with self.assertRaises(IdNotFoundError):
@@ -47,17 +47,17 @@ class TestTCodeScriptBuilder(unittest.TestCase):
             column_pitch=tc.ValueWithUnits(magnitude=9.0, units="mm"),
             has_lid=False,
         )
-        builder.add_labware(labware)
+        builder.add_labware_to_ast(labware)
         with self.subTest("Duplicate labware id"):
             with self.assertRaises(IdExistsError):
-                builder.add_labware(labware)
+                builder.add_labware_to_ast(labware)
 
         with self.subTest("Successful labware location generation"):
-            builder.goto_labware_index(l0, 0)
+            builder.move_to_location(l0, 0)
 
         with self.subTest("Missing labware id"):
             with self.assertRaises(IdNotFoundError):
-                builder.goto_labware_index("ID-L1", 0)
+                builder.move_to_location("ID-L1", 0)
 
     def test_to_and_from_file(self) -> None:
         """Check that TCodeScripts read and write from file without modification."""
@@ -80,10 +80,10 @@ class TestTCodeScriptBuilder(unittest.TestCase):
             has_lid=False,
         )
         builder = TCodeScriptBuilder(name="test_to_and_from_file")
-        builder.add_robot(tc.Robot(id=r0))
-        builder.add_tool(r0, tc.SingleChannelPipette(id=t0))
-        builder.add_labware(tip_box)
-        builder.add_labware(well_plate)
+        builder.add_robot_to_ast(tc.Robot(id=r0))
+        builder.add_tool_to_ast(r0, tc.SingleChannelPipette(id=t0))
+        builder.add_labware_to_ast(tip_box)
+        builder.add_labware_to_ast(well_plate)
         builder.retrieve_tool(t0)
         builder.add_command(
             tc.PICK_UP_PIPETTE_TIP(
@@ -91,9 +91,9 @@ class TestTCodeScriptBuilder(unittest.TestCase):
             )
         )
         builder.pick_up_pipette_tip(l0, 0)
-        builder.goto_labware_index(l1, 0)  # Well A1
+        builder.move_to_location(l1, 0)  # Well A1
         builder.aspirate(100.0)
-        builder.goto_labware_index(l1, 1)  # Well A2
+        builder.move_to_location(l1, 1)  # Well A2
         builder.dispense(100.0)
         builder.put_down_pipette_tip(l0, 0)
         builder.return_tool()
@@ -140,6 +140,27 @@ class TestTCodeScriptBuilder(unittest.TestCase):
             ast = builder.emit()
             self.assertEqual(ast.metadata.name, name_b)
             self.assertEqual(ast.metadata.description, None)
+
+    def test_endpoints_are_implemented(self) -> None:
+        """Check that builder has method implemented for each TCode endpoint."""
+        endpoints = [
+            obj
+            for obj in tc.__dict__.values()
+            if hasattr(obj, "__bases__") and tc._TCodeBase in obj.__bases__
+        ]
+        endpoint_names = {
+            endpoint.__name__.split(".")[-1].lower() for endpoint in endpoints
+        }
+        print(endpoint_names)
+        for endpoint_name in endpoint_names:
+            with self.subTest(endpoint_name=endpoint_name):
+                self.assertTrue(
+                    hasattr(
+                        TCodeScriptBuilder,
+                        endpoint_name,
+                    ),
+                    f"Missing method for endpoint: {endpoint_name}",
+                )
 
 
 if __name__ == "__main__":
