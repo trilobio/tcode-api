@@ -160,6 +160,11 @@ Tool = Annotated[
     Field(discriminator="type"),
 ]
 
+Pipette = Annotated[
+    SingleChannelPipette | EightChannelPipette,
+    Field(discriminator="type"),
+]
+
 
 class Robot(_BaseModelWithId):
     tools: list[Tool] = Field(default_factory=list)
