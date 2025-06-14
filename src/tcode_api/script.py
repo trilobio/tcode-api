@@ -168,7 +168,7 @@ class TCodeScriptBuilder:
 
     # Component registration methods #
 
-    def add_command(self, command) -> None:
+    def add_command(self, command: tc.TCode) -> None:
         """Add a new command to the TCode script."""
         self.ast.tcode.append(command)
 
