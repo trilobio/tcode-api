@@ -168,11 +168,11 @@ class TCodeScriptBuilder:
 
     # Component registration methods #
 
-    def add_command(self, command) -> None:
+    def add_command(self, command: tc.TCode) -> None:
         """Add a new command to the TCode script."""
         self.ast.tcode.append(command)
 
-    def add_labware(self, labware: tc.LabwareDescriptor) -> None:
+    def add_labware_to_ast(self, labware: tc.LabwareDescriptor) -> None:
         """Add a new labware to the script."""
         try:
             discovered_model = self._find_labware_by_id(labware.id)
@@ -185,7 +185,7 @@ class TCodeScriptBuilder:
 
         self.ast.fleet.labware.append(labware)
 
-    def add_robot(self, robot: tc.Robot) -> None:
+    def add_robot_to_ast(self, robot: tc.Robot) -> None:
         """Add a new robot to the targeted fleet."""
         if len(robot.tools) > 0:
             raise NotImplementedError(
@@ -200,7 +200,7 @@ class TCodeScriptBuilder:
         except IdNotFoundError:
             self.ast.fleet.robots.append(robot)
 
-    def add_tool(self, robot_id: Id, tool: tc.Tool) -> None:
+    def add_tool_to_ast(self, robot_id: Id, tool: tc.Tool) -> None:
         """Add a new tool to the script on a specific robot."""
         try:
             discovered_model = self._find_tool_by_id(tool.id)
@@ -212,7 +212,9 @@ class TCodeScriptBuilder:
             robot = self._find_robot_by_id(robot_id)
             robot.tools.append(tool)
 
-    def add_pipette_tip_group(self, pipette_tip_group: tc.PipetteTipGroup) -> None:
+    def add_pipette_tip_group_to_ast(
+        self, pipette_tip_group: tc.PipetteTipGroup
+    ) -> None:
         try:
             discovered_model = self._find_pipette_tip_group_by_id(pipette_tip_group.id)
             _logger.error(
@@ -234,6 +236,49 @@ class TCodeScriptBuilder:
             speed=tc.ValueWithUnits(magnitude=speed, units="microliters/second"),
         )
         self.add_command(command)
+
+    def add_labware(
+        self,
+        descriptor: tc.LabwareDescriptor,
+        labware_id: str | None = None,
+        target_deck_slot: str | None = None,
+    ) -> str:
+        """Wrapper for add_command(ADD_LABWARE) that auto-fills default values."""
+        labware_id = labware_id if labware_id is not None else generate_id()
+        command = tc.ADD_LABWARE(
+            id=labware_id, descriptor=descriptor, deck_slot_name=target_deck_slot
+        )
+        self.add_command(command)
+        return labware_id
+
+    def add_pipette_tip_group(
+        self, descriptor: tc.PipetteTipGroup, pipette_tip_group_id: str | None = None
+    ) -> str:
+        """Wrapper for add_command(ADD_PIPETTE_TIP_GROUP) that auto-fills default values."""
+        pipette_tip_group_id = (
+            pipette_tip_group_id if pipette_tip_group_id is not None else generate_id()
+        )
+        command = tc.ADD_PIPETTE_TIP_GROUP(
+            descriptor=descriptor, id=pipette_tip_group_id
+        )
+        self.add_command(command)
+        return pipette_tip_group_id
+
+    def add_robot(self, descriptor: tc.Robot, robot_id: str | None = None) -> str:
+        """Wrapper for add_command(ADD_ROBOT) that auto-fills default values."""
+        robot_id = robot_id if robot_id is not None else generate_id()
+        command = tc.ADD_ROBOT(descriptor=descriptor, id=robot_id)
+        self.add_command(command)
+        return robot_id
+
+    def add_tool(
+        self, robot_id: Id, descriptor: tc.Tool, tool_id: str | None = None
+    ) -> str:
+        """Wrapper for add_command(ADD_TOOL) that auto-fills default values."""
+        tool_id = tool_id if tool_id is not None else generate_id()
+        command = tc.ADD_TOOL(robot_id=robot_id, descriptor=descriptor, id=tool_id)
+        self.add_command(command)
+        return tool_id
 
     def calibrate_labware_height(
         self, labware_id: Id, matrix: tc.Matrix, persistent: bool = False
@@ -276,7 +321,7 @@ class TCodeScriptBuilder:
 
     def comment(self, text: str) -> None:
         """Wrapper for add_command(COMMENT)."""
-        self.add_command(tc.COMMENTS(text=text))
+        self.add_command(tc.COMMENT(text=text))
 
     def discard_pipette_tip_group(self) -> None:
         """Wrapper for add_command(DISCARD_PIPETTE_TIP_GROUP)."""
@@ -291,10 +336,10 @@ class TCodeScriptBuilder:
         )
         self.add_command(command)
 
-    def goto_labware_index(self, labware_id: Id, labware_index: int) -> None:
-        """Wrapper for add_command(GOTO) that auto-fills default values."""
+    def move_to_location(self, labware_id: Id, labware_index: int) -> None:
+        """Wrapper for add_command(MOVE_TO_LOCATION) that auto-fills default values."""
         location = self._location_as_labware_index(labware_id, labware_index)
-        command = tc.GOTO(
+        command = tc.MOVE_TO_LOCATION(
             location=location,
             path_type=self.default_path_type,
             trajectory_type=self.default_trajectory_type,
@@ -338,7 +383,7 @@ class TCodeScriptBuilder:
         if make_new_group:
             if pipette_tip_group_id is None:
                 pipette_tip_group_id = generate_id()
-            self.add_pipette_tip_group(
+            self.add_pipette_tip_group_to_ast(
                 tc.PipetteTipGroup(
                     id=pipette_tip_group_id,
                     row_count=1,

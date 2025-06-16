@@ -160,6 +160,15 @@ Tool = Annotated[
     Field(discriminator="type"),
 ]
 
+Pipette = Annotated[
+    SingleChannelPipette | EightChannelPipette,
+    Field(discriminator="type"),
+]
+
+
+class Robot(_BaseModelWithId):
+    tools: list[Tool] = Field(default_factory=list)
+
 
 class PathType(int, Enum):
     """Enumeration of robot path types.
@@ -186,13 +195,83 @@ class TrajectoryType(int, Enum):
     JOINT_TRAPEZOIDAL = 2
 
 
+# Labware Descriptors
+# These schemas are NOT intended to fully represent a labware, but instead to
+# contain a minimal representation of required features for a labware.
+class _LabwareDescriptorBase(_BaseModelWithId):
+    """Base schema shared by all labware in the Labware discriminated union."""
+
+    row_count: int | None = None
+    column_count: int | None = None
+    row_pitch: ValueWithUnits | None = None
+    column_pitch: ValueWithUnits | None = None
+    has_lid: bool = False
+    tags: list[str] = Field(default_factory=list)
+    named_tags: dict[str, str] = Field(default_factory=dict)
+
+
+class WellPlateDescriptor(_LabwareDescriptorBase):
+    """A descriptor of the minimal features required by protocol-specified well plate."""
+
+    type: Literal["WellPlateDescriptor"] = "WellPlateDescriptor"
+
+
+class PipetteTipRackDescriptor(_LabwareDescriptorBase):
+    """A descriptor of the minimal features required by protocol-specified pipette tip rack."""
+
+    type: Literal["PipetteTipRackDescriptor"] = "PipetteTipRackDescriptor"
+    full: bool = True
+
+
+class TrashDescriptor(_LabwareDescriptorBase):
+    """A descriptor of the minimal features required by protocol-specified waste disposal container."""
+
+    type: Literal["TrashDescriptor"] = "TrashDescriptor"
+
+
+class LidDescriptor(_LabwareDescriptorBase):
+    """A descriptor of the minimal features required by protocol-specified plate lid."""
+
+    type: Literal["LidDescriptor"] = "LidDescriptor"
+
+
+LabwareDescriptor = Annotated[
+    WellPlateDescriptor | PipetteTipRackDescriptor | TrashDescriptor | LidDescriptor,
+    Field(discriminator="type"),
+]
+
+
 # TCode command schemas
-
-
 class _TCodeBase(_BaseModelStrict):
     """Base schema shared by all TCode commands in the TCODE discriminated union."""
 
     ...
+
+
+class ADD_LABWARE(_TCodeBase):
+    type: Literal["ADD_LABWARE"] = "ADD_LABWARE"
+    id: str
+    descriptor: LabwareDescriptor
+    deck_slot_name: str | None = None
+
+
+class ADD_ROBOT(_TCodeBase):
+    type: Literal["ADD_ROBOT"] = "ADD_ROBOT"
+    id: str
+    descriptor: Robot
+
+
+class ADD_PIPETTE_TIP_GROUP(_TCodeBase):
+    type: Literal["ADD_PIPETTE_TIP_GROUP"] = "ADD_PIPETTE_TIP_GROUP"
+    id: str
+    descriptor: PipetteTipGroup
+
+
+class ADD_TOOL(_TCodeBase):
+    type: Literal["ADD_TOOL"] = "ADD_TOOL"
+    id: str
+    descriptor: Tool
+    robot_id: str
 
 
 class ASPIRATE(_TCodeBase):
@@ -205,7 +284,7 @@ class CALIBRATE_LABWARE_HEIGHT(_TCodeBase):
     """TCode command to use the currently held tool to tune the height of a target labware by probing.
 
     :param location: The location attribute specifes which labware and where on the labware to probe.
-        Unlike other location-based commands (ex. :class: GOTO), :class: CALIBRATE_LABWARE_HEIGHT
+        Unlike other location-based commands (ex. :class: MOVE_TO_LOCATION), :class: CALIBRATE_LABWARE_HEIGHT
         only supports locations that hold references to a labware.
     :param persistent: When raised, all labware of the same type and brand will be modified. This
         calibration DOES NOT APPLY
@@ -230,7 +309,7 @@ class CALIBRATE_LABWARE_WELL_DEPTH(_TCodeBase):
     ```
 
     :param location: The location attribute specifes which labware and where on the labware to probe.
-        Unlike other location-based commands (ex. :class: GOTO), :class: CALIBRATE_LABWARE_WELL_DEPTH
+        Unlike other location-based commands (ex. :class: MOVE_TO_LOCATION), :class: CALIBRATE_LABWARE_WELL_DEPTH
         only supports locations that hold references to a labware.
     :param modify_all_wells: This flag indicates whether only the probed well's depth should be modified,
         or if the depths of all of the wells in the labware should be modified.
@@ -267,8 +346,8 @@ class CALIBRATE_TOOL_FOR_PROBING(_TCodeBase):
     persistent: bool = False
 
 
-class COMMENTS(_TCodeBase):
-    type: Literal["COMMENTS"] = "COMMENTS"
+class COMMENT(_TCodeBase):
+    type: Literal["COMMENT"] = "COMMENT"
     text: str
 
 
@@ -282,8 +361,8 @@ class DISPENSE(_TCodeBase):
     speed: ValueWithUnits
 
 
-class GOTO(_TCodeBase):
-    type: Literal["GOTO"] = "GOTO"
+class MOVE_TO_LOCATION(_TCodeBase):
+    type: Literal["MOVE_TO_LOCATION"] = "MOVE_TO_LOCATION"
     location: Location
     location_offset: Matrix = Field(default_factory=identity_transform_factory)
     flange: Location | None = None
@@ -343,13 +422,17 @@ class WAIT(_TCodeBase):
 
 TCode = Annotated[
     ASPIRATE
+    | ADD_LABWARE
+    | ADD_PIPETTE_TIP_GROUP
+    | ADD_ROBOT
+    | ADD_TOOL
     | CALIBRATE_LABWARE_WELL_DEPTH
     | CALIBRATE_LABWARE_HEIGHT
     | CALIBRATE_TOOL_FOR_PROBING
-    | COMMENTS
+    | COMMENT
     | DISCARD_PIPETTE_TIP_GROUP
     | DISPENSE
-    | GOTO
+    | MOVE_TO_LOCATION
     | PAUSE
     | PICK_UP_PIPETTE_TIP
     | PUT_DOWN_PIPETTE_TIP
@@ -364,57 +447,7 @@ TCode = Annotated[
 ]
 
 
-# Labware Descriptors
-# These schemas are NOT intended to fully represent a labware, but instead to
-# contain a minimal representation of required features for a labware.
-class _LabwareDescriptorBase(_BaseModelWithId):
-    """Base schema shared by all labware in the Labware discriminated union."""
-
-    row_count: int | None = None
-    column_count: int | None = None
-    row_pitch: ValueWithUnits | None = None
-    column_pitch: ValueWithUnits | None = None
-    has_lid: bool = False
-    tags: list[str] = Field(default_factory=list)
-    named_tags: dict[str, str] = Field(default_factory=dict)
-
-
-class WellPlateDescriptor(_LabwareDescriptorBase):
-    """A descriptor of the minimal features required by protocol-specified well plate."""
-
-    type: Literal["WellPlateDescriptor"] = "WellPlateDescriptor"
-
-
-class PipetteTipRackDescriptor(_LabwareDescriptorBase):
-    """A descriptor of the minimal features required by protocol-specified pipette tip rack."""
-
-    type: Literal["PipetteTipRackDescriptor"] = "PipetteTipRackDescriptor"
-    full: bool = True
-
-
-class TrashDescriptor(_LabwareDescriptorBase):
-    """A descriptor of the minimal features required by protocol-specified waste disposal container."""
-
-    type: Literal["TrashDescriptor"] = "TrashDescriptor"
-
-
-class LidDescriptor(_LabwareDescriptorBase):
-    """A descriptor of the minimal features required by protocol-specified plate lid."""
-
-    type: Literal["LidDescriptor"] = "LidDescriptor"
-
-
-LabwareDescriptor = Annotated[
-    WellPlateDescriptor | PipetteTipRackDescriptor | TrashDescriptor | LidDescriptor,
-    Field(discriminator="type"),
-]
-
-
 # Top-level component schemas
-
-
-class Robot(_BaseModelWithId):
-    tools: list[Tool] = Field(default_factory=list)
 
 
 class Fleet(_BaseModelStrict):
