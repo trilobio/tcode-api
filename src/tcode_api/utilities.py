@@ -51,8 +51,14 @@ def ul_per_s(volume: float) -> tc.ValueWithUnits:
     return tc.ValueWithUnits(magnitude=volume, units="uL/s")
 
 
+def location_as_labware_index(
+    labware_id: str, labware_index: int
+) -> tc.LocationAsLabwareIndex:
+    """tc.LocationAsLabwareIndex constructor."""
+    return tc.LocationAsLabwareIndex(labware_id=labware_id, labware_index=labware_index)
+
+
 def build_well_plate(
-    id: str | None = None,
     tags: list[str] | None = None,
     named_tags: dict[str, str] | None = None,
     row_count: int = 8,
@@ -63,7 +69,6 @@ def build_well_plate(
 ) -> tc.WellPlateDescriptor:
     """tc.WellPlateDescriptor constructor with nice defaults.
 
-    :param id: Unique identifier for the well plate. Defaults to generate_id().
     :param tags: List of tags associated with the well plate. Defaults to an empty list.
     :param named_tags: Dictionary of named tags associated with the well plate. Defaults to an empty dictionary.
     :param row_count: Number of rows in the well plate. Defaults to 8.
@@ -74,11 +79,9 @@ def build_well_plate(
 
     :return: tc.WellPlateDescriptor constructed with the specified parameters.
     """
-    id = generate_id() if id is None else id
     tags = [] if tags is None else tags
     named_tags = {} if named_tags is None else named_tags
     return tc.WellPlateDescriptor(
-        id=id,
         tags=tags,
         named_tags=named_tags,
         row_count=row_count,
@@ -90,7 +93,6 @@ def build_well_plate(
 
 
 def build_pipette_tip_rack(
-    id: str | None = None,
     tags: list[str] | None = None,
     named_tags: dict[str, str] | None = None,
     row_count: int = 8,
@@ -102,7 +104,6 @@ def build_pipette_tip_rack(
 ) -> tc.PipetteTipRackDescriptor:
     """tc.PipetteTipRackDescriptor constructor with nice defaults.
 
-    :param id: Unique identifier for the pipette tip rack. Defaults to generate_id().
     :param tags: List of tags associated with the pipette tip rack. Defaults to an empty list.
     :param named_tags: Dictionary of named tags associated with the pipette tip rack. Defaults to an empty dictionary.
     :param row_count: Number of rows in the pipette tip rack. Defaults to 8.
@@ -114,11 +115,9 @@ def build_pipette_tip_rack(
 
     :return: tc.PipetteTipRackDescriptor constructed with the specified parameters.
     """
-    id = generate_id() if id is None else id
     tags = [] if tags is None else tags
     named_tags = {} if named_tags is None else named_tags
     return tc.PipetteTipRackDescriptor(
-        id=id,
         tags=tags,
         named_tags=named_tags,
         row_count=row_count,
@@ -131,15 +130,13 @@ def build_pipette_tip_rack(
 
 
 def build_pipette_tip_group(
-    id: str | None = None,
     row_count: int = 1,
     column_count: int = 1,
     tags: list[str] | None = None,
     named_tags: dict[str, Any] | None = None,
-) -> tc.PipetteTipGroup:
+) -> tc.PipetteTipGroupDescriptor:
     """tc.PipetteTipGroup constructor with nice defaults.
 
-    :param id: Unique identifier for the pipette tip group. Defaults to generate_id().
     :param row_count: Number of rows in the pipette tip group. Defaults to 1.
     :param column_count: Number of columns in the pipette tip group. Defaults to 1.
     :param tags: List of tags applied to each pipette tip in the pipette tip group. Defaults to an empty list.
@@ -147,9 +144,7 @@ def build_pipette_tip_group(
 
     :return: tc.PipetteTipGroup constructed with the specified parameters.
     """
-    id = generate_id() if id is None else id
-    return tc.PipetteTipGroup(
-        id=id,
+    return tc.PipetteTipGroupDescriptor(
         row_count=row_count,
         column_count=column_count,
         pipette_tip_tags=tags or [],
