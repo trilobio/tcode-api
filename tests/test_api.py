@@ -6,7 +6,6 @@ from typing import get_args
 
 import tcode_api.api as tc
 from tcode_api.api import _EnumWithDisplayName
-from tcode_api.utilities import generate_id
 
 
 class TestEnumWithDisplayName(unittest.TestCase):
@@ -44,24 +43,27 @@ class TestEnumWithDisplayName(unittest.TestCase):
 class TestAPI(unittest.TestCase):
 
     def test_tcodeast(self) -> None:
-        """Ensure that TCodeAST can be instantiated."""
-        ast = tc.TCodeAST(
+        """Ensure that TCodeScript can be instantiated."""
+        script = tc.TCodeScript(
             metadata=tc.Metadata(
                 name="unittest_instantiate",
                 timestamp=datetime.datetime.now().isoformat(),
                 tcode_api_version="0.1.0",
             ),
-            fleet=tc.Fleet(),
-            tcode=[],
         )
-        self.assertEqual(len(ast.tcode), 0)
+        self.assertEqual(len(script.commands), 0)
 
     def test_descriptors(self) -> None:
         """Ensure that LabwareDescriptors can be instantiated without specifying certain attributes."""
-        tc.WellPlateDescriptor(id=generate_id())
-        tc.PipetteTipRackDescriptor(id=generate_id())
-        tc.LidDescriptor(id=generate_id())
-        tc.TrashDescriptor(id=generate_id())
+        tc.GripperDescriptor()
+        tc.LidDescriptor()
+        tc.SingleChannelPipetteDescriptor()
+        tc.EightChannelPipetteDescriptor()
+        tc.PipetteTipRackDescriptor()
+        tc.ProbeDescriptor()
+        tc.RobotDescriptor()
+        tc.TrashDescriptor()
+        tc.WellPlateDescriptor()
 
 
 class TestTCodeEndpoints(unittest.TestCase):
@@ -69,14 +71,21 @@ class TestTCodeEndpoints(unittest.TestCase):
 
     def test_endpoints(self) -> None:
         """Test that all endpoints are included in the type."""
+        ENDPOINTS_TO_SKIP = [tc._RobotSpecificTCodeBase]
         endpoints = [
             obj
             for obj in tc.__dict__.values()
-            if hasattr(obj, "__bases__") and tc._TCodeBase in obj.__bases__
+            if hasattr(obj, "__bases__")
+            and (
+                tc._TCodeBase in obj.__bases__
+                or tc._RobotSpecificTCodeBase in obj.__bases__
+            )
         ]
         # https://stackoverflow.com/a/64643971
         type_options = get_args(get_args(tc.TCode)[0])
         for endpoint in endpoints:
+            if endpoint in ENDPOINTS_TO_SKIP:
+                continue
             with self.subTest(endpoint=endpoint):
                 self.assertIn(
                     endpoint,

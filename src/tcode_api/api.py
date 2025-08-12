@@ -14,7 +14,6 @@ class _BaseModelWithId(_BaseModelStrict):
     id: str
 
 
-# Define the ValueWithUnits schema
 class ValueWithUnits(_BaseModelStrict):
     type: Literal["ValueWithUnits"] = "ValueWithUnits"
     magnitude: float
@@ -114,8 +113,10 @@ Location = Annotated[
 ]
 
 
-class PipetteTipGroup(_BaseModelWithId):
+class PipetteTipGroupDescriptor(_BaseModelStrict):
     """Grid layout of pipette tips."""
+
+    type: Literal["PipetteTipGroupDescriptor"] = "PipetteTipGroupDescriptor"
 
     row_count: Annotated[int, verify_positive_nonzero_int]
     column_count: Annotated[int, verify_positive_nonzero_int]
@@ -126,48 +127,69 @@ class PipetteTipGroup(_BaseModelWithId):
 # Tool schemas
 
 
-class _ToolBase(_BaseModelWithId):
+class _ToolBaseDescriptor(_BaseModelStrict):
     """Base schema shared by all tools in the TOOL discriminated union."""
 
     ...
 
 
-class Probe(_ToolBase):
-    type: Literal["Probe"] = "Probe"
+class ProbeDescriptor(_ToolBaseDescriptor):
+    type: Literal["ProbeDescriptor"] = "ProbeDescriptor"
 
 
-class Gripper(_ToolBase):
-    type: Literal["Gripper"] = "Gripper"
+class GripperDescriptor(_ToolBaseDescriptor):
+    type: Literal["GripperDescriptor"] = "GripperDescriptor"
 
 
-class _PipetteCommon(_ToolBase):
+class _PipetteBaseDescriptor(_ToolBaseDescriptor):
     min_volume: ValueWithUnits | None = Field(default=None)
     max_volume: ValueWithUnits | None = Field(default=None)
     max_speed: ValueWithUnits | None = Field(default=None)
 
 
-class SingleChannelPipette(_PipetteCommon):
-    type: Literal["SingleChannelPipette"] = "SingleChannelPipette"
+class SingleChannelPipetteDescriptor(_PipetteBaseDescriptor):
+    type: Literal["SingleChannelPipetteDescriptor"] = "SingleChannelPipetteDescriptor"
 
 
-class EightChannelPipette(_PipetteCommon):
-    type: Literal["EightChannelPipette"] = "EightChannelPipette"
+class EightChannelPipetteDescriptor(_PipetteBaseDescriptor):
+    type: Literal["EightChannelPipetteDescriptor"] = "EightChannelPipetteDescriptor"
 
 
 # Define the Tool discriminated union
-Tool = Annotated[
-    SingleChannelPipette | EightChannelPipette | Probe | Gripper,
+ToolDescriptor = Annotated[
+    SingleChannelPipetteDescriptor
+    | EightChannelPipetteDescriptor
+    | ProbeDescriptor
+    | GripperDescriptor,
     Field(discriminator="type"),
 ]
 
-Pipette = Annotated[
-    SingleChannelPipette | EightChannelPipette,
+PipetteDescriptor = Annotated[
+    SingleChannelPipetteDescriptor | EightChannelPipetteDescriptor,
     Field(discriminator="type"),
 ]
 
 
-class Robot(_BaseModelWithId):
-    tools: list[Tool] = Field(default_factory=list)
+class LabwareHolderDescriptor(BaseModel):
+    """Descriptor for an entity that can hold labware."""
+
+    type: Literal["LabwareHolderDescriptor"] = "LabwareHolderDescriptor"
+
+
+class ToolHolderDescriptor(BaseModel):
+    """Descriptor for an entity that can hold tools."""
+
+    type: Literal["ToolHolderDescriptor"] = "ToolHolderDescriptor"
+
+
+class RobotDescriptor(BaseModel):
+    """Descriptor for a robot in the fleet."""
+
+    type: Literal["RobotDescriptor"] = "RobotDescriptor"
+    serial_number: str | None = None
+    tools: dict[str, ToolDescriptor] = Field(default_factory=dict)
+    tool_holders: dict[str, ToolHolderDescriptor] = Field(default_factory=dict)
+    labware_holders: dict[str, LabwareHolderDescriptor] = Field(default_factory=dict)
 
 
 class PathType(int, Enum):
@@ -195,48 +217,205 @@ class TrajectoryType(int, Enum):
     JOINT_TRAPEZOIDAL = 2
 
 
-# Labware Descriptors
-# These schemas are NOT intended to fully represent a labware, but instead to
-# contain a minimal representation of required features for a labware.
-class _LabwareDescriptorBase(_BaseModelWithId):
-    """Base schema shared by all labware in the Labware discriminated union."""
+### Well Shape Descriptors ###
+class CircleDescriptor(BaseModel):
+    """Discriptor of a circle."""
 
+    type: Literal["CircleDescriptor"] = "CircleDescriptor"
+    diameter: ValueWithUnits | None = None
+
+
+class AxisAlignedRectangleDescriptor(BaseModel):
+    """Descriptor of an axis-aligned rectangle."""
+
+    type: Literal["AxisAlignedRectangleDescriptor"] = "AxisAlignedRectangleDescriptor"
+    width: ValueWithUnits | None = None
+    length: ValueWithUnits | None = None
+
+
+WellShapeDescriptor = Annotated[
+    CircleDescriptor | AxisAlignedRectangleDescriptor,
+    Field(discriminator="type"),
+]
+
+
+### Well Bottom Profile Descriptors ###
+class _BaseWellBottomProfileDescriptor(BaseModel):
+    """Base descriptor for well bottom profiles."""
+
+    type: str
+
+
+class FlatBottomDescriptor(_BaseWellBottomProfileDescriptor):
+    """Descriptor for a flat bottom well."""
+
+    type: Literal["FlatBottomDescriptor"] = "FlatBottomDescriptor"
+
+
+class RoundBottomDescriptor(_BaseWellBottomProfileDescriptor):
+    """Descriptor for a round bottom well."""
+
+    type: Literal["RoundBottomDescriptor"] = "RoundBottomDescriptor"
+    # radius: the radius is inferred from the well's diameter
+
+
+class VBottomDescriptor(_BaseWellBottomProfileDescriptor):
+    """Descriptor for a V-bottom well (think trough)."""
+
+    type: Literal["VBottomDescriptor"] = "VBottomDescriptor"
+    direction: Literal["Width-wide", "Length-wide"] | None = None
+    offset: ValueWithUnits | None = None
+
+
+class ConicalBottomDescriptor(_BaseWellBottomProfileDescriptor):
+    """Descriptor for a conical bottom well."""
+
+    type: Literal["ConicalBottomDescriptor"] = "ConicalBottomDescriptor"
+    # angle: assumed to come to a point at the bottom of the well
+    offset: ValueWithUnits | None = None
+
+
+WellBottomShapeDescriptor = Annotated[
+    FlatBottomDescriptor | RoundBottomDescriptor | VBottomDescriptor,
+    Field(discriminator="type"),
+]
+
+
+class GridDescriptor(_BaseModelStrict):
+    """Descriptor for a grid layout."""
+
+    type: Literal["GridDescriptor"] = "GridDescriptor"
     row_count: int | None = None
     column_count: int | None = None
     row_pitch: ValueWithUnits | None = None
     column_pitch: ValueWithUnits | None = None
-    has_lid: bool = False
+    row_offset: ValueWithUnits | None = None
+    column_offset: ValueWithUnits | None = None
+
+
+class WellDescriptor(_BaseModelStrict):
+    """Descriptor for a well in a labware."""
+
+    type: Literal["WellDescriptor"] = "WellDescriptor"
+    depth: ValueWithUnits | None = None
+    shape: WellShapeDescriptor | None = None
+    bottom_shape: WellBottomShapeDescriptor | None = None
+    min_volume: ValueWithUnits | None = None
+    max_volume: ValueWithUnits | None = None
+    well_tags: list[str] = Field(default_factory=list)
+    well_named_tags: dict[str, str] = Field(default_factory=dict)
+
+
+# Labware Descriptors
+# These schemas are NOT intended to fully represent a labware, but instead to
+# contain a minimal representation of required features for a labware.
+class _LabwareBaseDescriptor(_BaseModelStrict):
+    """Base schema shared by all labware in the Labware discriminated union."""
+
     tags: list[str] = Field(default_factory=list)
     named_tags: dict[str, str] = Field(default_factory=dict)
 
 
-class WellPlateDescriptor(_LabwareDescriptorBase):
-    """A descriptor of the minimal features required by protocol-specified well plate."""
-
-    type: Literal["WellPlateDescriptor"] = "WellPlateDescriptor"
-
-
-class PipetteTipRackDescriptor(_LabwareDescriptorBase):
-    """A descriptor of the minimal features required by protocol-specified pipette tip rack."""
-
-    type: Literal["PipetteTipRackDescriptor"] = "PipetteTipRackDescriptor"
-    full: bool = True
-
-
-class TrashDescriptor(_LabwareDescriptorBase):
-    """A descriptor of the minimal features required by protocol-specified waste disposal container."""
-
-    type: Literal["TrashDescriptor"] = "TrashDescriptor"
-
-
-class LidDescriptor(_LabwareDescriptorBase):
+class LidDescriptor(_LabwareBaseDescriptor):
     """A descriptor of the minimal features required by protocol-specified plate lid."""
 
     type: Literal["LidDescriptor"] = "LidDescriptor"
 
 
+class WellPlateDescriptor(_LabwareBaseDescriptor):
+    """A descriptor of the minimal features required by protocol-specified well plate."""
+
+    type: Literal["WellPlateDescriptor"] = "WellPlateDescriptor"
+    grid_descriptor: GridDescriptor | None = None
+    well_descriptor: WellDescriptor | None = None
+
+    # Lid parameters
+    has_lid: bool = False
+    lid_offset: ValueWithUnits | None = None
+    lid_descriptor: LidDescriptor | None = None
+
+
+class PipetteTipRackDescriptor(_LabwareBaseDescriptor):
+    """A descriptor of the minimal features required by protocol-specified pipette tip rack."""
+
+    type: Literal["PipetteTipRackDescriptor"] = "PipetteTipRackDescriptor"
+    grid_descriptor: GridDescriptor | None = None
+    full: bool | None = None
+
+
+class TrashDescriptor(_LabwareBaseDescriptor):
+    """A descriptor of the minimal features required by protocol-specified waste disposal container."""
+
+    type: Literal["TrashDescriptor"] = "TrashDescriptor"
+    depth: ValueWithUnits | None = None
+
+
 LabwareDescriptor = Annotated[
     WellPlateDescriptor | PipetteTipRackDescriptor | TrashDescriptor | LidDescriptor,
+    Field(discriminator="type"),
+]
+
+
+# Labware Descriptions
+# These schemas are intended to be identical to Descriptors, but with no optional attributes.
+class _LabwareBaseDescription(_BaseModelStrict):
+    """Base schema shared by all labware in the LabwareDescription discriminated union."""
+
+    type: str
+    tags: list[str] = Field(default_factory=list)
+    named_tags: dict[str, str] = Field(default_factory=dict)
+    height: ValueWithUnits
+
+
+class LidDescription(_LabwareBaseDescription):
+    """A full description of a plate lid."""
+
+    type: Literal["LidDescription"] = "LidDescription"
+
+
+class GridDescription(_BaseModelStrict):
+    """A full description of a grid layout."""
+
+    type: Literal["GridDescription"] = "GridDescription"
+
+    row_count: int
+    column_count: int
+    row_pitch: ValueWithUnits
+    column_pitch: ValueWithUnits
+    row_offset: ValueWithUnits
+    column_offset: ValueWithUnits
+
+
+class WellDescription(_BaseModelStrict):
+    """A full description of a well in a labware."""
+
+    type: Literal["WellDescription"] = "WellDescription"
+    tags: list[str] = Field(default_factory=list)
+    named_tags: dict[str, str] = Field(default_factory=dict)
+
+    depth: ValueWithUnits
+    shape: WellShapeDescriptor
+    bottom_shape: WellBottomShapeDescriptor
+    min_volume: ValueWithUnits
+    max_volume: ValueWithUnits
+
+
+class WellPlateDescription(_LabwareBaseDescription):
+    """A full description of a well plate."""
+
+    type: Literal["WellPlateDescription"] = "WellPlateDescription"
+
+    grid_description: GridDescription
+    well_description: WellDescription
+
+    # Lid parameters
+    has_lid: bool
+    lid_offset: ValueWithUnits | None
+    lid_description: LidDescription | None
+
+
+LabwareDescription = Annotated[
+    WellPlateDescription | PipetteTipRackDescriptor | TrashDescriptor | LidDescription,
     Field(discriminator="type"),
 ]
 
@@ -248,39 +427,47 @@ class _TCodeBase(_BaseModelStrict):
     ...
 
 
+class _RobotSpecificTCodeBase(_TCodeBase):
+    """Base schema shared by all TCode commands that are specific to a robot.
+
+    This is used to ensure that the command is only executed on the robot with the specified id.
+    """
+
+    robot_id: str
+
+
 class ADD_LABWARE(_TCodeBase):
     type: Literal["ADD_LABWARE"] = "ADD_LABWARE"
     id: str
     descriptor: LabwareDescriptor
-    deck_slot_name: str | None = None
 
 
 class ADD_ROBOT(_TCodeBase):
     type: Literal["ADD_ROBOT"] = "ADD_ROBOT"
     id: str
-    descriptor: Robot
+    descriptor: RobotDescriptor
 
 
 class ADD_PIPETTE_TIP_GROUP(_TCodeBase):
     type: Literal["ADD_PIPETTE_TIP_GROUP"] = "ADD_PIPETTE_TIP_GROUP"
     id: str
-    descriptor: PipetteTipGroup
+    descriptor: PipetteTipGroupDescriptor
 
 
 class ADD_TOOL(_TCodeBase):
     type: Literal["ADD_TOOL"] = "ADD_TOOL"
     id: str
-    descriptor: Tool
+    descriptor: ToolDescriptor
     robot_id: str
 
 
-class ASPIRATE(_TCodeBase):
+class ASPIRATE(_RobotSpecificTCodeBase):
     type: Literal["ASPIRATE"] = "ASPIRATE"
     volume: ValueWithUnits
     speed: ValueWithUnits
 
 
-class CALIBRATE_LABWARE_HEIGHT(_TCodeBase):
+class CALIBRATE_LABWARE_HEIGHT(_RobotSpecificTCodeBase):
     """TCode command to use the currently held tool to tune the height of a target labware by probing.
 
     :param location: The location attribute specifes which labware and where on the labware to probe.
@@ -297,7 +484,7 @@ class CALIBRATE_LABWARE_HEIGHT(_TCodeBase):
     persistent: bool
 
 
-class CALIBRATE_LABWARE_WELL_DEPTH(_TCodeBase):
+class CALIBRATE_LABWARE_WELL_DEPTH(_RobotSpecificTCodeBase):
     """TCode command to use the currently held tool to tune the depth of a target labware's well by probing.
 
     An example TCode snippet to calibrate using a pipette tip is here:
@@ -326,8 +513,8 @@ class CALIBRATE_LABWARE_WELL_DEPTH(_TCodeBase):
     persistent: bool
 
 
-class CALIBRATE_TOOL_FOR_PROBING(_TCodeBase):
-    """TCode comand to calibrate the tool for probing.
+class CALIBRATE_TOOL_FOR_PROBING(_RobotSpecificTCodeBase):
+    """TCode command to calibrate the tool for probing.
 
     If a bare tool is held, the tool's transform will be calibrated. If a pipette tip is held, the
     pipette tip's relationship to the tool will be calibrated.
@@ -346,22 +533,46 @@ class CALIBRATE_TOOL_FOR_PROBING(_TCodeBase):
     persistent: bool = False
 
 
+class CREATE_LABWARE(_RobotSpecificTCodeBase):
+    """TCode command to create a new labware on the deck of a robot in the fleet.
+
+    :param robot_id: The ID of the robot on which to create the labware.
+    :param description: The labware descriptor that describes the labware to be created.
+        Must be fully filled out, UNLIKE typical labware descriptors (which may have unprovided fields).
+    :param deck_slot_name: The name of the deck slot where the labware will be created on the target robot.
+    """
+
+    type: Literal["CREATE_LABWARE"] = "CREATE_LABWARE"
+    description: LabwareDescription
+    deck_slot_name: str
+
+
 class COMMENT(_TCodeBase):
     type: Literal["COMMENT"] = "COMMENT"
     text: str
 
 
-class DISCARD_PIPETTE_TIP_GROUP(_TCodeBase):
+class DELETE_LABWARE(_RobotSpecificTCodeBase):
+    """TCode command to delete a labware from the fleet.
+
+    :param labware_id: The ID of the labware to be deleted.
+    """
+
+    type: Literal["DELETE_LABWARE"] = "DELETE_LABWARE"
+    labware_id: str
+
+
+class DISCARD_PIPETTE_TIP_GROUP(_RobotSpecificTCodeBase):
     type: Literal["DISCARD_PIPETTE_TIP_GROUP"] = "DISCARD_PIPETTE_TIP_GROUP"
 
 
-class DISPENSE(_TCodeBase):
+class DISPENSE(_RobotSpecificTCodeBase):
     type: Literal["DISPENSE"] = "DISPENSE"
     volume: ValueWithUnits
     speed: ValueWithUnits
 
 
-class MOVE_TO_LOCATION(_TCodeBase):
+class MOVE_TO_LOCATION(_RobotSpecificTCodeBase):
     type: Literal["MOVE_TO_LOCATION"] = "MOVE_TO_LOCATION"
     location: Location
     location_offset: Matrix = Field(default_factory=identity_transform_factory)
@@ -375,47 +586,47 @@ class PAUSE(_TCodeBase):
     type: Literal["PAUSE"] = "PAUSE"
 
 
-class REMOVE_PLATE_LID(_TCodeBase):
+class REMOVE_PLATE_LID(_RobotSpecificTCodeBase):
     type: Literal["REMOVE_PLATE_LID"] = "REMOVE_PLATE_LID"
     plate_id: str
     storage_location: Location | None = None
 
 
-class REPLACE_PLATE_LID(_TCodeBase):
+class REPLACE_PLATE_LID(_RobotSpecificTCodeBase):
     type: Literal["REPLACE_PLATE_LID"] = "REPLACE_PLATE_LID"
     plate_id: str
     lid_id: str | None = None
 
 
-class PICK_UP_PIPETTE_TIP(_TCodeBase):
+class PICK_UP_PIPETTE_TIP(_RobotSpecificTCodeBase):
     type: Literal["PICK_UP_PIPETTE_TIP"] = "PICK_UP_PIPETTE_TIP"
     location: Location
 
 
-class PUT_DOWN_PIPETTE_TIP(_TCodeBase):
+class PUT_DOWN_PIPETTE_TIP(_RobotSpecificTCodeBase):
     type: Literal["PUT_DOWN_PIPETTE_TIP"] = "PUT_DOWN_PIPETTE_TIP"
     location: Location
 
 
-class RETRIEVE_PIPETTE_TIP_GROUP(_TCodeBase):
+class RETRIEVE_PIPETTE_TIP_GROUP(_RobotSpecificTCodeBase):
     type: Literal["RETRIEVE_PIPETTE_TIP_GROUP"] = "RETRIEVE_PIPETTE_TIP_GROUP"
     id: str
 
 
-class RETRIEVE_TOOL(_TCodeBase):
+class RETRIEVE_TOOL(_RobotSpecificTCodeBase):
     type: Literal["RETRIEVE_TOOL"] = "RETRIEVE_TOOL"
     id: str
 
 
-class RETURN_PIPETTE_TIP_GROUP(_TCodeBase):
+class RETURN_PIPETTE_TIP_GROUP(_RobotSpecificTCodeBase):
     type: Literal["RETURN_PIPETTE_TIP_GROUP"] = "RETURN_PIPETTE_TIP_GROUP"
 
 
-class RETURN_TOOL(_TCodeBase):
+class RETURN_TOOL(_RobotSpecificTCodeBase):
     type: Literal["RETURN_TOOL"] = "RETURN_TOOL"
 
 
-class WAIT(_TCodeBase):
+class WAIT(_RobotSpecificTCodeBase):
     type: Literal["WAIT"] = "WAIT"
     duration: ValueWithUnits
 
@@ -430,6 +641,8 @@ TCode = Annotated[
     | CALIBRATE_LABWARE_HEIGHT
     | CALIBRATE_TOOL_FOR_PROBING
     | COMMENT
+    | CREATE_LABWARE
+    | DELETE_LABWARE
     | DISCARD_PIPETTE_TIP_GROUP
     | DISPENSE
     | MOVE_TO_LOCATION
@@ -451,8 +664,8 @@ TCode = Annotated[
 
 
 class Fleet(_BaseModelStrict):
-    robots: list[Robot] = Field(default_factory=list)
-    labware: list[LabwareDescriptor] = Field(default_factory=list)
+    robots: dict[str, RobotDescriptor] = Field(default_factory=dict)
+    labware: dict[str, LabwareDescriptor] = Field(default_factory=dict)
 
 
 class Metadata(_BaseModelStrict):
@@ -464,10 +677,8 @@ class Metadata(_BaseModelStrict):
     description: str | None = Field(default=None)
 
 
-class TCodeAST(BaseModel):
-    """Structure of a TCode script as an abstract syntax tree."""
+class TCodeScript(BaseModel):
+    """Structure of a TCode script."""
 
     metadata: Metadata
-    fleet: Fleet
-    tcode: list[TCode] = Field(default_factory=list)
-    pipette_tips: list[PipetteTipGroup] = Field(default_factory=list)
+    commands: list[TCode] = Field(default_factory=list)
