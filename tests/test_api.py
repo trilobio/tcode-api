@@ -55,10 +55,15 @@ class TestAPI(unittest.TestCase):
 
     def test_descriptors(self) -> None:
         """Ensure that LabwareDescriptors can be instantiated without specifying certain attributes."""
-        tc.WellPlateDescriptor()
-        tc.PipetteTipRackDescriptor()
+        tc.GripperDescriptor()
         tc.LidDescriptor()
+        tc.SingleChannelPipetteDescriptor()
+        tc.EightChannelPipetteDescriptor()
+        tc.PipetteTipRackDescriptor()
+        tc.ProbeDescriptor()
+        tc.RobotDescriptor()
         tc.TrashDescriptor()
+        tc.WellPlateDescriptor()
 
 
 class TestTCodeEndpoints(unittest.TestCase):
@@ -70,7 +75,11 @@ class TestTCodeEndpoints(unittest.TestCase):
         endpoints = [
             obj
             for obj in tc.__dict__.values()
-            if hasattr(obj, "__bases__") and tc._TCodeBase in obj.__bases__
+            if hasattr(obj, "__bases__")
+            and (
+                tc._TCodeBase in obj.__bases__
+                or tc._RobotSpecificTCodeBase in obj.__bases__
+            )
         ]
         # https://stackoverflow.com/a/64643971
         type_options = get_args(get_args(tc.TCode)[0])

@@ -52,13 +52,15 @@ def ul_per_s(volume: float) -> tc.ValueWithUnits:
 
 
 def location_as_labware_index(
-    labware_id: str, labware_index: int
+    labware_id: str, location_index: int
 ) -> tc.LocationAsLabwareIndex:
     """tc.LocationAsLabwareIndex constructor."""
-    return tc.LocationAsLabwareIndex(labware_id=labware_id, labware_index=labware_index)
+    return tc.LocationAsLabwareIndex(
+        labware_id=labware_id, location_index=location_index
+    )
 
 
-def build_well_plate(
+def describe_well_plate(
     tags: list[str] | None = None,
     named_tags: dict[str, str] | None = None,
     row_count: int = 8,
@@ -81,25 +83,29 @@ def build_well_plate(
     """
     tags = [] if tags is None else tags
     named_tags = {} if named_tags is None else named_tags
-    return tc.WellPlateDescriptor(
-        tags=tags,
-        named_tags=named_tags,
+    grid_descriptor = tc.GridDescriptor(
         row_count=row_count,
         column_count=column_count,
         row_pitch=m(row_pitch),
         column_pitch=m(column_pitch),
+    )
+    lid_descriptor = tc.LidDescriptor() if has_lid else None
+    return tc.WellPlateDescriptor(
+        tags=tags,
+        named_tags=named_tags,
+        grid_descriptor=grid_descriptor,
         has_lid=has_lid,
+        lid_descriptor=lid_descriptor,
     )
 
 
-def build_pipette_tip_rack(
+def describe_pipette_tip_rack(
     tags: list[str] | None = None,
     named_tags: dict[str, str] | None = None,
     row_count: int = 8,
     column_count: int = 12,
     row_pitch: float = 0.009,
     column_pitch: float = 0.009,
-    has_lid: bool = False,
     full: bool = True,
 ) -> tc.PipetteTipRackDescriptor:
     """tc.PipetteTipRackDescriptor constructor with nice defaults.
@@ -110,26 +116,27 @@ def build_pipette_tip_rack(
     :param column_count: Number of columns in the pipette tip rack. Defaults to 12.
     :param row_pitch: Pitch between rows in meters. Defaults to 0.009 m.
     :param column_pitch: Pitch between columns in meters. Defaults to 0.009 m.
-    :param has_lid: Whether the pipette tip rack has a lid. Defaults to False.
     :param full: Whether the pipette tip rack is full of tips. Defaults to True.
 
     :return: tc.PipetteTipRackDescriptor constructed with the specified parameters.
     """
     tags = [] if tags is None else tags
     named_tags = {} if named_tags is None else named_tags
-    return tc.PipetteTipRackDescriptor(
-        tags=tags,
-        named_tags=named_tags,
+    grid_descriptor = tc.GridDescriptor(
         row_count=row_count,
         column_count=column_count,
         row_pitch=m(row_pitch),
         column_pitch=m(column_pitch),
-        has_lid=has_lid,
+    )
+    return tc.PipetteTipRackDescriptor(
+        tags=tags,
+        named_tags=named_tags,
+        grid_descriptor=grid_descriptor,
         full=full,
     )
 
 
-def build_pipette_tip_group(
+def describe_pipette_tip_group(
     row_count: int = 1,
     column_count: int = 1,
     tags: list[str] | None = None,
@@ -152,20 +159,20 @@ def build_pipette_tip_group(
     )
 
 
-build_pipette_tip_1x1 = functools.partial(
-    build_pipette_tip_group, row_count=1, column_count=1
+describe_pipette_tip_1x1 = functools.partial(
+    describe_pipette_tip_group, row_count=1, column_count=1
 )
-build_pipette_tip_1x1.__doc__ = (
+describe_pipette_tip_1x1.__doc__ = (
     "tc.PipetteTipGroup constructor for a single pipette tip.\n\n"
     "param id: Unique identifier for the pipette tip group. Defaults to generate_id().\n"
     "param tags: List of tags applied to the pipette tip. Defaults to an empty list.\n"
     "param named_tags: Dictionary of named tags applied to the pipette tip. Defaults to an empty dictionary.\n\n"
     "return: tc.PipetteTipGroup with 1 row and 1 column."
 )
-build_pipette_tip_1x8 = functools.partial(
-    build_pipette_tip_group, row_count=1, column_count=8
+describe_pipette_tip_1x8 = functools.partial(
+    describe_pipette_tip_group, row_count=1, column_count=8
 )
-build_pipette_tip_1x8.__doc__ = (
+describe_pipette_tip_1x8.__doc__ = (
     "tc.PipetteTipGroup constructor for an 8-channel pipette tip group.\n\n"
     "param id: Unique identifier for the pipette tip group. Defaults to generate_id().\n"
     "param tags: List of tags applied to the pipette tip. Defaults to an empty list.\n"
