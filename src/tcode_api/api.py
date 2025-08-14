@@ -414,8 +414,27 @@ class WellPlateDescription(_LabwareBaseDescription):
     lid_description: LidDescription | None
 
 
+class PipetteTipRackDescription(_LabwareBaseDescription):
+    """A full description of a pipette tip rack."""
+
+    type: Literal["PipetteTipRackDescription"] = "PipetteTipRackDescription"
+
+    grid_description: GridDescription
+    full: bool | None = None
+
+
+class TrashDescription(_LabwareBaseDescriptor):
+    """A full description of a waste disposal container."""
+
+    type: Literal["TrashDescription"] = "TrashDescription"
+    depth: ValueWithUnits | None = None
+
+
 LabwareDescription = Annotated[
-    WellPlateDescription | PipetteTipRackDescriptor | TrashDescriptor | LidDescription,
+    WellPlateDescription
+    | PipetteTipRackDescription
+    | TrashDescription
+    | LidDescription,
     Field(discriminator="type"),
 ]
 
