@@ -414,13 +414,19 @@ class WellPlateDescription(_LabwareBaseDescription):
     lid_description: LidDescription | None
 
 
+class PipetteTipDescription(_LabwareBaseDescription):
+    """A full description of a pipette tip."""
+    type: Literal["PipetteTipDescription"] = "PipetteTipDescription"
+    flange_height: ValueWithUnits
+
 class PipetteTipRackDescription(_LabwareBaseDescription):
     """A full description of a pipette tip rack."""
 
     type: Literal["PipetteTipRackDescription"] = "PipetteTipRackDescription"
 
     grid_description: GridDescription
-    full: bool | None = None
+    full: bool
+    pipette_tip_description: PipetteTipDescription
 
 
 class TrashDescription(_LabwareBaseDescriptor):
