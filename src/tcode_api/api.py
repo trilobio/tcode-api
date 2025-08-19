@@ -335,6 +335,9 @@ class _LabwareBaseDescriptor(_BaseModelStrict):
 
     tags: list[str] = Field(default_factory=list)
     named_tags: dict[str, str] = Field(default_factory=dict)
+    length: ValueWithUnits | None = None
+    width: ValueWithUnits | None = None
+    height: ValueWithUnits | None = None
 
 
 class LidDescriptor(_LabwareBaseDescriptor):
@@ -385,6 +388,8 @@ class _LabwareBaseDescription(_BaseModelStrict):
     type: str
     tags: list[str] = Field(default_factory=list)
     named_tags: dict[str, str] = Field(default_factory=dict)
+    length: ValueWithUnits
+    width: ValueWithUnits
     height: ValueWithUnits
 
 
