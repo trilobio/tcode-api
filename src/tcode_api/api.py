@@ -74,6 +74,14 @@ class _Location(_BaseModelStrict):
     type: str
 
 
+class LocationAsLabwareHolder(_Location):
+    """Location specified by a labware holder's name."""
+
+    type: Literal["LocationAsLabwareHolder"] = "LocationAsLabwareHolder"
+    robot_id: str
+    labware_holder_name: str
+
+
 class LocationAsLabwareIndex(_Location):
     """Location specified by a tuple of labware id and labware location index."""
 
@@ -105,7 +113,8 @@ class LocationRelativeToWorld(_Location):
 
 
 Location = Annotated[
-    LocationAsLabwareIndex
+    LocationAsLabwareHolder
+    | LocationAsLabwareIndex
     | LocationAsNodeId
     | LocationRelativeToLabware
     | LocationRelativeToWorld,
@@ -203,6 +212,18 @@ class PathType(int, Enum):
     DIRECT = 1
     SAFE = 2
     SHORTCUT = 3
+
+
+class GraspType(str, Enum):
+    """Enumeration of robot gripper grasp types.
+
+    PINCH: robot actively pinches the labware from the sides.
+    LIFT: robot passively lifts the labware from the bottom.
+    """
+
+    UNSPECIFIED = "UNSPECIFIED"
+    LIFT = "LIFT"
+    PINCH = "PINCH"
 
 
 class TrajectoryType(int, Enum):
@@ -416,8 +437,10 @@ class WellPlateDescription(_LabwareBaseDescription):
 
 class PipetteTipDescription(_LabwareBaseDescription):
     """A full description of a pipette tip."""
+
     type: Literal["PipetteTipDescription"] = "PipetteTipDescription"
     flange_height: ValueWithUnits
+
 
 class PipetteTipRackDescription(_LabwareBaseDescription):
     """A full description of a pipette tip rack."""
@@ -433,7 +456,7 @@ class TrashDescription(_LabwareBaseDescriptor):
     """A full description of a waste disposal container."""
 
     type: Literal["TrashDescription"] = "TrashDescription"
-    depth: ValueWithUnits | None = None
+    depth: ValueWithUnits
 
 
 LabwareDescription = Annotated[
@@ -611,15 +634,26 @@ class PAUSE(_TCodeBase):
     type: Literal["PAUSE"] = "PAUSE"
 
 
-class REMOVE_PLATE_LID(_RobotSpecificTCodeBase):
-    type: Literal["REMOVE_PLATE_LID"] = "REMOVE_PLATE_LID"
-    plate_id: str
+class PICK_UP_LABWARE(_RobotSpecificTCodeBase):
+    type: Literal["PICK_UP_LABWARE"] = "PICK_UP_LABWARE"
+    labware_id: str
+    grasp_type: str = GraspType.UNSPECIFIED.value
+
+
+class PUT_DOWN_LABWARE(_RobotSpecificTCodeBase):
+    type: Literal["PUT_DOWN_LABWARE"] = "PUT_DOWN_LABWARE"
+    location: Location
+
+
+class REMOVE_LABWARE_LID(_RobotSpecificTCodeBase):
+    type: Literal["REMOVE_LABWARE_LID"] = "REMOVE_LABWARE_LID"
+    labware_id: str
     storage_location: Location | None = None
 
 
-class REPLACE_PLATE_LID(_RobotSpecificTCodeBase):
-    type: Literal["REPLACE_PLATE_LID"] = "REPLACE_PLATE_LID"
-    plate_id: str
+class REPLACE_LABWARE_LID(_RobotSpecificTCodeBase):
+    type: Literal["REPLACE_LABWARE_LID"] = "REPLACE_LABWARE_LID"
+    labware_id: str
     lid_id: str | None = None
 
 
@@ -672,10 +706,12 @@ TCode = Annotated[
     | DISPENSE
     | MOVE_TO_LOCATION
     | PAUSE
+    | PICK_UP_LABWARE
     | PICK_UP_PIPETTE_TIP
+    | PUT_DOWN_LABWARE
     | PUT_DOWN_PIPETTE_TIP
-    | REMOVE_PLATE_LID
-    | REPLACE_PLATE_LID
+    | REMOVE_LABWARE_LID
+    | REPLACE_LABWARE_LID
     | RETRIEVE_PIPETTE_TIP_GROUP
     | RETRIEVE_TOOL
     | RETURN_PIPETTE_TIP_GROUP
