@@ -1,0 +1,31 @@
+{
+    "schemaVersion": 2,
+    "id": "TrilobioDef_3DTube2mL-",
+    "name": "2ml Sarstedt 72.894.308 Tube Rack",
+    "contains": "Tube",
+    "length": 127.8,
+    "width": 85.3,
+    "height": 45,
+    "grid": {
+        "columns": 7,
+        "columnPitch": 18,
+        "columnOffset": 0,
+        "rows": 4,
+        "rowPitch": 18,
+        "rowOffset": 0
+    },
+    "tube": {
+        "topHeight": 8.2,
+        "bottomShape": {
+            "type": "Conical",
+            "offset": 0
+        },
+        "depth": 42.8,
+        "maxVolume": 1500,
+        "minVolume": 20,
+        "shape": {
+            "type": "Circle",
+            "diameter": 10.8
+        }
+    }
+}

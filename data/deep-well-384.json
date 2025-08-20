@@ -1,0 +1,31 @@
+{
+    "id": "TrilobioDef_384Well---",
+    "schemaVersion": 2,
+    "name": "Deep Well 384 Plate",
+    "contains": "Liquid",
+    "length": 127.76,
+    "width": 85.47,
+    "height": 14.22,
+    "grid": {
+        "columns": 24,
+        "columnPitch": 4.48,
+        "columnOffset": 0,
+        "rows": 16,
+        "rowPitch": 4.48,
+        "rowOffset": 0
+    },
+    "well": {
+        "bottomShape": {
+            "type": "Conical",
+            "offset": 0.5
+        },
+        "depth": 11.4,
+        "maxVolume": 75,
+        "minVolume": 5,
+        "shape": {
+            "type": "AxisAlignedRectangle",
+            "width": 3.4,
+            "length": 3.4
+        }
+    }
+}

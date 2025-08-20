@@ -1,0 +1,30 @@
+{
+    "schemaVersion": 2,
+    "id": "TrilobioDef_3DTrash---",
+    "name": "Trash Bin",
+    "contains": "Trash",
+    "length": 127.76,
+    "width": 85.48,
+    "height": 75,
+    "grid": {
+        "columns": 1,
+        "columnPitch": 0,
+        "columnOffset": 0,
+        "rows": 1,
+        "rowPitch": 0,
+        "rowOffset": 0
+    },
+    "well": {
+        "bottomShape": {
+            "type": "Flat"
+        },
+        "depth": 72,
+        "maxVolume": 693279,
+        "minVolume": 0,
+        "shape": {
+            "type": "AxisAlignedRectangle",
+            "width": 121.5,
+            "length": 79.25
+        }
+    }
+}

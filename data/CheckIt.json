@@ -1,0 +1,29 @@
+{
+    "schemaVersion": 2,
+    "id": "TrilobioDef_CheckIt---",
+    "name": "CheckIt",
+    "contains": "Liquid",
+    "length": 127.8,
+    "width": 85.3,
+    "height": 16,
+    "grid": {
+        "columns": 2,
+        "columnPitch": 100,
+        "columnOffset": 0,
+        "rows": 8,
+        "rowPitch": 8,
+        "rowOffset": 0
+    },
+    "well": {
+        "bottomShape": {
+            "type": "Round"
+        },
+        "depth": 4.5,
+        "maxVolume": 50,
+        "minVolume": 10,
+        "shape": {
+            "type": "Circle",
+            "diameter": 7.5
+        }
+    }
+}

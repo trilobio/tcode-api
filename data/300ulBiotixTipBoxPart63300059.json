@@ -1,0 +1,23 @@
+{
+    "schemaVersion": 2,
+    "id": "TrilobioDef_uTip300uL-",
+    "name": "300ul Biotix Tip Box part: 63300059",
+    "contains": "PipetteTip",
+    "length": 127.76,
+    "width": 85.47,
+    "height": 42,
+    "grid": {
+        "columns": 12,
+        "columnPitch": 9,
+        "columnOffset": 0,
+        "rows": 8,
+        "rowPitch": 9,
+        "rowOffset": 0
+    },
+    "tip": {
+        "height": 38.55,
+        "maxVolume": 300,
+        "minVolume": 10,
+        "hasFilter": false
+    }
+}

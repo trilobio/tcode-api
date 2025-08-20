@@ -1,0 +1,29 @@
+{
+    "schemaVersion": 2,
+    "id": "TrilobioDef_Plate3788-",
+    "name": "Corning Costar 96 Well Plate #3788",
+    "contains": "Liquid",
+    "length": 127.76,
+    "width": 85.47,
+    "height": 14.22,
+    "grid": {
+        "columns": 12,
+        "columnPitch": 9,
+        "columnOffset": 0,
+        "rows": 8,
+        "rowPitch": 9,
+        "rowOffset": 0
+    },
+    "well": {
+        "bottomShape": {
+            "type": "Round"
+        },
+        "depth": 11.3,
+        "maxVolume": 260,
+        "minVolume": 10,
+        "shape": {
+            "type": "Circle",
+            "diameter": 6.86
+        }
+    }
+}

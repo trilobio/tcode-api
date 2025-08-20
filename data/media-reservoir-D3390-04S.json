@@ -1,0 +1,32 @@
+{
+    "schemaVersion": 2,
+    "id": "TrilobioDef_Reservoir4",
+    "name": "Automation Reservoir D3390-04S",
+    "contains": "Liquid",
+    "length": 127.76,
+    "width": 85.48,
+    "height": 31.4,
+    "grid": {
+        "columns": 4,
+        "columnPitch": 27,
+        "columnOffset": 0,
+        "rows": 1,
+        "rowPitch": 0,
+        "rowOffset": 0
+    },
+    "well": {
+        "bottomShape": {
+            "type": "V-Shape",
+            "direction": "Width-wide",
+            "offset": 4.5
+        },
+        "depth": 28.8,
+        "maxVolume": 45700,
+        "minVolume": 7000,
+        "shape": {
+            "type": "AxisAlignedRectangle",
+            "width": 26.2,
+            "length": 71.2
+        }
+    }
+}

@@ -7,7 +7,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class _BaseModelStrict(BaseModel):
-    model_config = ConfigDict(strict=True, extra="forbid")
+    model_config = ConfigDict(strict=True, extra="ignore")
 
 
 class _BaseModelWithId(_BaseModelStrict):
@@ -242,14 +242,14 @@ class TrajectoryType(int, Enum):
 class CircleDescriptor(BaseModel):
     """Discriptor of a circle."""
 
-    type: Literal["CircleDescriptor"] = "CircleDescriptor"
+    type: Literal["Circle"] = "Circle"
     diameter: ValueWithUnits | None = None
 
 
 class AxisAlignedRectangleDescriptor(BaseModel):
     """Descriptor of an axis-aligned rectangle."""
 
-    type: Literal["AxisAlignedRectangleDescriptor"] = "AxisAlignedRectangleDescriptor"
+    type: Literal["AxisAlignedRectangle"] = "AxisAlignedRectangle"
     width: ValueWithUnits | None = None
     length: ValueWithUnits | None = None
 
@@ -264,26 +264,26 @@ WellShapeDescriptor = Annotated[
 class _BaseWellBottomProfileDescriptor(BaseModel):
     """Base descriptor for well bottom profiles."""
 
-    type: str
+    type: str  # To be overridden with string literal in subclass
 
 
 class FlatBottomDescriptor(_BaseWellBottomProfileDescriptor):
     """Descriptor for a flat bottom well."""
 
-    type: Literal["FlatBottomDescriptor"] = "FlatBottomDescriptor"
+    type: Literal["Flat"] = "Flat"
 
 
 class RoundBottomDescriptor(_BaseWellBottomProfileDescriptor):
     """Descriptor for a round bottom well."""
 
-    type: Literal["RoundBottomDescriptor"] = "RoundBottomDescriptor"
+    type: Literal["Round"] = "Round"
     # radius: the radius is inferred from the well's diameter
 
 
 class VBottomDescriptor(_BaseWellBottomProfileDescriptor):
     """Descriptor for a V-bottom well (think trough)."""
 
-    type: Literal["VBottomDescriptor"] = "VBottomDescriptor"
+    type: Literal["V"] = "V"
     direction: Literal["Width-wide", "Length-wide"] | None = None
     offset: ValueWithUnits | None = None
 
@@ -291,13 +291,13 @@ class VBottomDescriptor(_BaseWellBottomProfileDescriptor):
 class ConicalBottomDescriptor(_BaseWellBottomProfileDescriptor):
     """Descriptor for a conical bottom well."""
 
-    type: Literal["ConicalBottomDescriptor"] = "ConicalBottomDescriptor"
+    type: Literal["Conical"] = "Conical"
     # angle: assumed to come to a point at the bottom of the well
     offset: ValueWithUnits | None = None
 
 
 WellBottomShapeDescriptor = Annotated[
-    FlatBottomDescriptor | RoundBottomDescriptor | VBottomDescriptor,
+    ConicalBottomDescriptor | FlatBottomDescriptor | RoundBottomDescriptor | VBottomDescriptor,
     Field(discriminator="type"),
 ]
 
@@ -305,7 +305,7 @@ WellBottomShapeDescriptor = Annotated[
 class GridDescriptor(_BaseModelStrict):
     """Descriptor for a grid layout."""
 
-    type: Literal["GridDescriptor"] = "GridDescriptor"
+    type: Literal["Grid"] = "Grid"
     row_count: int | None = None
     column_count: int | None = None
     row_pitch: ValueWithUnits | None = None
@@ -317,7 +317,7 @@ class GridDescriptor(_BaseModelStrict):
 class WellDescriptor(_BaseModelStrict):
     """Descriptor for a well in a labware."""
 
-    type: Literal["WellDescriptor"] = "WellDescriptor"
+    type: Literal["Well"] = "Well"
     depth: ValueWithUnits | None = None
     shape: WellShapeDescriptor | None = None
     bottom_shape: WellBottomShapeDescriptor | None = None
@@ -343,13 +343,15 @@ class _LabwareBaseDescriptor(_BaseModelStrict):
 class LidDescriptor(_LabwareBaseDescriptor):
     """A descriptor of the minimal features required by protocol-specified plate lid."""
 
-    type: Literal["LidDescriptor"] = "LidDescriptor"
+    type: Literal["Lid"] = "Lid"
+    height: ValueWithUnits | None = None
+    stackable: bool = False
 
 
 class WellPlateDescriptor(_LabwareBaseDescriptor):
     """A descriptor of the minimal features required by protocol-specified well plate."""
 
-    type: Literal["WellPlateDescriptor"] = "WellPlateDescriptor"
+    type: Literal["WellPlate"] = "WellPlate"
     grid_descriptor: GridDescriptor | None = None
     well_descriptor: WellDescriptor | None = None
 
@@ -362,7 +364,7 @@ class WellPlateDescriptor(_LabwareBaseDescriptor):
 class PipetteTipRackDescriptor(_LabwareBaseDescriptor):
     """A descriptor of the minimal features required by protocol-specified pipette tip rack."""
 
-    type: Literal["PipetteTipRackDescriptor"] = "PipetteTipRackDescriptor"
+    type: Literal["PipetteTipRack"] = "PipetteTipRack"
     grid_descriptor: GridDescriptor | None = None
     full: bool | None = None
 
@@ -370,7 +372,7 @@ class PipetteTipRackDescriptor(_LabwareBaseDescriptor):
 class TrashDescriptor(_LabwareBaseDescriptor):
     """A descriptor of the minimal features required by protocol-specified waste disposal container."""
 
-    type: Literal["TrashDescriptor"] = "TrashDescriptor"
+    type: Literal["Trash"] = "Trash"
     depth: ValueWithUnits | None = None
 
 
@@ -396,13 +398,13 @@ class _LabwareBaseDescription(_BaseModelStrict):
 class LidDescription(_LabwareBaseDescription):
     """A full description of a plate lid."""
 
-    type: Literal["LidDescription"] = "LidDescription"
+    type: Literal["Lid"] = "Lid"
 
 
 class GridDescription(_BaseModelStrict):
     """A full description of a grid layout."""
 
-    type: Literal["GridDescription"] = "GridDescription"
+    type: Literal["Grid"] = "Grid"
 
     row_count: int
     column_count: int
@@ -415,7 +417,7 @@ class GridDescription(_BaseModelStrict):
 class WellDescription(_BaseModelStrict):
     """A full description of a well in a labware."""
 
-    type: Literal["WellDescription"] = "WellDescription"
+    type: Literal["Well"] = "Well"
     tags: list[str] = Field(default_factory=list)
     named_tags: dict[str, str] = Field(default_factory=dict)
 
@@ -429,28 +431,31 @@ class WellDescription(_BaseModelStrict):
 class WellPlateDescription(_LabwareBaseDescription):
     """A full description of a well plate."""
 
-    type: Literal["WellPlateDescription"] = "WellPlateDescription"
+    type: Literal["WellPlate"] = "WellPlate"
 
-    grid_description: GridDescription
-    well_description: WellDescription
+    grid: GridDescription
+    well: WellDescription
 
     # Lid parameters
     has_lid: bool
     lid_offset: ValueWithUnits | None
-    lid_description: LidDescription | None
+    lid: LidDescription | None
 
 
-class PipetteTipDescription(_LabwareBaseDescription):
+class PipetteTipDescription(_BaseModelStrict):
     """A full description of a pipette tip."""
 
-    type: Literal["PipetteTipDescription"] = "PipetteTipDescription"
+    type: Literal["PipetteTip"] = "PipetteTip"
+    tags: list[str] = Field(default_factory=list)
+    named_tags: dict[str, str] = Field(default_factory=dict)
+    height: ValueWithUnits
     flange_height: ValueWithUnits
 
 
 class PipetteTipRackDescription(_LabwareBaseDescription):
     """A full description of a pipette tip rack."""
 
-    type: Literal["PipetteTipRackDescription"] = "PipetteTipRackDescription"
+    type: Literal["PipetteTipRack"] = "PipetteTipRack"
 
     grid_description: GridDescription
     full: bool
@@ -460,7 +465,7 @@ class PipetteTipRackDescription(_LabwareBaseDescription):
 class TrashDescription(_LabwareBaseDescriptor):
     """A full description of a waste disposal container."""
 
-    type: Literal["TrashDescription"] = "TrashDescription"
+    type: Literal["Trash"] = "Trash"
     depth: ValueWithUnits
 
 

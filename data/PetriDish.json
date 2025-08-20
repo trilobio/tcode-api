@@ -1,0 +1,29 @@
+{
+    "schemaVersion": 2,
+    "id": "TrilobioDef_petriDish-",
+    "name": "PetriDish",
+    "contains": "Liquid",
+    "length": 127.76,
+    "width": 85.48,
+    "height": 14.11,
+    "well": {
+        "bottomShape": {
+            "type": "Flat"
+        },
+        "depth": 10.54,
+        "maxVolume": 40000,
+        "minVolume": 10,
+        "shape": {
+            "type": "Circle",
+            "diameter": 92
+        }
+    },
+    "grid": {
+        "columns": 1,
+        "columnPitch": 0,
+        "columnOffset": 0,
+        "rows": 1,
+        "rowPitch": 0,
+        "rowOffset": 0
+    }
+}
