@@ -70,5 +70,7 @@
             "magnitude": 0.0,
             "units": "mm"
         }
-    }
+    },
+    "lid_offset": null,
+    "lid": null
 }

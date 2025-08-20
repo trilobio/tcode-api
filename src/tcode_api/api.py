@@ -125,7 +125,7 @@ Location = Annotated[
 class PipetteTipGroupDescriptor(_BaseModelStrict):
     """Grid layout of pipette tips."""
 
-    type: Literal["PipetteTipGroupDescriptor"] = "PipetteTipGroupDescriptor"
+    type: Literal["PipetteTipGroup"] = "PipetteTipGroup"
 
     row_count: Annotated[int, verify_positive_nonzero_int]
     column_count: Annotated[int, verify_positive_nonzero_int]
@@ -143,11 +143,11 @@ class _ToolBaseDescriptor(_BaseModelStrict):
 
 
 class ProbeDescriptor(_ToolBaseDescriptor):
-    type: Literal["ProbeDescriptor"] = "ProbeDescriptor"
+    type: Literal["Probe"] = "Probe"
 
 
 class GripperDescriptor(_ToolBaseDescriptor):
-    type: Literal["GripperDescriptor"] = "GripperDescriptor"
+    type: Literal["Gripper"] = "Gripper"
 
 
 class _PipetteBaseDescriptor(_ToolBaseDescriptor):
@@ -157,11 +157,11 @@ class _PipetteBaseDescriptor(_ToolBaseDescriptor):
 
 
 class SingleChannelPipetteDescriptor(_PipetteBaseDescriptor):
-    type: Literal["SingleChannelPipetteDescriptor"] = "SingleChannelPipetteDescriptor"
+    type: Literal["SingleChannelPipette"] = "SingleChannelPipette"
 
 
 class EightChannelPipetteDescriptor(_PipetteBaseDescriptor):
-    type: Literal["EightChannelPipetteDescriptor"] = "EightChannelPipetteDescriptor"
+    type: Literal["EightChannelPipette"] = "EightChannelPipette"
 
 
 # Define the Tool discriminated union
@@ -182,19 +182,19 @@ PipetteDescriptor = Annotated[
 class LabwareHolderDescriptor(BaseModel):
     """Descriptor for an entity that can hold labware."""
 
-    type: Literal["LabwareHolderDescriptor"] = "LabwareHolderDescriptor"
+    type: Literal["LabwareHolder"] = "LabwareHolder"
 
 
 class ToolHolderDescriptor(BaseModel):
     """Descriptor for an entity that can hold tools."""
 
-    type: Literal["ToolHolderDescriptor"] = "ToolHolderDescriptor"
+    type: Literal["ToolHolder"] = "ToolHolder"
 
 
 class RobotDescriptor(BaseModel):
     """Descriptor for a robot in the fleet."""
 
-    type: Literal["RobotDescriptor"] = "RobotDescriptor"
+    type: Literal["Robot"] = "Robot"
     serial_number: str | None = None
     tools: dict[str, ToolDescriptor] = Field(default_factory=dict)
     tool_holders: dict[str, ToolHolderDescriptor] = Field(default_factory=dict)
@@ -352,20 +352,19 @@ class WellPlateDescriptor(_LabwareBaseDescriptor):
     """A descriptor of the minimal features required by protocol-specified well plate."""
 
     type: Literal["WellPlate"] = "WellPlate"
-    grid_descriptor: GridDescriptor | None = None
-    well_descriptor: WellDescriptor | None = None
+    grid: GridDescriptor | None = None
+    well: WellDescriptor | None = None
 
     # Lid parameters
-    has_lid: bool = False
     lid_offset: ValueWithUnits | None = None
-    lid_descriptor: LidDescriptor | None = None
+    lid: LidDescriptor | None = None
 
 
 class PipetteTipRackDescriptor(_LabwareBaseDescriptor):
     """A descriptor of the minimal features required by protocol-specified pipette tip rack."""
 
     type: Literal["PipetteTipRack"] = "PipetteTipRack"
-    grid_descriptor: GridDescriptor | None = None
+    grid: GridDescriptor | None = None
     full: bool | None = None
 
 
@@ -437,7 +436,6 @@ class WellPlateDescription(_LabwareBaseDescription):
     well: WellDescription
 
     # Lid parameters
-    has_lid: bool
     lid_offset: ValueWithUnits | None
     lid: LidDescription | None
 
@@ -457,9 +455,9 @@ class PipetteTipRackDescription(_LabwareBaseDescription):
 
     type: Literal["PipetteTipRack"] = "PipetteTipRack"
 
-    grid_description: GridDescription
+    grid: GridDescription
     full: bool
-    pipette_tip_description: PipetteTipDescription
+    pipette_tip: PipetteTipDescription
 
 
 class TrashDescription(_LabwareBaseDescriptor):
