@@ -1,6 +1,6 @@
 """TCode API definitions, implemented with Pydantic."""
 
-from enum import Enum
+import enum
 from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -43,6 +43,17 @@ def verify_positive_nonzero_int(value: int) -> int:
     return value
 
 
+class WellPartType(str, enum.Enum):
+    """Enumeration of well parts.
+    
+    TOP: the top part of the well, above the liquid level.
+    BOTTOM: the bottom part of the well, below the liquid level.
+    """
+
+    TOP = "TOP"
+    BOTTOM = "BOTTOM"
+
+
 class _Location(_BaseModelStrict):
     """Base schema shared by all locations in the Location discriminated union."""
 
@@ -63,6 +74,7 @@ class LocationAsLabwareIndex(_Location):
     type: Literal["LocationAsLabwareIndex"] = "LocationAsLabwareIndex"
     labware_id: str
     location_index: int
+    well_part: WellPartType
 
 
 class LocationAsNodeId(_Location):
@@ -176,7 +188,7 @@ class RobotDescriptor(BaseModel):
     labware_holders: dict[str, LabwareHolderDescriptor] = Field(default_factory=dict)
 
 
-class PathType(int, Enum):
+class PathType(int, enum.Enum):
     """Enumeration of robot path types.
 
     DIRECT: robot moves to the target location directly in jointspace.
@@ -189,7 +201,7 @@ class PathType(int, Enum):
     SHORTCUT = 3
 
 
-class GraspType(str, Enum):
+class GraspType(str, enum.Enum):
     """Enumeration of robot gripper grasp types.
 
     PINCH: robot actively pinches the labware from the sides.
@@ -201,7 +213,7 @@ class GraspType(str, Enum):
     PINCH = "PINCH"
 
 
-class TrajectoryType(int, Enum):
+class TrajectoryType(int, enum.Enum):
     """Enumeration of trajectory types.
 
     JOINT_SQUARE: robot moves in joint space with square motor profiles.
@@ -220,11 +232,13 @@ class CircleDescription(_BaseModelStrict):
     type: Literal["Circle"] = "Circle"
     diameter: ValueWithUnits
 
+
 class CircleDescriptor(_BaseModelStrict):
     """CircleDescription with optional parameters."""
 
     type: Literal["Circle"] = "Circle"
     diameter: ValueWithUnits | None = None
+
 
 class AxisAlignedRectangleDescription(_BaseModelStrict):
     """Description of an axis-aligned rectangle."""
@@ -233,12 +247,14 @@ class AxisAlignedRectangleDescription(_BaseModelStrict):
     width: ValueWithUnits
     length: ValueWithUnits
 
+
 class AxisAlignedRectangleDescriptor(_BaseModelStrict):
     """AxisAlignedRectangleDescription with optional parameters."""
 
     type: Literal["AxisAlignedRectangle"] = "AxisAlignedRectangle"
     width: ValueWithUnits | None = None
     length: ValueWithUnits | None = None
+
 
 WellShapeDescription = Annotated[
     CircleDescription | AxisAlignedRectangleDescription,
@@ -256,8 +272,10 @@ class FlatBottomDescriptor(_BaseModelStrict):
 
     type: Literal["Flat"] = "Flat"
 
+
 class FlatBottomDescription(FlatBottomDescriptor):
     """FlatBottomDescription with optional paramters."""
+
 
 class RoundBottomDescription(_BaseModelStrict):
     """Descriptor for a round bottom well."""
@@ -265,8 +283,12 @@ class RoundBottomDescription(_BaseModelStrict):
     type: Literal["Round"] = "Round"
     # radius: the radius is inferred from the well's diameter
 
-class RoundBottomDescriptor(RoundBottomDescription):
+
+class RoundBottomDescriptor(_BaseModelStrict):
     """RoundBottomDescription with optional parameters."""
+
+    type: Literal["Round"] = "Round"
+
 
 class VBottomDescription(_BaseModelStrict):
     """Description of a V-bottom well (think trough)."""
@@ -275,10 +297,14 @@ class VBottomDescription(_BaseModelStrict):
     direction: Literal["Width-wide", "Length-wide"]
     offset: ValueWithUnits
 
-class VBottomDescriptor(VBottomDescription):
+
+class VBottomDescriptor(_BaseModelStrict):
     """VBottomDescription with optional parameters."""
+
+    type: Literal["V-Shape"] = "V-Shape"
     direction: Literal["Width-wide", "Length-wide"] | None = None
     offset: ValueWithUnits | None = None
+
 
 class ConicalBottomDescription(_BaseModelStrict):
     """Description of a conical bottom well."""
@@ -287,16 +313,26 @@ class ConicalBottomDescription(_BaseModelStrict):
     # angle: assumed to come to a point at the bottom of the well
     offset: ValueWithUnits
 
-class ConicalBottomDescriptor(ConicalBottomDescription):
+
+class ConicalBottomDescriptor(_BaseModelStrict):
     """ConicalBottomDescription with optional parameters."""
+
+    type: Literal["Conical"] = "Conical"
     offset: ValueWithUnits | None = None
 
+
 WellBottomShapeDescription = Annotated[
-    ConicalBottomDescription | FlatBottomDescription | RoundBottomDescription | VBottomDescription,
+    ConicalBottomDescription
+    | FlatBottomDescription
+    | RoundBottomDescription
+    | VBottomDescription,
     Field(discriminator="type"),
 ]
 WellBottomShapeDescriptor = Annotated[
-    ConicalBottomDescriptor | FlatBottomDescriptor | RoundBottomDescriptor | VBottomDescriptor,
+    ConicalBottomDescriptor
+    | FlatBottomDescriptor
+    | RoundBottomDescriptor
+    | VBottomDescriptor,
     Field(discriminator="type"),
 ]
 
@@ -313,8 +349,11 @@ class GridDescription(_BaseModelStrict):
     row_offset: ValueWithUnits
     column_offset: ValueWithUnits
 
-class GridDescriptor(GridDescription):
+
+class GridDescriptor(_BaseModelStrict):
     """GridDescription with optional parameters."""
+
+    type: Literal["Grid"] = "Grid"
     row_count: int | None = None
     column_count: int | None = None
     row_pitch: ValueWithUnits | None = None
@@ -322,21 +361,24 @@ class GridDescriptor(GridDescription):
     row_offset: ValueWithUnits | None = None
     column_offset: ValueWithUnits | None = None
 
+
 class WellDescription(_BaseModelStrict):
     """Description of a well in a labware."""
 
     type: Literal["Well"] = "Well"
     depth: ValueWithUnits
-    shape: WellShapeDescriptor
-    bottom_shape: WellBottomShapeDescriptor
+    shape: WellShapeDescription
+    bottom_shape: WellBottomShapeDescription
     min_volume: ValueWithUnits
     max_volume: ValueWithUnits
     well_tags: list[str] = Field(default_factory=list)
     well_named_tags: dict[str, str] = Field(default_factory=dict)
 
-class WellDescriptor(WellDescription):
+
+class WellDescriptor(_BaseModelStrict):
     """WellDescription with optional parameters."""
 
+    type: Literal["Well"] = "Well"
     depth: ValueWithUnits | None = None
     shape: WellShapeDescriptor | None = None
     bottom_shape: WellBottomShapeDescriptor | None = None
@@ -354,13 +396,16 @@ class PipetteTipDescription(_BaseModelStrict):
     height: ValueWithUnits
     flange_height: ValueWithUnits
 
-class PipetteTipDescriptor(PipetteTipDescription):
+
+class PipetteTipDescriptor(_BaseModelStrict):
     """PipetteTipDescription with optional parameters."""
 
-    tags: list[str] | None = None
-    named_tags: dict[str, str] | None = None
+    type: Literal["PipetteTip"] = "PipetteTip"
+    tags: list[str] = Field(default_factory=list)
+    named_tags: dict[str, str] = Field(default_factory=dict)
     height: ValueWithUnits | None = None
     flange_height: ValueWithUnits | None = None
+
 
 class TubeDescription(_BaseModelStrict):
     """Description of a tube."""
@@ -375,11 +420,13 @@ class TubeDescription(_BaseModelStrict):
     max_volume: ValueWithUnits
     top_height: ValueWithUnits
 
-class TubeDescriptor(TubeDescription):
+
+class TubeDescriptor(_BaseModelStrict):
     """TubeDescription with optional parameters."""
 
-    tags: list[str] | None = None
-    named_tags: dict[str, str] | None = None
+    type: Literal["Tube"] = "Tube"
+    tags: list[str] = Field(default_factory=list)
+    named_tags: dict[str, str] = Field(default_factory=dict)
     depth: ValueWithUnits | None = None
     shape: WellShapeDescriptor | None = None
     bottom_shape: WellBottomShapeDescriptor | None = None
@@ -398,19 +445,30 @@ class _LabwareBaseDescription(_BaseModelStrict):
     width: ValueWithUnits
     height: ValueWithUnits
 
+
+class _LabwareBaseDescriptor(_BaseModelStrict):
+    """Base schema shared by all labware descriptors in the LabwareDescriptor discriminated union."""
+
+    tags: list[str] = Field(default_factory=list)
+    named_tags: dict[str, str] = Field(default_factory=dict)
+    length: ValueWithUnits | None = None
+    width: ValueWithUnits | None = None
+    height: ValueWithUnits | None = None
+
+
 class LidDescription(_LabwareBaseDescription):
     """Description of a plate lid."""
 
     type: Literal["Lid"] = "Lid"
     stackable: bool
 
-class LidDescriptor(LidDescription):
+
+class LidDescriptor(_LabwareBaseDescriptor):
     """LidDescription with optional parameters."""
 
-    length: ValueWithUnits | None = None
-    width: ValueWithUnits | None = None
-    height: ValueWithUnits | None = None
+    type: Literal["Lid"] = "Lid"
     stackable: bool | None = None
+
 
 class WellPlateDescription(_LabwareBaseDescription):
     """Description of a well plate.
@@ -427,16 +485,16 @@ class WellPlateDescription(_LabwareBaseDescription):
     lid_offset: ValueWithUnits | None = None
     lid: LidDescription | None = None
 
-class WellPlateDescriptor(WellPlateDescription):
+
+class WellPlateDescriptor(_LabwareBaseDescriptor):
     """WellPlateDescription with optional parameters."""
 
-    length: ValueWithUnits | None = None
-    width: ValueWithUnits | None = None
-    height: ValueWithUnits | None = None
+    type: Literal["WellPlate"] = "WellPlate"
     grid: GridDescriptor | None = None
     well: WellDescriptor | None = None
     lid_offset: ValueWithUnits | None = None
     lid: LidDescriptor | None = None
+
 
 class PipetteTipBoxDescription(_LabwareBaseDescription):
     """Description of a pipette tip box."""
@@ -446,31 +504,31 @@ class PipetteTipBoxDescription(_LabwareBaseDescription):
     full: bool
     pipette_tip: PipetteTipDescription
 
-class PipetteTipBoxDescriptor(PipetteTipBoxDescription):
+
+class PipetteTipBoxDescriptor(_LabwareBaseDescriptor):
     """PipetteTipBoxDescription with optional parameters."""
 
-    length: ValueWithUnits | None = None
-    width: ValueWithUnits | None = None
-    height: ValueWithUnits | None = None
+    type: Literal["PipetteTipBox"] = "PipetteTipBox"
     grid: GridDescriptor | None = None
     full: bool | None = None
     pipette_tip: PipetteTipDescriptor | None = None
 
+
 class TubeHolderDescription(_LabwareBaseDescription):
     """Description of a tube holder."""
-    
+
     type: Literal["TubeHolder"] = "TubeHolder"
     grid: GridDescription
     tube: TubeDescription
 
-class TubeHolderDescriptor(TubeHolderDescription):
+
+class TubeHolderDescriptor(_LabwareBaseDescriptor):
     """TubeHolderDescription with optional parameters."""
 
-    length: ValueWithUnits | None = None
-    width: ValueWithUnits | None = None
-    height: ValueWithUnits | None = None
+    type: Literal["TubeHolder"] = "TubeHolder"
     grid: GridDescriptor | None = None
     tube: TubeDescriptor | None = None
+
 
 class TrashDescription(_LabwareBaseDescription):
     """Description of a waste disposal container."""
@@ -478,22 +536,31 @@ class TrashDescription(_LabwareBaseDescription):
     type: Literal["Trash"] = "Trash"
     depth: ValueWithUnits
 
-class TrashDescriptor(TrashDescription):
+
+class TrashDescriptor(_LabwareBaseDescriptor):
     """TrashDescription with optional parameters."""
 
-    length: ValueWithUnits | None = None
-    width: ValueWithUnits | None = None
-    height: ValueWithUnits | None = None
+    type: Literal["Trash"] = "Trash"
     depth: ValueWithUnits | None = None
 
+
 LabwareDescription = Annotated[
-    WellPlateDescription | PipetteTipBoxDescription | TrashDescription | TubeHolderDescription | LidDescription,
+    WellPlateDescription
+    | PipetteTipBoxDescription
+    | TrashDescription
+    | TubeHolderDescription
+    | LidDescription,
     Field(discriminator="type"),
 ]
 LabwareDescriptor = Annotated[
-    WellPlateDescriptor | PipetteTipBoxDescriptor | TrashDescriptor | LidDescriptor | TubeHolderDescriptor,
+    WellPlateDescriptor
+    | PipetteTipBoxDescriptor
+    | TrashDescriptor
+    | LidDescriptor
+    | TubeHolderDescriptor,
     Field(discriminator="type"),
 ]
+
 
 class _TCodeBase(_BaseModelStrict):
     """Base schema shared by all TCode commands in the TCODE discriminated union."""

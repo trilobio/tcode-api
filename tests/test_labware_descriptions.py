@@ -3,9 +3,10 @@
 import json
 import pathlib
 import unittest
-import plac  # type: ignore[import-untpyed]
-import tcode_api.api as tc
 
+import plac  # type: ignore[import-untyped]
+
+import tcode_api.api as tc
 
 labware_json_dir = pathlib.Path(__file__).parent.parent / "data"
 
@@ -17,16 +18,14 @@ class TestLabwareDescriptions(unittest.TestCase):
         """Test that labware description stored in file is a valid LabwareDescription."""
         with filepath.open("r") as f:
             content = f.read()
-        well_plate_type = tc.WellPlateDescriptor().type
-        pipette_tip_rack_typew = tc.PipetteTipRackDescriptor().type
 
         content_json = json.loads(content)
         match content_json["type"]:
-            case tc.WellPlateDescription.type:
-                constructor = tc.WellPlateDescription
-            case tc.TipRackDescription.type:
-                constructor = tc.TipRackDescription
-            case tc.TubeHolderDescription.type:
+            case "WellPlate":
+                constructor: type[tc.LabwareDescription] = tc.WellPlateDescription
+            case "PipetteTipBox":
+                constructor = tc.PipetteTipBoxDescription
+            case "TubeHolder":
                 constructor = tc.TubeHolderDescription
             case "Trash":
                 constructor = tc.TrashDescription
@@ -45,9 +44,9 @@ class TestLabwareDescriptions(unittest.TestCase):
         content_json = json.loads(content)
         match content_json["type"]:
             case "WellPlate":
-                constructor = tc.WellPlateDescriptor
-            case "TipRack":
-                constructor = tc.TipRackDescriptor
+                constructor: type[tc.LabwareDescriptor] = tc.WellPlateDescriptor
+            case "PipetteTipBox":
+                constructor = tc.PipetteTipBoxDescriptor
             case "Trash":
                 constructor = tc.TrashDescriptor
             case "Lid":
@@ -67,7 +66,12 @@ class TestLabwareDescriptions(unittest.TestCase):
 
 
 @plac.annotations(
-    labware_filepath=("Path to a single labware description JSON file", "positional", None, pathlib.Path)
+    labware_filepath=(
+        "Path to a single labware description JSON file",
+        "positional",
+        None,
+        pathlib.Path,
+    )
 )
 def main(labware_filepath: pathlib.Path) -> None:
     """Run test_labware_descriptions for a single labware."""

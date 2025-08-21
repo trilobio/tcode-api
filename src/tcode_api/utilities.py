@@ -52,11 +52,19 @@ def ul_per_s(volume: float) -> tc.ValueWithUnits:
 
 
 def location_as_labware_index(
-    labware_id: str, location_index: int
+    labware_id: str, location_index: int, well_part: str | tc.WellPartType | None = None,
 ) -> tc.LocationAsLabwareIndex:
-    """tc.LocationAsLabwareIndex constructor."""
+    """tc.LocationAsLabwareIndex constructor.
+    
+    :note: defaults to the bottom of the well
+    """
+    well_part = well_part or tc.WellPartType.BOTTOM
+    if isinstance(well_part, str):
+        well_part = tc.WellPartType(well_part)
     return tc.LocationAsLabwareIndex(
-        labware_id=labware_id, location_index=location_index
+        labware_id=labware_id,
+        location_index=location_index,
+        well_part=well_part,
     )
 
 
@@ -99,7 +107,7 @@ def describe_well_plate(
     )
 
 
-def describe_pipette_tip_rack(
+def describe_pipette_tip_box(
     tags: list[str] | None = None,
     named_tags: dict[str, str] | None = None,
     row_count: int = 8,
@@ -107,18 +115,18 @@ def describe_pipette_tip_rack(
     row_pitch: float = 0.009,
     column_pitch: float = 0.009,
     full: bool = True,
-) -> tc.PipetteTipRackDescriptor:
-    """tc.PipetteTipRackDescriptor constructor with nice defaults.
+) -> tc.PipetteTipBoxDescriptor:
+    """tc.PipetteTipBoxDescriptor constructor with nice defaults.
 
-    :param tags: List of tags associated with the pipette tip rack. Defaults to an empty list.
-    :param named_tags: Dictionary of named tags associated with the pipette tip rack. Defaults to an empty dictionary.
-    :param row_count: Number of rows in the pipette tip rack. Defaults to 8.
-    :param column_count: Number of columns in the pipette tip rack. Defaults to 12.
+    :param tags: List of tags associated with the pipette tip box. Defaults to an empty list.
+    :param named_tags: Dictionary of named tags associated with the pipette tip box. Defaults to an empty dictionary.
+    :param row_count: Number of rows in the pipette tip box. Defaults to 8.
+    :param column_count: Number of columns in the pipette tip box. Defaults to 12.
     :param row_pitch: Pitch between rows in meters. Defaults to 0.009 m.
     :param column_pitch: Pitch between columns in meters. Defaults to 0.009 m.
-    :param full: Whether the pipette tip rack is full of tips. Defaults to True.
+    :param full: Whether the pipette tip box is full of tips. Defaults to True.
 
-    :return: tc.PipetteTipRackDescriptor constructed with the specified parameters.
+    :return: tc.PipetteTipBoxDescriptor constructed with the specified parameters.
     """
     tags = [] if tags is None else tags
     named_tags = {} if named_tags is None else named_tags
@@ -128,7 +136,7 @@ def describe_pipette_tip_rack(
         row_pitch=m(row_pitch),
         column_pitch=m(column_pitch),
     )
-    return tc.PipetteTipRackDescriptor(
+    return tc.PipetteTipBoxDescriptor(
         tags=tags,
         named_tags=named_tags,
         grid_descriptor=grid_descriptor,
