@@ -283,7 +283,7 @@ class RoundBottomDescriptor(_BaseWellBottomProfileDescriptor):
 class VBottomDescriptor(_BaseWellBottomProfileDescriptor):
     """Descriptor for a V-bottom well (think trough)."""
 
-    type: Literal["V"] = "V"
+    type: Literal["V-Shape"] = "V-Shape"
     direction: Literal["Width-wide", "Length-wide"] | None = None
     offset: ValueWithUnits | None = None
 
@@ -360,6 +360,11 @@ class WellPlateDescriptor(_LabwareBaseDescriptor):
     lid: LidDescriptor | None = None
 
 
+class TubeHolderDescriptor(WellPlateDescriptor):
+    """For now, a duplicate of a well plate."""
+    type: Literal["TubeHolder"] = "TubeHolder"
+
+
 class PipetteTipRackDescriptor(_LabwareBaseDescriptor):
     """A descriptor of the minimal features required by protocol-specified pipette tip rack."""
 
@@ -376,13 +381,16 @@ class TrashDescriptor(_LabwareBaseDescriptor):
 
 
 LabwareDescriptor = Annotated[
-    WellPlateDescriptor | PipetteTipRackDescriptor | TrashDescriptor | LidDescriptor,
+    WellPlateDescriptor | PipetteTipRackDescriptor | TrashDescriptor | LidDescriptor | TubeHolderDescriptor,
     Field(discriminator="type"),
 ]
 
 
 # Labware Descriptions
 # These schemas are intended to be identical to Descriptors, but with no optional attributes.
+#
+# The exception to the 'no optional attributes' rule is `lid_offset` and `lid` - these attributes default to
+# None, assuming that a described labware has no lid.
 class _LabwareBaseDescription(_BaseModelStrict):
     """Base schema shared by all labware in the LabwareDescription discriminated union."""
 
@@ -436,8 +444,13 @@ class WellPlateDescription(_LabwareBaseDescription):
     well: WellDescription
 
     # Lid parameters
-    lid_offset: ValueWithUnits | None
-    lid: LidDescription | None
+    lid_offset: ValueWithUnits | None = None
+    lid: LidDescription | None = None
+
+
+class TubeHolderDescription(WellPlateDescription):
+    """A full description of a tube holder, which for now duplicates a well plate."""
+    type: Literal["TubeHolder"] = "TubeHolder"
 
 
 class PipetteTipDescription(_BaseModelStrict):
@@ -471,6 +484,7 @@ LabwareDescription = Annotated[
     WellPlateDescription
     | PipetteTipRackDescription
     | TrashDescription
+    | TubeHolderDescription
     | LidDescription,
     Field(discriminator="type"),
 ]

@@ -1,23 +1,64 @@
 {
-    "schemaVersion": 2,
+    "schema_version": 3,
     "id": "TrilobioDef_uTip300uL-",
     "name": "300ul Biotix Tip Box part: 63300059",
+    "type": "TipBox",
     "contains": "PipetteTip",
-    "length": 127.76,
-    "width": 85.47,
-    "height": 42,
+    "length": {
+        "type": "ValueWithUnits",
+        "units": "mm",
+        "magnitude": 127.76
+    },
+    "width": {
+        "type": "ValueWithUnits",
+        "units": "mm",
+        "magnitude": 85.47
+    },
+    "height": {
+        "type": "ValueWithUnits",
+        "units": "mm",
+        "magnitude": 42
+    },
     "grid": {
-        "columns": 12,
-        "columnPitch": 9,
-        "columnOffset": 0,
-        "rows": 8,
-        "rowPitch": 9,
-        "rowOffset": 0
+        "column_count": 12,
+        "column_pitch": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 9
+        },
+        "column_offset": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 0
+        },
+        "row_count": 8,
+        "row_pitch": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 9
+        },
+        "row_offset": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 0
+        }
     },
     "tip": {
-        "height": 38.55,
-        "maxVolume": 300,
-        "minVolume": 10,
-        "hasFilter": false
+        "height": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 38.55
+        },
+        "max_volume": {
+            "type": "ValueWithUnits",
+            "units": "µL",
+            "magnitude": 300
+        },
+        "min_volume": {
+            "type": "ValueWithUnits",
+            "units": "µL",
+            "magnitude": 10
+        },
+        "has_filter": false
     }
 }

@@ -17,13 +17,17 @@ class TestLabwareDescriptions(unittest.TestCase):
         """Test that labware description stored in file is a valid LabwareDescription."""
         with filepath.open("r") as f:
             content = f.read()
+        well_plate_type = tc.WellPlateDescriptor().type
+        pipette_tip_rack_typew = tc.PipetteTipRackDescriptor().type
 
         content_json = json.loads(content)
         match content_json["type"]:
-            case "WellPlate":
+            case tc.WellPlateDescription.type:
                 constructor = tc.WellPlateDescription
-            case "TipRack":
+            case tc.TipRackDescription.type:
                 constructor = tc.TipRackDescription
+            case tc.TubeHolderDescription.type:
+                constructor = tc.TubeHolderDescription
             case "Trash":
                 constructor = tc.TrashDescription
             case "Lid":

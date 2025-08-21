@@ -1,31 +1,68 @@
 {
-    "schemaVersion": 2,
+    "schema_version": 3,
     "id": "TrilobioDef_3DTube2mL-",
     "name": "2ml Sarstedt 72.894.308 Tube Rack",
+    "type": "TubeHolder",
     "contains": "Tube",
-    "length": 127.8,
-    "width": 85.3,
-    "height": 45,
+    "length": { "type": "ValueWithUnits", "units": "mm", "magnitude": 127.8 },
+    "width": { "type": "ValueWithUnits", "units": "mm", "magnitude": 85.3 },
+    "height": { "type": "ValueWithUnits", "units": "mm", "magnitude": 45 },
     "grid": {
-        "columns": 7,
-        "columnPitch": 18,
-        "columnOffset": 0,
-        "rows": 4,
-        "rowPitch": 18,
-        "rowOffset": 0
+        "column_count": 7,
+        "column_pitch": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 18
+        },
+        "column_offset": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 0
+        },
+        "row_count": 4,
+        "row_pitch": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 18
+        },
+        "row_offset": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 0
+        }
     },
     "tube": {
-        "topHeight": 8.2,
-        "bottomShape": {
-            "type": "Conical",
-            "offset": 0
+        "top_height": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 8.2
         },
-        "depth": 42.8,
-        "maxVolume": 1500,
-        "minVolume": 20,
+        "bottom_shape": {
+            "type": "Conical",
+            "offset": {
+                "type": "ValueWithUnits",
+                "units": "mm",
+                "magnitude": 0
+            }
+        },
+        "depth": { "type": "ValueWithUnits", "units": "mm", "magnitude": 42.8 },
+        "max_volume": {
+            "type": "ValueWithUnits",
+            "units": "µL",
+            "magnitude": 1500
+        },
+        "min_volume": {
+            "type": "ValueWithUnits",
+            "units": "µL",
+            "magnitude": 20
+        },
         "shape": {
             "type": "Circle",
-            "diameter": 10.8
+            "diameter": {
+                "type": "ValueWithUnits",
+                "units": "mm",
+                "magnitude": 10.8
+            }
         }
     }
 }

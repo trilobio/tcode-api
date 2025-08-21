@@ -1,31 +1,84 @@
 {
     "id": "TrilobioDef_384Well---",
-    "schemaVersion": 2,
+    "schema_version": 3,
     "name": "Deep Well 384 Plate",
+    "type": "WellPlate",
     "contains": "Liquid",
-    "length": 127.76,
-    "width": 85.47,
-    "height": 14.22,
+    "length": {
+        "type": "ValueWithUnits",
+        "units": "mm",
+        "magnitude": 127.76
+    },
+    "width": {
+        "type": "ValueWithUnits",
+        "units": "mm",
+        "magnitude": 85.47
+    },
+    "height": {
+        "type": "ValueWithUnits",
+        "units": "mm",
+        "magnitude": 14.22
+    },
     "grid": {
-        "columns": 24,
-        "columnPitch": 4.48,
-        "columnOffset": 0,
-        "rows": 16,
-        "rowPitch": 4.48,
-        "rowOffset": 0
+        "column_count": 24,
+        "column_pitch": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 4.48
+        },
+        "column_offset": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 0
+        },
+        "row_count": 16,
+        "row_pitch": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 4.48
+        },
+        "row_offset": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 0
+        }
     },
     "well": {
-        "bottomShape": {
+        "bottom_shape": {
             "type": "Conical",
-            "offset": 0.5
+            "offset": {
+                "type": "ValueWithUnits",
+                "units": "mm",
+                "magnitude": 0.5
+            }
         },
-        "depth": 11.4,
-        "maxVolume": 75,
-        "minVolume": 5,
+        "depth": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 11.4
+        },
+        "max_volume": {
+            "type": "ValueWithUnits",
+            "units": "µL",
+            "magnitude": 75
+        },
+        "min_volume": {
+            "type": "ValueWithUnits",
+            "units": "µL",
+            "magnitude": 5
+        },
         "shape": {
             "type": "AxisAlignedRectangle",
-            "width": 3.4,
-            "length": 3.4
+            "width": {
+                "type": "ValueWithUnits",
+                "units": "mm",
+                "magnitude": 3.4
+            },
+            "length": {
+                "type": "ValueWithUnits",
+                "units": "mm",
+                "magnitude": 3.4
+            }
         }
     }
 }

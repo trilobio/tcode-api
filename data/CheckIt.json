@@ -1,29 +1,74 @@
 {
-    "schemaVersion": 2,
+    "schema_version": 3,
     "id": "TrilobioDef_CheckIt---",
     "name": "CheckIt",
+    "type": "WellPlate",
     "contains": "Liquid",
-    "length": 127.8,
-    "width": 85.3,
-    "height": 16,
+    "length": {
+        "type": "ValueWithUnits",
+        "units": "mm",
+        "magnitude": 127.8
+    },
+    "width": {
+        "type": "ValueWithUnits",
+        "units": "mm",
+        "magnitude": 85.3
+    },
+    "height": {
+        "type": "ValueWithUnits",
+        "units": "mm",
+        "magnitude": 16
+    },
     "grid": {
-        "columns": 2,
-        "columnPitch": 100,
-        "columnOffset": 0,
-        "rows": 8,
-        "rowPitch": 8,
-        "rowOffset": 0
+        "column_count": 2,
+        "column_pitch": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 100
+        },
+        "column_offset": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 0
+        },
+        "row_count": 8,
+        "row_pitch": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 8
+        },
+        "row_offset": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 0
+        }
     },
     "well": {
-        "bottomShape": {
+        "bottom_shape": {
             "type": "Round"
         },
-        "depth": 4.5,
-        "maxVolume": 50,
-        "minVolume": 10,
+        "depth": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 4.5
+        },
+        "max_volume": {
+            "type": "ValueWithUnits",
+            "units": "µL",
+            "magnitude": 50
+        },
+        "min_volume": {
+            "type": "ValueWithUnits",
+            "units": "µL",
+            "magnitude": 10
+        },
         "shape": {
             "type": "Circle",
-            "diameter": 7.5
+            "diameter": {
+                "type": "ValueWithUnits",
+                "units": "mm",
+                "magnitude": 7.5
+            }
         }
     }
 }

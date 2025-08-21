@@ -1,32 +1,85 @@
 {
-    "schemaVersion": 2,
+    "schema_version": 3,
     "id": "TrilobioDef_Reservoir4",
     "name": "Automation Reservoir D3390-04S",
+    "type": "WellPlate",
     "contains": "Liquid",
-    "length": 127.76,
-    "width": 85.48,
-    "height": 31.4,
+    "length": {
+        "type": "ValueWithUnits",
+        "units": "mm",
+        "magnitude": 127.76
+    },
+    "width": {
+        "type": "ValueWithUnits",
+        "units": "mm",
+        "magnitude": 85.48
+    },
+    "height": {
+        "type": "ValueWithUnits",
+        "units": "mm",
+        "magnitude": 31.4
+    },
     "grid": {
-        "columns": 4,
-        "columnPitch": 27,
-        "columnOffset": 0,
-        "rows": 1,
-        "rowPitch": 0,
-        "rowOffset": 0
+        "column_count": 4,
+        "column_pitch": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 27
+        },
+        "column_offset": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 0
+        },
+        "row_count": 1,
+        "row_pitch": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 0
+        },
+        "row_offset": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 0
+        }
     },
     "well": {
-        "bottomShape": {
+        "bottom_shape": {
             "type": "V-Shape",
             "direction": "Width-wide",
-            "offset": 4.5
+            "offset": {
+                "type": "ValueWithUnits",
+                "units": "mm",
+                "magnitude": 4.5
+            }
         },
-        "depth": 28.8,
-        "maxVolume": 45700,
-        "minVolume": 7000,
+        "depth": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 28.8
+        },
+        "max_volume": {
+            "type": "ValueWithUnits",
+            "units": "µL",
+            "magnitude": 45700
+        },
+        "min_volume": {
+            "type": "ValueWithUnits",
+            "units": "µL",
+            "magnitude": 7000
+        },
         "shape": {
             "type": "AxisAlignedRectangle",
-            "width": 26.2,
-            "length": 71.2
+            "width": {
+                "type": "ValueWithUnits",
+                "units": "mm",
+                "magnitude": 26.2
+            },
+            "length": {
+                "type": "ValueWithUnits",
+                "units": "mm",
+                "magnitude": 71.2
+            }
         }
     }
 }

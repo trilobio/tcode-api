@@ -1,31 +1,84 @@
 {
-    "schemaVersion": 2,
+    "schema_version": 3,
     "id": "TrilobioDef_3DTube50mL",
     "name": "SergiLabs 50ml Tube Rack With 50ml FroggyBio Tubes",
+    "type": "TubeHolder",
     "contains": "Tube",
-    "length": 127.76,
-    "width": 85.48,
-    "height": 90,
+    "length": {
+        "type": "ValueWithUnits",
+        "units": "mm",
+        "magnitude": 127.76
+    },
+    "width": {
+        "type": "ValueWithUnits",
+        "units": "mm",
+        "magnitude": 85.48
+    },
+    "height": {
+        "type": "ValueWithUnits",
+        "units": "mm",
+        "magnitude": 90
+    },
     "grid": {
-        "columns": 3,
-        "columnPitch": 34.85,
-        "columnOffset": 0,
-        "rows": 2,
-        "rowPitch": 34.85,
-        "rowOffset": 0
+        "column_count": 3,
+        "column_pitch": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 34.85
+        },
+        "column_offset": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 0
+        },
+        "row_count": 2,
+        "row_pitch": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 34.85
+        },
+        "row_offset": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 0
+        }
     },
     "tube": {
-        "topHeight": 29,
-        "bottomShape": {
-            "type": "Conical",
-            "offset": 0
+        "top_height": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 29
         },
-        "depth": 85.4,
-        "maxVolume": 350000,
-        "minVolume": 200,
+        "bottom_shape": {
+            "type": "Conical",
+            "offset": {
+                "type": "ValueWithUnits",
+                "units": "mm",
+                "magnitude": 0
+            }
+        },
+        "depth": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 85.4
+        },
+        "max_volume": {
+            "type": "ValueWithUnits",
+            "units": "µL",
+            "magnitude": 350000
+        },
+        "min_volume": {
+            "type": "ValueWithUnits",
+            "units": "µL",
+            "magnitude": 200
+        },
         "shape": {
             "type": "Circle",
-            "diameter": 27.5
+            "diameter": {
+                "type": "ValueWithUnits",
+                "units": "mm",
+                "magnitude": 27.5
+            }
         }
     }
 }
