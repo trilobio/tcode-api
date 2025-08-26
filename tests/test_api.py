@@ -5,39 +5,7 @@ import unittest
 from typing import get_args
 
 import tcode_api.api as tc
-from tcode_api.api import _EnumWithDisplayName
-
-
-class TestEnumWithDisplayName(unittest.TestCase):
-    """EnumWithDisplayName unittests."""
-
-    class FruitType(_EnumWithDisplayName):
-        """EnumWithDisplayName subclass, referenced in unittests."""
-
-        APPLE = (1, "Apple")
-        BANANA = (2, "Banana")
-        CHERRY = (3, "Cherry")
-
-    def test_from_value(self) -> None:
-        """Test from_value method on an EnumWithDisplayName subclass."""
-        with self.subTest("Good integer keys"):
-            self.assertEqual(self.FruitType.from_value(1), self.FruitType.APPLE)
-            self.assertEqual(self.FruitType.from_value(2), self.FruitType.BANANA)
-            self.assertEqual(self.FruitType.from_value(3), self.FruitType.CHERRY)
-
-        with self.subTest("Good string keys"):
-            self.assertEqual(self.FruitType.from_value("Apple"), self.FruitType.APPLE)
-            self.assertEqual(self.FruitType.from_value("Banana"), self.FruitType.BANANA)
-            self.assertEqual(self.FruitType.from_value("Cherry"), self.FruitType.CHERRY)
-
-        with self.subTest("Bad integer keys"):
-            self.assertRaises(ValueError, self.FruitType.from_value, 4)
-
-        with self.subTest("Bad string keys"):
-            self.assertRaises(ValueError, self.FruitType.from_value, "PEAR")
-
-        with self.subTest("Non-string and non-integer keys"):
-            self.assertRaises(TypeError, self.FruitType.from_value, [1])
+from tcode_api.utilities import generate_id
 
 
 class TestAPI(unittest.TestCase):
@@ -59,11 +27,44 @@ class TestAPI(unittest.TestCase):
         tc.LidDescriptor()
         tc.SingleChannelPipetteDescriptor()
         tc.EightChannelPipetteDescriptor()
-        tc.PipetteTipRackDescriptor()
+        tc.PipetteTipBoxDescriptor()
         tc.ProbeDescriptor()
         tc.RobotDescriptor()
         tc.TrashDescriptor()
         tc.WellPlateDescriptor()
+
+
+class TestLocationAsLabwareIndex(unittest.TestCase):
+    """Regression test for verifying that LocationAsLabwareIndex can be
+    loaded using FastAPI.
+
+    The fundamental issue (and solution) is outlined here, has to do with pydantic's strict-by-default type coercion:
+        https://github.com/pydantic/pydantic/discussions/8726#discussioncomment-10427646
+
+    Update: changed typehint in LocationAsLabwareIndex from WellPartType enum to str as temp fix, but this sucks!
+    """
+
+    def test_enum_validation_as_enum_entry(self) -> None:
+        """Test that model_validate method works for enum entry."""
+        tc.LocationAsLabwareIndex.model_validate(
+            {
+                "labware_id": generate_id(),
+                "location_index": 0,
+                "well_part": "TOP",
+            },
+            strict=True,
+        )
+
+    def test_enum_validation_as_str(self) -> None:
+        """Test that model_validate method works for string."""
+        tc.LocationAsLabwareIndex.model_validate(
+            {
+                "labware_id": generate_id(),
+                "location_index": 0,
+                "well_part": tc.WellPartType.BOTTOM,
+            },
+            strict=True,
+        )
 
 
 class TestTCodeEndpoints(unittest.TestCase):

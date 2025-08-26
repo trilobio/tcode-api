@@ -1,0 +1,68 @@
+{
+    "schema_version": 3,
+    "id": "TrilobioDef_3DTube2mL-",
+    "name": "2ml Sarstedt 72.894.308 Tube Rack",
+    "type": "TubeHolder",
+    "contains": "Tube",
+    "length": { "type": "ValueWithUnits", "units": "mm", "magnitude": 127.8 },
+    "width": { "type": "ValueWithUnits", "units": "mm", "magnitude": 85.3 },
+    "height": { "type": "ValueWithUnits", "units": "mm", "magnitude": 45 },
+    "grid": {
+        "column_count": 7,
+        "column_pitch": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 18
+        },
+        "column_offset": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 0
+        },
+        "row_count": 4,
+        "row_pitch": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 18
+        },
+        "row_offset": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 0
+        }
+    },
+    "tube": {
+        "top_height": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 8.2
+        },
+        "bottom_shape": {
+            "type": "Conical",
+            "offset": {
+                "type": "ValueWithUnits",
+                "units": "mm",
+                "magnitude": 0
+            }
+        },
+        "depth": { "type": "ValueWithUnits", "units": "mm", "magnitude": 42.8 },
+        "max_volume": {
+            "type": "ValueWithUnits",
+            "units": "µL",
+            "magnitude": 1500
+        },
+        "min_volume": {
+            "type": "ValueWithUnits",
+            "units": "µL",
+            "magnitude": 20
+        },
+        "shape": {
+            "type": "Circle",
+            "diameter": {
+                "type": "ValueWithUnits",
+                "units": "mm",
+                "magnitude": 10.8
+            }
+        }
+    }
+}

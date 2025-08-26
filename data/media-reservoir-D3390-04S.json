@@ -1,0 +1,85 @@
+{
+    "schema_version": 3,
+    "id": "TrilobioDef_Reservoir4",
+    "name": "Automation Reservoir D3390-04S",
+    "type": "WellPlate",
+    "contains": "Liquid",
+    "length": {
+        "type": "ValueWithUnits",
+        "units": "mm",
+        "magnitude": 127.76
+    },
+    "width": {
+        "type": "ValueWithUnits",
+        "units": "mm",
+        "magnitude": 85.48
+    },
+    "height": {
+        "type": "ValueWithUnits",
+        "units": "mm",
+        "magnitude": 31.4
+    },
+    "grid": {
+        "column_count": 4,
+        "column_pitch": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 27
+        },
+        "column_offset": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 0
+        },
+        "row_count": 1,
+        "row_pitch": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 0
+        },
+        "row_offset": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 0
+        }
+    },
+    "well": {
+        "bottom_shape": {
+            "type": "V-Shape",
+            "direction": "Width-wide",
+            "offset": {
+                "type": "ValueWithUnits",
+                "units": "mm",
+                "magnitude": 4.5
+            }
+        },
+        "depth": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 28.8
+        },
+        "max_volume": {
+            "type": "ValueWithUnits",
+            "units": "µL",
+            "magnitude": 45700
+        },
+        "min_volume": {
+            "type": "ValueWithUnits",
+            "units": "µL",
+            "magnitude": 7000
+        },
+        "shape": {
+            "type": "AxisAlignedRectangle",
+            "width": {
+                "type": "ValueWithUnits",
+                "units": "mm",
+                "magnitude": 26.2
+            },
+            "length": {
+                "type": "ValueWithUnits",
+                "units": "mm",
+                "magnitude": 71.2
+            }
+        }
+    }
+}

@@ -1,0 +1,84 @@
+{
+    "id": "TrilobioDef_384Well---",
+    "schema_version": 3,
+    "name": "Deep Well 384 Plate",
+    "type": "WellPlate",
+    "contains": "Liquid",
+    "length": {
+        "type": "ValueWithUnits",
+        "units": "mm",
+        "magnitude": 127.76
+    },
+    "width": {
+        "type": "ValueWithUnits",
+        "units": "mm",
+        "magnitude": 85.47
+    },
+    "height": {
+        "type": "ValueWithUnits",
+        "units": "mm",
+        "magnitude": 14.22
+    },
+    "grid": {
+        "column_count": 24,
+        "column_pitch": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 4.48
+        },
+        "column_offset": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 0
+        },
+        "row_count": 16,
+        "row_pitch": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 4.48
+        },
+        "row_offset": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 0
+        }
+    },
+    "well": {
+        "bottom_shape": {
+            "type": "Conical",
+            "offset": {
+                "type": "ValueWithUnits",
+                "units": "mm",
+                "magnitude": 0.5
+            }
+        },
+        "depth": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 11.4
+        },
+        "max_volume": {
+            "type": "ValueWithUnits",
+            "units": "µL",
+            "magnitude": 75
+        },
+        "min_volume": {
+            "type": "ValueWithUnits",
+            "units": "µL",
+            "magnitude": 5
+        },
+        "shape": {
+            "type": "AxisAlignedRectangle",
+            "width": {
+                "type": "ValueWithUnits",
+                "units": "mm",
+                "magnitude": 3.4
+            },
+            "length": {
+                "type": "ValueWithUnits",
+                "units": "mm",
+                "magnitude": 3.4
+            }
+        }
+    }
+}

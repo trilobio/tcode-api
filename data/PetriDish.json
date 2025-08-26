@@ -1,0 +1,74 @@
+{
+    "schema_version": 3,
+    "id": "TrilobioDef_petriDish-",
+    "name": "PetriDish",
+    "type": "WellPlate",
+    "contains": "Liquid",
+    "length": {
+        "type": "ValueWithUnits",
+        "units": "mm",
+        "magnitude": 127.76
+    },
+    "width": {
+        "type": "ValueWithUnits",
+        "units": "mm",
+        "magnitude": 85.48
+    },
+    "height": {
+        "type": "ValueWithUnits",
+        "units": "mm",
+        "magnitude": 14.11
+    },
+    "well": {
+        "bottom_shape": {
+            "type": "Flat"
+        },
+        "depth": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 10.54
+        },
+        "max_volume": {
+            "type": "ValueWithUnits",
+            "units": "µL",
+            "magnitude": 40000
+        },
+        "min_volume": {
+            "type": "ValueWithUnits",
+            "units": "µL",
+            "magnitude": 10
+        },
+        "shape": {
+            "type": "Circle",
+            "diameter": {
+                "type": "ValueWithUnits",
+                "units": "mm",
+                "magnitude": 92
+            }
+        }
+    },
+    "grid": {
+        "column_count": 1,
+        "column_pitch": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 0
+        },
+        "column_offset": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 0
+        },
+        "row_count": 1,
+        "row_pitch": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 0
+        },
+        "row_offset": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 0
+        }
+    }
+}
