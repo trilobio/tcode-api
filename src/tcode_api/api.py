@@ -5,6 +5,8 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from tcode_api.types import NamedTags, Tags
+
 
 class _BaseModelStrict(BaseModel):
     model_config = ConfigDict(strict=True, extra="ignore")
@@ -43,9 +45,9 @@ def verify_positive_nonzero_int(value: int) -> int:
     return value
 
 
-class WellPartType(str, enum.Enum):
+class WellPartType(enum.StrEnum):
     """Enumeration of well parts.
-    
+
     TOP: the top part of the well, above the liquid level.
     BOTTOM: the bottom part of the well, below the liquid level.
     """
@@ -74,7 +76,7 @@ class LocationAsLabwareIndex(_Location):
     type: Literal["LocationAsLabwareIndex"] = "LocationAsLabwareIndex"
     labware_id: str
     location_index: int
-    well_part: WellPartType
+    well_part: str  # WellPartType
 
 
 class LocationAsNodeId(_Location):
@@ -116,8 +118,8 @@ class PipetteTipGroupDescriptor(_BaseModelStrict):
 
     row_count: Annotated[int, verify_positive_nonzero_int]
     column_count: Annotated[int, verify_positive_nonzero_int]
-    pipette_tip_tags: list[str] = Field(default_factory=list)
-    pipette_tip_named_tags: dict[str, str] = Field(default_factory=dict)
+    pipette_tip_tags: Tags = Field(default_factory=list)
+    pipette_tip_named_tags: NamedTags = Field(default_factory=dict)
 
 
 # Tool schemas
@@ -371,8 +373,8 @@ class WellDescription(_BaseModelStrict):
     bottom_shape: WellBottomShapeDescription
     min_volume: ValueWithUnits
     max_volume: ValueWithUnits
-    well_tags: list[str] = Field(default_factory=list)
-    well_named_tags: dict[str, str] = Field(default_factory=dict)
+    well_tags: Tags = Field(default_factory=list)
+    well_named_tags: NamedTags = Field(default_factory=dict)
 
 
 class WellDescriptor(_BaseModelStrict):
@@ -391,8 +393,8 @@ class PipetteTipDescription(_BaseModelStrict):
     """Description of a pipette tip."""
 
     type: Literal["PipetteTip"] = "PipetteTip"
-    tags: list[str] = Field(default_factory=list)
-    named_tags: dict[str, str] = Field(default_factory=dict)
+    tags: Tags = Field(default_factory=list)
+    named_tags: NamedTags = Field(default_factory=dict)
     height: ValueWithUnits
     flange_height: ValueWithUnits
 
@@ -401,8 +403,8 @@ class PipetteTipDescriptor(_BaseModelStrict):
     """PipetteTipDescription with optional parameters."""
 
     type: Literal["PipetteTip"] = "PipetteTip"
-    tags: list[str] = Field(default_factory=list)
-    named_tags: dict[str, str] = Field(default_factory=dict)
+    tags: Tags = Field(default_factory=list)
+    named_tags: NamedTags = Field(default_factory=dict)
     height: ValueWithUnits | None = None
     flange_height: ValueWithUnits | None = None
 
@@ -411,8 +413,8 @@ class TubeDescription(_BaseModelStrict):
     """Description of a tube."""
 
     type: Literal["Tube"] = "Tube"
-    tags: list[str] = Field(default_factory=list)
-    named_tags: dict[str, str] = Field(default_factory=dict)
+    tags: Tags = Field(default_factory=list)
+    named_tags: NamedTags = Field(default_factory=dict)
     depth: ValueWithUnits
     shape: WellShapeDescription
     bottom_shape: WellBottomShapeDescription
@@ -425,8 +427,8 @@ class TubeDescriptor(_BaseModelStrict):
     """TubeDescription with optional parameters."""
 
     type: Literal["Tube"] = "Tube"
-    tags: list[str] = Field(default_factory=list)
-    named_tags: dict[str, str] = Field(default_factory=dict)
+    tags: Tags = Field(default_factory=list)
+    named_tags: NamedTags = Field(default_factory=dict)
     depth: ValueWithUnits | None = None
     shape: WellShapeDescriptor | None = None
     bottom_shape: WellBottomShapeDescriptor | None = None
@@ -439,8 +441,8 @@ class TubeDescriptor(_BaseModelStrict):
 class _LabwareBaseDescription(_BaseModelStrict):
     """Base schema shared by all labware in the Labware discriminated union."""
 
-    tags: list[str] = Field(default_factory=list)
-    named_tags: dict[str, str] = Field(default_factory=dict)
+    tags: Tags = Field(default_factory=list)
+    named_tags: NamedTags = Field(default_factory=dict)
     length: ValueWithUnits
     width: ValueWithUnits
     height: ValueWithUnits
@@ -449,8 +451,8 @@ class _LabwareBaseDescription(_BaseModelStrict):
 class _LabwareBaseDescriptor(_BaseModelStrict):
     """Base schema shared by all labware descriptors in the LabwareDescriptor discriminated union."""
 
-    tags: list[str] = Field(default_factory=list)
-    named_tags: dict[str, str] = Field(default_factory=dict)
+    tags: Tags = Field(default_factory=list)
+    named_tags: NamedTags = Field(default_factory=dict)
     length: ValueWithUnits | None = None
     width: ValueWithUnits | None = None
     height: ValueWithUnits | None = None
@@ -545,19 +547,19 @@ class TrashDescriptor(_LabwareBaseDescriptor):
 
 
 LabwareDescription = Annotated[
-    WellPlateDescription
+    LidDescription
     | PipetteTipBoxDescription
     | TrashDescription
     | TubeHolderDescription
-    | LidDescription,
+    | WellPlateDescription,
     Field(discriminator="type"),
 ]
 LabwareDescriptor = Annotated[
-    WellPlateDescriptor
+    LidDescriptor
     | PipetteTipBoxDescriptor
     | TrashDescriptor
-    | LidDescriptor
-    | TubeHolderDescriptor,
+    | TubeHolderDescriptor
+    | WellPlateDescriptor,
     Field(discriminator="type"),
 ]
 

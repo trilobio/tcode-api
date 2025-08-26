@@ -3,6 +3,7 @@
 import json
 import pathlib
 import unittest
+from typing import get_args
 
 import plac  # type: ignore[import-untyped]
 
@@ -11,8 +12,18 @@ import tcode_api.api as tc
 labware_json_dir = pathlib.Path(__file__).parent.parent / "data"
 
 
-class TestLabwareDescriptions(unittest.TestCase):
-    """Test that all labware descriptions are valid."""
+# https://stackoverflow.com/a/64643971
+descriptor_constructor_map: dict[str, type[tc.LabwareDescriptor]] = {}
+for endpoint in get_args(get_args(tc.LabwareDescriptor)[0]):
+    descriptor_constructor_map[endpoint.__fields__["type"].default] = endpoint
+
+description_constructor_map: dict[str, type[tc.LabwareDescription]] = {}
+for endpoint in get_args(get_args(tc.LabwareDescription)[0]):
+    description_constructor_map[endpoint.__fields__["type"].default] = endpoint
+
+
+class TestLabware(unittest.TestCase):
+    """Test that all labware json files are valid as descriptions and descriptors."""
 
     def load_labware_descriptor(self, filepath: pathlib.Path) -> None:
         """Test that labware description stored in file is a valid LabwareDescription."""
@@ -20,19 +31,10 @@ class TestLabwareDescriptions(unittest.TestCase):
             content = f.read()
 
         content_json = json.loads(content)
-        match content_json["type"]:
-            case "WellPlate":
-                constructor: type[tc.LabwareDescription] = tc.WellPlateDescription
-            case "PipetteTipBox":
-                constructor = tc.PipetteTipBoxDescription
-            case "TubeHolder":
-                constructor = tc.TubeHolderDescription
-            case "Trash":
-                constructor = tc.TrashDescription
-            case "Lid":
-                constructor = tc.LidDescription
-            case _:
-                raise ValueError(f"Unknown labware type: {content_json['type']}")
+        try:
+            constructor = descriptor_constructor_map[content_json["type"]]
+        except KeyError as e:
+            raise ValueError(f"Unknown labware type: {content_json['type']}") from e
 
         constructor(**content_json)
 
@@ -42,17 +44,10 @@ class TestLabwareDescriptions(unittest.TestCase):
             content = f.read()
 
         content_json = json.loads(content)
-        match content_json["type"]:
-            case "WellPlate":
-                constructor: type[tc.LabwareDescriptor] = tc.WellPlateDescriptor
-            case "PipetteTipBox":
-                constructor = tc.PipetteTipBoxDescriptor
-            case "Trash":
-                constructor = tc.TrashDescriptor
-            case "Lid":
-                constructor = tc.LidDescriptor
-            case _:
-                raise ValueError(f"Unknown labware type: {content_json['type']}")
+        try:
+            constructor = description_constructor_map[content_json["type"]]
+        except KeyError as e:
+            raise ValueError(f"Unknown labware type: {content_json['type']}") from e
 
         constructor(**content_json)
 
@@ -75,7 +70,7 @@ class TestLabwareDescriptions(unittest.TestCase):
 )
 def main(labware_filepath: pathlib.Path) -> None:
     """Run test_labware_descriptions for a single labware."""
-    test_class = TestLabwareDescriptions()
+    test_class = TestLabware()
     test_class.load_labware_description(labware_filepath)
     print("Successfully loaded as LabwareDescription")
     test_class.load_labware_descriptor(labware_filepath)

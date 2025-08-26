@@ -6,6 +6,7 @@ import string
 from typing import Any
 
 import tcode_api.api as tc
+from tcode_api.types import NamedTags, Tags
 
 
 def generate_id(length: int = 22) -> str:
@@ -52,10 +53,12 @@ def ul_per_s(volume: float) -> tc.ValueWithUnits:
 
 
 def location_as_labware_index(
-    labware_id: str, location_index: int, well_part: str | tc.WellPartType | None = None,
+    labware_id: str,
+    location_index: int,
+    well_part: str | tc.WellPartType | None = None,
 ) -> tc.LocationAsLabwareIndex:
     """tc.LocationAsLabwareIndex constructor.
-    
+
     :note: defaults to the bottom of the well
     """
     well_part = well_part or tc.WellPartType.BOTTOM
@@ -69,8 +72,8 @@ def location_as_labware_index(
 
 
 def describe_well_plate(
-    tags: list[str] | None = None,
-    named_tags: dict[str, str] | None = None,
+    tags: Tags | None = None,
+    named_tags: NamedTags | None = None,
     row_count: int = 8,
     column_count: int = 12,
     row_pitch: float = 0.009,
@@ -108,8 +111,8 @@ def describe_well_plate(
 
 
 def describe_pipette_tip_box(
-    tags: list[str] | None = None,
-    named_tags: dict[str, str] | None = None,
+    tags: Tags | None = None,
+    named_tags: NamedTags | None = None,
     row_count: int = 8,
     column_count: int = 12,
     row_pitch: float = 0.009,
@@ -147,8 +150,8 @@ def describe_pipette_tip_box(
 def describe_pipette_tip_group(
     row_count: int = 1,
     column_count: int = 1,
-    tags: list[str] | None = None,
-    named_tags: dict[str, Any] | None = None,
+    tags: Tags | None = None,
+    named_tags: NamedTags | None = None,
 ) -> tc.PipetteTipGroupDescriptor:
     """tc.PipetteTipGroup constructor with nice defaults.
 

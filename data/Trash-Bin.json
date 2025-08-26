@@ -2,11 +2,27 @@
     "schema_version": 3,
     "id": "TrilobioDef_3DTrash---",
     "name": "Trash Bin",
-    "type": "TrashCan",
-    "contains": "Trash",
-    "length": { "type": "ValueWithUnits", "units": "mm", "magnitude": 127.76 },
-    "width": { "type": "ValueWithUnits", "units": "mm", "magnitude": 85.48 },
-    "height": { "type": "ValueWithUnits", "units": "mm", "magnitude": 75 },
+    "type": "Trash",
+    "length": {
+        "type": "ValueWithUnits",
+        "units": "mm",
+        "magnitude": 127.76
+    },
+    "width": {
+        "type": "ValueWithUnits",
+        "units": "mm",
+        "magnitude": 85.48
+    },
+    "height": {
+        "type": "ValueWithUnits",
+        "units": "mm",
+        "magnitude": 75
+    },
+    "depth": {
+        "type": "ValueWithUnits",
+        "units": "mm",
+        "magnitude": 71.66
+    },
     "grid": {
         "column_count": 1,
         "column_pitch": {
@@ -29,35 +45,6 @@
             "type": "ValueWithUnits",
             "units": "mm",
             "magnitude": 0
-        }
-    },
-    "well": {
-        "bottom_shape": {
-            "type": "Flat"
-        },
-        "depth": { "type": "ValueWithUnits", "units": "mm", "magnitude": 72 },
-        "max_volume": {
-            "type": "ValueWithUnits",
-            "units": "µL",
-            "magnitude": 693279
-        },
-        "min_volume": {
-            "type": "ValueWithUnits",
-            "units": "µL",
-            "magnitude": 0
-        },
-        "shape": {
-            "type": "AxisAlignedRectangle",
-            "width": {
-                "type": "ValueWithUnits",
-                "units": "mm",
-                "magnitude": 121.5
-            },
-            "length": {
-                "type": "ValueWithUnits",
-                "units": "mm",
-                "magnitude": 79.25
-            }
         }
     }
 }
