@@ -395,8 +395,11 @@ class PipetteTipDescription(_BaseModelStrict):
     type: Literal["PipetteTip"] = "PipetteTip"
     tags: Tags = Field(default_factory=list)
     named_tags: NamedTags = Field(default_factory=dict)
+    has_filter: bool
     height: ValueWithUnits
     flange_height: ValueWithUnits
+    max_volume: ValueWithUnits
+    min_volume: ValueWithUnits
 
 
 class PipetteTipDescriptor(_BaseModelStrict):
@@ -405,8 +408,11 @@ class PipetteTipDescriptor(_BaseModelStrict):
     type: Literal["PipetteTip"] = "PipetteTip"
     tags: Tags = Field(default_factory=list)
     named_tags: NamedTags = Field(default_factory=dict)
+    has_filter: bool | None = None
     height: ValueWithUnits | None = None
     flange_height: ValueWithUnits | None = None
+    max_volume: ValueWithUnits | None = None
+    min_volume: ValueWithUnits | None = None
 
 
 class TubeDescription(_BaseModelStrict):
