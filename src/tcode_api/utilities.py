@@ -3,7 +3,6 @@
 import functools
 import random
 import string
-from typing import Any
 
 import tcode_api.api as tc
 from tcode_api.types import NamedTags, Tags
@@ -20,36 +19,46 @@ def generate_id(length: int = 22) -> str:
     return "".join(random.choice(letters) for i in range(length))
 
 
-def mm(length: float) -> tc.ValueWithUnits:
+def _cast_to_float(value: float | int | str) -> float:
+    """Cast int to float or try to parse string as float."""
+    if isinstance(value, (float, int)):
+        return float(value)
+    try:
+        return float(value)
+    except ValueError as e:
+        raise ValueError(f"Cannot convert {value} to float") from e
+
+
+def mm(length: float | int | str) -> tc.ValueWithUnits:
     """tc.ValueWithUnits constructor for millimeters.
 
     :return: tc.ValueWithUnits with magnitude in mm.
     """
-    return tc.ValueWithUnits(magnitude=length, units="mm")
+    return tc.ValueWithUnits(magnitude=_cast_to_float(length), units="mm")
 
 
-def m(length: float) -> tc.ValueWithUnits:
+def m(length: float | int | str) -> tc.ValueWithUnits:
     """tc.ValueWithUnits constructor for meters.
 
     :return: tc.ValueWithUnits with magnitude in m.
     """
-    return tc.ValueWithUnits(magnitude=length, units="m")
+    return tc.ValueWithUnits(magnitude=_cast_to_float(length), units="m")
 
 
-def ul(volume: float) -> tc.ValueWithUnits:
+def ul(volume: float | int | str) -> tc.ValueWithUnits:
     """tc.ValueWithUnits constructor for uL.
 
     :return: tc.ValueWithUnits with magnitude in uL.
     """
-    return tc.ValueWithUnits(magnitude=volume, units="uL")
+    return tc.ValueWithUnits(magnitude=_cast_to_float(volume), units="uL")
 
 
-def ul_per_s(volume: float) -> tc.ValueWithUnits:
+def ul_per_s(volume: float | int | str) -> tc.ValueWithUnits:
     """tc.ValueWithUnits constructor for uL/s.
 
     :return: tc.ValueWithUnits with magnitude in uL/s.
     """
-    return tc.ValueWithUnits(magnitude=volume, units="uL/s")
+    return tc.ValueWithUnits(magnitude=_cast_to_float(volume), units="uL/s")
 
 
 def location_as_labware_index(
