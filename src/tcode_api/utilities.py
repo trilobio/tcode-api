@@ -121,9 +121,9 @@ def describe_well_plate(
     return tc.WellPlateDescriptor(
         tags=tags,
         named_tags=named_tags,
-        grid_descriptor=grid_descriptor,
+        grid=grid_descriptor,
         has_lid=has_lid,
-        lid_descriptor=lid_descriptor,
+        lid=lid_descriptor,
     )
 
 
@@ -159,7 +159,7 @@ def describe_pipette_tip_box(
     return tc.PipetteTipBoxDescriptor(
         tags=tags,
         named_tags=named_tags,
-        grid_descriptor=grid_descriptor,
+        grid=grid_descriptor,
         full=full,
     )
 

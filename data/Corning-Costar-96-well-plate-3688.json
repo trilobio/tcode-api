@@ -4,17 +4,17 @@
     "name": "Corning Costar 96 Well Plate #3688",
     "type": "WellPlate",
     "contains": "Liquid",
-    "length": {
+    "x_length": {
         "type": "ValueWithUnits",
         "magnitude": 127.76,
         "units": "mm"
     },
-    "width": {
+    "y_length": {
         "type": "ValueWithUnits",
         "magnitude": 85.48,
         "units": "mm"
     },
-    "height": {
+    "z_length": {
         "type": "ValueWithUnits",
         "magnitude": 14.11,
         "units": "mm"

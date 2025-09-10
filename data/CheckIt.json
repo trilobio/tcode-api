@@ -1,20 +1,21 @@
 {
     "schema_version": 3,
     "id": "TrilobioDef_CheckIt---",
+    "tags": ["auto-layout-default-ineligible"],
     "name": "CheckIt",
     "type": "WellPlate",
     "contains": "Liquid",
-    "length": {
+    "x_length": {
         "type": "ValueWithUnits",
         "units": "mm",
         "magnitude": 127.8
     },
-    "width": {
+    "y_length": {
         "type": "ValueWithUnits",
         "units": "mm",
         "magnitude": 85.3
     },
-    "height": {
+    "z_length": {
         "type": "ValueWithUnits",
         "units": "mm",
         "magnitude": 16

@@ -4,17 +4,17 @@
     "name": "SergiLabs 50ml Tube Rack With 50ml FroggyBio Tubes",
     "type": "TubeHolder",
     "contains": "Tube",
-    "length": {
+    "x_length": {
         "type": "ValueWithUnits",
         "units": "mm",
         "magnitude": 127.76
     },
-    "width": {
+    "y_length": {
         "type": "ValueWithUnits",
         "units": "mm",
         "magnitude": 85.48
     },
-    "height": {
+    "z_length": {
         "type": "ValueWithUnits",
         "units": "mm",
         "magnitude": 90

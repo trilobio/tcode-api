@@ -3,10 +3,26 @@
     "id": "TrilobioDef_3DTube2mL-",
     "name": "2ml Sarstedt 72.894.308 Tube Rack",
     "type": "TubeHolder",
+    "tags": ["source-preferred"],
+    "named_tags": {
+        "model": "2_ml_tube_rack.obj"
+    },
     "contains": "Tube",
-    "length": { "type": "ValueWithUnits", "units": "mm", "magnitude": 127.8 },
-    "width": { "type": "ValueWithUnits", "units": "mm", "magnitude": 85.3 },
-    "height": { "type": "ValueWithUnits", "units": "mm", "magnitude": 45 },
+    "x_length": {
+        "type": "ValueWithUnits",
+        "units": "mm",
+        "magnitude": 127.8
+    },
+    "y_length": {
+        "type": "ValueWithUnits",
+        "units": "mm",
+        "magnitude": 85.3
+    },
+    "z_length": {
+        "type": "ValueWithUnits",
+        "units": "mm",
+        "magnitude": 45
+    },
     "grid": {
         "column_count": 7,
         "column_pitch": {
@@ -45,7 +61,11 @@
                 "magnitude": 0
             }
         },
-        "depth": { "type": "ValueWithUnits", "units": "mm", "magnitude": 42.8 },
+        "depth": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 42.8
+        },
         "max_volume": {
             "type": "ValueWithUnits",
             "units": "µL",

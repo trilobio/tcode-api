@@ -3,18 +3,20 @@
     "id": "TrilobioDef_Plate3788-",
     "name": "Corning Costar 96 Well Plate #3788",
     "type": "WellPlate",
-    "contains": "Liquid",
-    "length": {
+    "named_tags": {
+        "model": "well_plate_96.obj"
+    },
+    "x_length": {
         "type": "ValueWithUnits",
         "units": "mm",
         "magnitude": 127.76
     },
-    "width": {
+    "y_length": {
         "type": "ValueWithUnits",
         "units": "mm",
         "magnitude": 85.47
     },
-    "height": {
+    "z_length": {
         "type": "ValueWithUnits",
         "units": "mm",
         "magnitude": 14.22

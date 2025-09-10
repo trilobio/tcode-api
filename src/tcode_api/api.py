@@ -253,19 +253,23 @@ class CircleDescriptor(_BaseModelStrict):
 
 
 class AxisAlignedRectangleDescription(_BaseModelStrict):
-    """Description of an axis-aligned rectangle."""
+    """Description of an axis-aligned rectangle.
+
+    :note: X and Y lengths are measured in the coordinate system of the parent labware,
+        to avoid ambiguity when referring to the "length" or "width" of a rectangle.
+    """
 
     type: Literal["AxisAlignedRectangle"] = "AxisAlignedRectangle"
-    width: ValueWithUnits
-    length: ValueWithUnits
+    x_length: ValueWithUnits
+    y_length: ValueWithUnits
 
 
 class AxisAlignedRectangleDescriptor(_BaseModelStrict):
     """AxisAlignedRectangleDescription with optional parameters."""
 
     type: Literal["AxisAlignedRectangle"] = "AxisAlignedRectangle"
-    width: ValueWithUnits | None = None
-    length: ValueWithUnits | None = None
+    x_length: ValueWithUnits | None = None
+    y_length: ValueWithUnits | None = None
 
 
 WellShapeDescription = Annotated[
@@ -455,13 +459,16 @@ class TubeDescriptor(_BaseModelStrict):
 
 # Labware
 class _LabwareBaseDescription(_BaseModelStrict):
-    """Base schema shared by all labware in the Labware discriminated union."""
+    """Base schema shared by all labware in the Labware discriminated union.
+
+    :note: Using [x|y|z]_length is intended to avoid the semantic ambiguity of "length" vs "width"
+    """
 
     tags: Tags = Field(default_factory=list)
     named_tags: NamedTags = Field(default_factory=dict)
-    length: ValueWithUnits
-    width: ValueWithUnits
-    height: ValueWithUnits
+    x_length: ValueWithUnits
+    y_length: ValueWithUnits
+    z_length: ValueWithUnits
 
 
 class _LabwareBaseDescriptor(_BaseModelStrict):
@@ -469,9 +476,9 @@ class _LabwareBaseDescriptor(_BaseModelStrict):
 
     tags: Tags = Field(default_factory=list)
     named_tags: NamedTags = Field(default_factory=dict)
-    length: ValueWithUnits | None = None
-    width: ValueWithUnits | None = None
-    height: ValueWithUnits | None = None
+    x_length: ValueWithUnits | None = None
+    y_length: ValueWithUnits | None = None
+    z_length: ValueWithUnits | None = None
 
 
 class LidDescription(_LabwareBaseDescription):

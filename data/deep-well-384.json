@@ -4,17 +4,17 @@
     "name": "Deep Well 384 Plate",
     "type": "WellPlate",
     "contains": "Liquid",
-    "length": {
+    "x_length": {
         "type": "ValueWithUnits",
         "units": "mm",
         "magnitude": 127.76
     },
-    "width": {
+    "y_length": {
         "type": "ValueWithUnits",
         "units": "mm",
         "magnitude": 85.47
     },
-    "height": {
+    "z_length": {
         "type": "ValueWithUnits",
         "units": "mm",
         "magnitude": 14.22
@@ -69,12 +69,12 @@
         },
         "shape": {
             "type": "AxisAlignedRectangle",
-            "width": {
+            "x_length": {
                 "type": "ValueWithUnits",
                 "units": "mm",
                 "magnitude": 3.4
             },
-            "length": {
+            "y_length": {
                 "type": "ValueWithUnits",
                 "units": "mm",
                 "magnitude": 3.4
