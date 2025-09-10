@@ -62,6 +62,15 @@ class _Location(_BaseModelStrict):
     type: str
 
 
+class LocationRelativeToCurrentPosition(_Location):
+    """Location specified by a transformation matrix relative to position of the robot's current control node."""
+
+    type: Literal["LocationRelativeToCurrentPosition"] = (
+        "LocationRelativeToCurrentPosition"
+    )
+    matrix: Matrix  # 4x4 transformation matrix
+
+
 class LocationAsLabwareHolder(_Location):
     """Location specified by a labware holder's name."""
 
@@ -105,6 +114,7 @@ Location = Annotated[
     LocationAsLabwareHolder
     | LocationAsLabwareIndex
     | LocationAsNodeId
+    | LocationRelativeToCurrentPosition
     | LocationRelativeToLabware
     | LocationRelativeToWorld,
     Field(discriminator="type"),
@@ -731,6 +741,12 @@ class MOVE_TO_LOCATION(_RobotSpecificTCodeBase):
     trajectory_type: int | None = None  # TrajectoryType | None = None
 
 
+class MOVE_TO_JOINT_POSE(_RobotSpecificTCodeBase):
+    type: Literal["MOVE_TO_JOINT_POSE"] = "MOVE_TO_JOINT_POSE"
+    joint_positions: list[ValueWithUnits]
+    relative: bool
+
+
 class PAUSE(_TCodeBase):
     type: Literal["PAUSE"] = "PAUSE"
 
@@ -806,6 +822,7 @@ TCode = Annotated[
     | DISCARD_PIPETTE_TIP_GROUP
     | DISPENSE
     | MOVE_TO_LOCATION
+    | MOVE_TO_JOINT_POSE
     | PAUSE
     | PICK_UP_LABWARE
     | PICK_UP_PIPETTE_TIP
