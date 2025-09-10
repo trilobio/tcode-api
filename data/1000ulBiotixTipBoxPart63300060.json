@@ -1,0 +1,75 @@
+{
+    "schema_version": 3,
+    "id": "TrilobioDef_uTip1000uL",
+    "name": "1000ul Biotix Tip Box part: 63300060",
+    "type": "PipetteTipBox",
+    "named_tags": {
+        "model": "biotix_utip_p1000_box.obj"
+    },
+    "x_length": {
+        "type": "ValueWithUnits",
+        "units": "mm",
+        "magnitude": 127.76
+    },
+    "y_length": {
+        "type": "ValueWithUnits",
+        "units": "mm",
+        "magnitude": 85.47
+    },
+    "z_length": {
+        "type": "ValueWithUnits",
+        "units": "mm",
+        "magnitude": 77.0
+    },
+    "grid": {
+        "column_count": 12,
+        "column_pitch": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 9
+        },
+        "column_offset": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 0
+        },
+        "row_count": 8,
+        "row_pitch": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 9
+        },
+        "row_offset": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 0
+        }
+    },
+    "pipette_tip": {
+        "pipette_tip_named_tags": {
+            "model": "biotix_utip_p1000.obj"
+        },
+        "height": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 81.7
+        },
+        "max_volume": {
+            "type": "ValueWithUnits",
+            "units": "µL",
+            "magnitude": 1000
+        },
+        "min_volume": {
+            "type": "ValueWithUnits",
+            "units": "µL",
+            "magnitude": 10
+        },
+        "has_filter": false,
+        "flange_height": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 24.1
+        }
+    },
+    "full": true
+}
