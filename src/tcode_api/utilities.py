@@ -45,6 +45,14 @@ def m(length: float | int | str) -> tc.ValueWithUnits:
     return tc.ValueWithUnits(magnitude=_cast_to_float(length), units="m")
 
 
+def rad(angle: float | int | str) -> tc.ValueWithUnits:
+    """tc.ValueWithUnits constructor for radians.
+
+    :return: tc.ValueWithUnits with magnitude in rad.
+    """
+    return tc.ValueWithUnits(magnitude=_cast_to_float(angle), units="rad")
+
+
 def ul(volume: float | int | str) -> tc.ValueWithUnits:
     """tc.ValueWithUnits constructor for uL.
 
