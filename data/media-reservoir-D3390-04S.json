@@ -1,20 +1,24 @@
 {
     "schema_version": 3,
     "id": "TrilobioDef_Reservoir4",
-    "name": "Automation Reservoir D3390-04S",
+    "name": "MTC 4 Well Reservoir",
     "type": "WellPlate",
     "contains": "Liquid",
-    "length": {
+    "tags": ["multichannel-capable", "source-preferred"],
+    "named_tags": {
+        "model": "4_channel_trough.obj"
+    },
+    "x_length": {
         "type": "ValueWithUnits",
         "units": "mm",
         "magnitude": 127.76
     },
-    "width": {
+    "y_length": {
         "type": "ValueWithUnits",
         "units": "mm",
         "magnitude": 85.48
     },
-    "height": {
+    "z_length": {
         "type": "ValueWithUnits",
         "units": "mm",
         "magnitude": 31.4
@@ -70,12 +74,12 @@
         },
         "shape": {
             "type": "AxisAlignedRectangle",
-            "width": {
+            "x_length": {
                 "type": "ValueWithUnits",
                 "units": "mm",
                 "magnitude": 26.2
             },
-            "length": {
+            "y_length": {
                 "type": "ValueWithUnits",
                 "units": "mm",
                 "magnitude": 71.2

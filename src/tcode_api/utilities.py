@@ -45,6 +45,14 @@ def m(length: float | int | str) -> tc.ValueWithUnits:
     return tc.ValueWithUnits(magnitude=_cast_to_float(length), units="m")
 
 
+def rad(angle: float | int | str) -> tc.ValueWithUnits:
+    """tc.ValueWithUnits constructor for radians.
+
+    :return: tc.ValueWithUnits with magnitude in rad.
+    """
+    return tc.ValueWithUnits(magnitude=_cast_to_float(angle), units="rad")
+
+
 def ul(volume: float | int | str) -> tc.ValueWithUnits:
     """tc.ValueWithUnits constructor for uL.
 
@@ -113,9 +121,9 @@ def describe_well_plate(
     return tc.WellPlateDescriptor(
         tags=tags,
         named_tags=named_tags,
-        grid_descriptor=grid_descriptor,
+        grid=grid_descriptor,
         has_lid=has_lid,
-        lid_descriptor=lid_descriptor,
+        lid=lid_descriptor,
     )
 
 
@@ -151,7 +159,7 @@ def describe_pipette_tip_box(
     return tc.PipetteTipBoxDescriptor(
         tags=tags,
         named_tags=named_tags,
-        grid_descriptor=grid_descriptor,
+        grid=grid_descriptor,
         full=full,
     )
 

@@ -3,17 +3,20 @@
     "id": "TrilobioDef_uTip300uL-",
     "name": "300ul Biotix Tip Box part: 63300059",
     "type": "PipetteTipBox",
-    "length": {
+    "named_tags": {
+        "model": "biotix_utip_p300_box.obj"
+    },
+    "x_length": {
         "type": "ValueWithUnits",
         "units": "mm",
         "magnitude": 127.76
     },
-    "width": {
+    "y_length": {
         "type": "ValueWithUnits",
         "units": "mm",
         "magnitude": 85.47
     },
-    "height": {
+    "z_length": {
         "type": "ValueWithUnits",
         "units": "mm",
         "magnitude": 42
@@ -43,6 +46,9 @@
         }
     },
     "pipette_tip": {
+        "pipette_tip_named_tags": {
+            "model": "biotix_utip_p300.obj"
+        },
         "height": {
             "type": "ValueWithUnits",
             "units": "m",

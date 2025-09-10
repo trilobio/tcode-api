@@ -1,9 +1,11 @@
 {
-    "id": "TrilobioDef_384Well---",
     "schema_version": 3,
-    "name": "Deep Well 384 Plate",
-    "type": "WellPlate",
-    "contains": "Liquid",
+    "id": "TrilobioDef_uTip20uL--",
+    "name": "20ul Biotix Tip Box part: 63300042",
+    "type": "PipetteTipBox",
+    "named_tags": {
+        "model": "biotix_utip_p20_box.obj"
+    },
     "x_length": {
         "type": "ValueWithUnits",
         "units": "mm",
@@ -17,25 +19,25 @@
     "z_length": {
         "type": "ValueWithUnits",
         "units": "mm",
-        "magnitude": 14.22
+        "magnitude": 42.1
     },
     "grid": {
-        "column_count": 24,
+        "column_count": 12,
         "column_pitch": {
             "type": "ValueWithUnits",
             "units": "mm",
-            "magnitude": 4.48
+            "magnitude": 9
         },
         "column_offset": {
             "type": "ValueWithUnits",
             "units": "mm",
             "magnitude": 0
         },
-        "row_count": 16,
+        "row_count": 8,
         "row_pitch": {
             "type": "ValueWithUnits",
             "units": "mm",
-            "magnitude": 4.48
+            "magnitude": 9
         },
         "row_offset": {
             "type": "ValueWithUnits",
@@ -43,42 +45,31 @@
             "magnitude": 0
         }
     },
-    "well": {
-        "bottom_shape": {
-            "type": "Conical",
-            "offset": {
-                "type": "ValueWithUnits",
-                "units": "mm",
-                "magnitude": 0.5
-            }
+    "pipette_tip": {
+        "pipette_tip_named_tags": {
+            "model": "biotix_utip_p20.obj"
         },
-        "depth": {
+        "height": {
             "type": "ValueWithUnits",
             "units": "mm",
-            "magnitude": 11.4
+            "magnitude": 50.5
         },
         "max_volume": {
             "type": "ValueWithUnits",
             "units": "µL",
-            "magnitude": 75
+            "magnitude": 20
         },
         "min_volume": {
             "type": "ValueWithUnits",
             "units": "µL",
-            "magnitude": 5
+            "magnitude": 10
         },
-        "shape": {
-            "type": "AxisAlignedRectangle",
-            "x_length": {
-                "type": "ValueWithUnits",
-                "units": "mm",
-                "magnitude": 3.4
-            },
-            "y_length": {
-                "type": "ValueWithUnits",
-                "units": "mm",
-                "magnitude": 3.4
-            }
+        "has_filter": false,
+        "flange_height": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 16.1
         }
-    }
+    },
+    "full": true
 }

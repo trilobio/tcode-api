@@ -3,17 +3,17 @@
     "id": "TrilobioDef_3DTrash---",
     "name": "Trash Bin",
     "type": "Trash",
-    "length": {
+    "x_length": {
         "type": "ValueWithUnits",
         "units": "mm",
         "magnitude": 127.76
     },
-    "width": {
+    "y_length": {
         "type": "ValueWithUnits",
         "units": "mm",
         "magnitude": 85.48
     },
-    "height": {
+    "z_length": {
         "type": "ValueWithUnits",
         "units": "mm",
         "magnitude": 75

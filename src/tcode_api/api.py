@@ -62,6 +62,15 @@ class _Location(_BaseModelStrict):
     type: str
 
 
+class LocationRelativeToCurrentPosition(_Location):
+    """Location specified by a transformation matrix relative to position of the robot's current control node."""
+
+    type: Literal["LocationRelativeToCurrentPosition"] = (
+        "LocationRelativeToCurrentPosition"
+    )
+    matrix: Matrix  # 4x4 transformation matrix
+
+
 class LocationAsLabwareHolder(_Location):
     """Location specified by a labware holder's name."""
 
@@ -105,6 +114,7 @@ Location = Annotated[
     LocationAsLabwareHolder
     | LocationAsLabwareIndex
     | LocationAsNodeId
+    | LocationRelativeToCurrentPosition
     | LocationRelativeToLabware
     | LocationRelativeToWorld,
     Field(discriminator="type"),
@@ -243,19 +253,23 @@ class CircleDescriptor(_BaseModelStrict):
 
 
 class AxisAlignedRectangleDescription(_BaseModelStrict):
-    """Description of an axis-aligned rectangle."""
+    """Description of an axis-aligned rectangle.
+
+    :note: X and Y lengths are measured in the coordinate system of the parent labware,
+        to avoid ambiguity when referring to the "length" or "width" of a rectangle.
+    """
 
     type: Literal["AxisAlignedRectangle"] = "AxisAlignedRectangle"
-    width: ValueWithUnits
-    length: ValueWithUnits
+    x_length: ValueWithUnits
+    y_length: ValueWithUnits
 
 
 class AxisAlignedRectangleDescriptor(_BaseModelStrict):
     """AxisAlignedRectangleDescription with optional parameters."""
 
     type: Literal["AxisAlignedRectangle"] = "AxisAlignedRectangle"
-    width: ValueWithUnits | None = None
-    length: ValueWithUnits | None = None
+    x_length: ValueWithUnits | None = None
+    y_length: ValueWithUnits | None = None
 
 
 WellShapeDescription = Annotated[
@@ -445,13 +459,16 @@ class TubeDescriptor(_BaseModelStrict):
 
 # Labware
 class _LabwareBaseDescription(_BaseModelStrict):
-    """Base schema shared by all labware in the Labware discriminated union."""
+    """Base schema shared by all labware in the Labware discriminated union.
+
+    :note: Using [x|y|z]_length is intended to avoid the semantic ambiguity of "length" vs "width"
+    """
 
     tags: Tags = Field(default_factory=list)
     named_tags: NamedTags = Field(default_factory=dict)
-    length: ValueWithUnits
-    width: ValueWithUnits
-    height: ValueWithUnits
+    x_length: ValueWithUnits
+    y_length: ValueWithUnits
+    z_length: ValueWithUnits
 
 
 class _LabwareBaseDescriptor(_BaseModelStrict):
@@ -459,9 +476,9 @@ class _LabwareBaseDescriptor(_BaseModelStrict):
 
     tags: Tags = Field(default_factory=list)
     named_tags: NamedTags = Field(default_factory=dict)
-    length: ValueWithUnits | None = None
-    width: ValueWithUnits | None = None
-    height: ValueWithUnits | None = None
+    x_length: ValueWithUnits | None = None
+    y_length: ValueWithUnits | None = None
+    z_length: ValueWithUnits | None = None
 
 
 class LidDescription(_LabwareBaseDescription):
@@ -731,6 +748,12 @@ class MOVE_TO_LOCATION(_RobotSpecificTCodeBase):
     trajectory_type: int | None = None  # TrajectoryType | None = None
 
 
+class MOVE_TO_JOINT_POSE(_RobotSpecificTCodeBase):
+    type: Literal["MOVE_TO_JOINT_POSE"] = "MOVE_TO_JOINT_POSE"
+    joint_positions: list[ValueWithUnits]
+    relative: bool
+
+
 class PAUSE(_TCodeBase):
     type: Literal["PAUSE"] = "PAUSE"
 
@@ -806,6 +829,7 @@ TCode = Annotated[
     | DISCARD_PIPETTE_TIP_GROUP
     | DISPENSE
     | MOVE_TO_LOCATION
+    | MOVE_TO_JOINT_POSE
     | PAUSE
     | PICK_UP_LABWARE
     | PICK_UP_PIPETTE_TIP
