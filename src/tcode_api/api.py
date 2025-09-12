@@ -732,6 +732,10 @@ class DISCARD_PIPETTE_TIP_GROUP(_RobotSpecificTCodeBase):
     type: Literal["DISCARD_PIPETTE_TIP_GROUP"] = "DISCARD_PIPETTE_TIP_GROUP"
 
 
+class DISCOVER_FLEET(_TCodeBase):
+    type: Literal["DISCOVER_FLEET"] = "DISCOVER_FLEET"
+
+
 class DISPENSE(_RobotSpecificTCodeBase):
     type: Literal["DISPENSE"] = "DISPENSE"
     volume: ValueWithUnits
@@ -827,6 +831,7 @@ TCode = Annotated[
     | CREATE_LABWARE
     | DELETE_LABWARE
     | DISCARD_PIPETTE_TIP_GROUP
+    | DISCOVER_FLEET
     | DISPENSE
     | MOVE_TO_LOCATION
     | MOVE_TO_JOINT_POSE
