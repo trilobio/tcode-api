@@ -809,6 +809,11 @@ class RETURN_TOOL(_RobotSpecificTCodeBase):
     type: Literal["RETURN_TOOL"] = "RETURN_TOOL"
 
 
+class SWAP_TO_TOOL(_RobotSpecificTCodeBase):
+    type: Literal["SWAP_TO_TOOL"] = "SWAP_TO_TOOL"
+    id: str
+
+
 class WAIT(_RobotSpecificTCodeBase):
     type: Literal["WAIT"] = "WAIT"
     duration: ValueWithUnits
@@ -841,6 +846,7 @@ TCode = Annotated[
     | RETRIEVE_TOOL
     | RETURN_PIPETTE_TIP_GROUP
     | RETURN_TOOL
+    | SWAP_TO_TOOL
     | WAIT,
     Field(discriminator="type"),
 ]
