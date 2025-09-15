@@ -1,6 +1,6 @@
 [project]
 name = "tcode-api"
-version = "1.23.0"
+version = "1.24.0"
 description = "TCode API specification implemented in pydantic"
 authors = [
     { name = "Connor Novak", email = "connor@trilo.bio" }

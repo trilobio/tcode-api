@@ -50,7 +50,7 @@
     "well": {
         "bottom_shape": {
             "type": "V-Shape",
-            "direction": "Width-wide",
+            "direction": "x-axis",
             "offset": {
                 "type": "ValueWithUnits",
                 "units": "mm",

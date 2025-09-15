@@ -310,7 +310,7 @@ class VBottomDescription(_BaseModelStrict):
     """Description of a V-bottom well (think trough)."""
 
     type: Literal["V-Shape"] = "V-Shape"
-    direction: Literal["Width-wide", "Length-wide"]
+    direction: Literal["x-axis", "y-axis"]
     offset: ValueWithUnits
 
 
@@ -318,7 +318,7 @@ class VBottomDescriptor(_BaseModelStrict):
     """VBottomDescription with optional parameters."""
 
     type: Literal["V-Shape"] = "V-Shape"
-    direction: Literal["Width-wide", "Length-wide"] | None = None
+    direction: Literal["x-axis", "y-axis"] | None = None
     offset: ValueWithUnits | None = None
 
 
