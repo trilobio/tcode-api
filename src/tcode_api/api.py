@@ -499,7 +499,7 @@ class WellPlateDescription(_LabwareBaseDescription):
     """Description of a well plate.
 
     :note: The exception to the 'no optional attributes' rule is `lid_offset` and `lid`.
-    These attributes default to None, assuming that a described labware has no lid.
+        These attributes default to None, assuming that a described labware has no lid.
     """
 
     type: Literal["WellPlate"] = "WellPlate"

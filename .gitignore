@@ -21,3 +21,6 @@ fp-info-cache
 *.png
 
 .idea
+
+# Sphinx Documentation
+docs/build

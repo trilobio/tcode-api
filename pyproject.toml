@@ -1,9 +1,9 @@
 [project]
 name = "tcode-api"
 version = "1.25.0"
-description = "TCode API specification implemented in pydantic"
+description = "Python implementation of Trilobio's TCode API"
 authors = [
-    { name = "Connor Novak", email = "connor@trilo.bio" }
+    { name = "Trilobio", email = "hello@trilo.bio" }
 ]
 readme = "README.md"
 requires-python = ">=3.11"
@@ -24,8 +24,12 @@ plugins = ['pydantic.mypy']
 dev = [
     "black>=25.1.0",
     "coverage>=7.8.2",
+    "furo>=2025.7.19",
     "isort>=6.0.1",
     "mypy>=1.15.0",
+    "sphinx>=8.2.3",
+    "sphinx-autodoc-typehints>=3.2.0",
+    "sphinx-copybutton>=0.5.2",
 ]
 
 
