@@ -18,11 +18,6 @@
         "units": "mm",
         "magnitude": 75
     },
-    "depth": {
-        "type": "ValueWithUnits",
-        "units": "mm",
-        "magnitude": 71.66
-    },
     "grid": {
         "column_count": 1,
         "column_pitch": {
@@ -45,6 +40,39 @@
             "type": "ValueWithUnits",
             "units": "mm",
             "magnitude": 0
+        }
+    },
+    "well": {
+        "bottom_shape": {
+            "type": "Flat"
+        },
+        "depth": {
+            "type": "ValueWithUnits",
+            "units": "mm",
+            "magnitude": 72
+        },
+        "max_volume": {
+            "type": "ValueWithUnits",
+            "units": "µL",
+            "magnitude": 693279
+        },
+        "min_volume": {
+            "type": "ValueWithUnits",
+            "units": "µL",
+            "magnitude": 0
+        },
+        "shape": {
+            "type": "AxisAlignedRectangle",
+            "x_length": {
+                "type": "ValueWithUnits",
+                "units": "mm",
+                "magnitude": 121.5
+            },
+            "y_length": {
+                "type": "ValueWithUnits",
+                "units": "mm",
+                "magnitude": 79.25
+            }
         }
     }
 }
