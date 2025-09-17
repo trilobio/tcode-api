@@ -560,6 +560,7 @@ class TrashDescription(_LabwareBaseDescription):
 
     type: Literal["Trash"] = "Trash"
     depth: ValueWithUnits
+    well: WellDescription
 
 
 class TrashDescriptor(_LabwareBaseDescriptor):
@@ -567,6 +568,7 @@ class TrashDescriptor(_LabwareBaseDescriptor):
 
     type: Literal["Trash"] = "Trash"
     depth: ValueWithUnits | None = None
+    well: WellDescriptor | None = None
 
 
 LabwareDescription = Annotated[
