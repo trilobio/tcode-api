@@ -559,7 +559,6 @@ class TrashDescription(_LabwareBaseDescription):
     """Description of a waste disposal container."""
 
     type: Literal["Trash"] = "Trash"
-    depth: ValueWithUnits
     well: WellDescription
 
 
@@ -567,7 +566,6 @@ class TrashDescriptor(_LabwareBaseDescriptor):
     """TrashDescription with optional parameters."""
 
     type: Literal["Trash"] = "Trash"
-    depth: ValueWithUnits | None = None
     well: WellDescriptor | None = None
 
 
