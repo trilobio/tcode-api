@@ -75,7 +75,7 @@
             },
             "y_length": {
                 "type": "ValueWithUnits",
-                "units": "µL",
+                "units": "mm",
                 "magnitude": 79.25
             }
         }
