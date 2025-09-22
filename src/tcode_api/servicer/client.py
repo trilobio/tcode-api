@@ -3,9 +3,13 @@
 import logging
 
 import requests
-from tcode_api.api import GetStatusResponse, ScheduleCommandRequest, ScheduleCommandResponse
 
 import tcode_api.api as tc
+from tcode_api.servicer.servicer_api import (
+    GetStatusResponse,
+    ScheduleCommandRequest,
+    ScheduleCommandResponse,
+)
 
 _logger = logging.getLogger(__name__)
 
