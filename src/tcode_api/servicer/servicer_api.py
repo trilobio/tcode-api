@@ -6,7 +6,7 @@ from pydantic import BaseModel, field_serializer
 
 import tcode_api.api as tc
 from tcode_api.error import TCodeResultReportInterface
-from tcode_api.types import CommandId
+from tcode_api.types import CommandID
 
 # Response structures #
 
@@ -50,7 +50,7 @@ class ClearScheduleResponse(BaseModel):
 class GetStatusResponse(BaseModel):
     """Response object for get_status endpoint."""
 
-    command_id: CommandId | None
+    command_id: CommandID | None
     operation_count: int
     run_state: bool
     result: Result
@@ -59,7 +59,7 @@ class GetStatusResponse(BaseModel):
 class ScheduleCommandRequest(BaseModel):
     """Request object for the schedule_command endpoint."""
 
-    command_id: CommandId
+    command_id: CommandID
     command: tc.TCode
 
 
@@ -75,7 +75,7 @@ class ScheduleCommandResponse(BaseModel):
 class TCodeCommandSchedulingReport(BaseModel):
     """Report from a single TCode command scheduling call."""
 
-    command_id: CommandId
+    command_id: CommandID
     command: tc.TCode
     result: Result
     duration: float
