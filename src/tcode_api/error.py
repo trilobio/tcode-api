@@ -63,3 +63,27 @@ class ValidatorError(TCodeResultReportInterface, Exception):
         self.code = code
         self.details = details or {}
         self.message = message
+
+
+# Scheduler
+
+
+class SchedulerCode(enum.StrEnum):
+    """Enumeration of the different response codes from the scheduler."""
+
+    SUCCESS = "success"
+    NOT_IMPLEMENTED = "not_implemented"
+
+
+class SchedulerError(TCodeResultReportInterface, Exception):
+    """Custom exception for the scheduler."""
+
+    success: bool = False
+
+    def __init__(
+        self, message: str, code: SchedulerCode, details: dict | None = None
+    ) -> None:
+        super().__init__(message)
+        self.code = code
+        self.details = details or {}
+        self.message = message
