@@ -136,3 +136,53 @@ class ResolverResult(TCodeResultReportInterface):
     ) -> Self:
         """Create a result containing an error. Enforces good exception practices through mandatory args."""
         return cls(False, code=code, message=message, details=details)
+
+
+# Executor
+
+
+class ExecutionCode(enum.StrEnum):
+    """Domain-specific code returned from TCode execution.
+
+    This code used in conjunction with the ResolutionResult object to return fine-grained
+    resolution debugging info to the user.
+    """
+
+    SUCCESS = enum.auto()
+    PIPETTE_TIP_DROPOFF_FAILURE = enum.auto()
+    ROBOT_BOOT_STATE_FAILURE = enum.auto()
+    ROBOT_ESTOPPED = enum.auto()
+    INTERNAL_ERROR = enum.auto()
+
+
+class ExecutionResult(TCodeResultReportInterface):
+    """Base class for results returned from the tcode.servicer execution."""
+
+    def __init__(
+        self,
+        success: bool,
+        message: str | None = None,
+        code: ExecutionCode | None = None,
+        details: dict | None = None,
+    ) -> None:
+        self.success = success
+        self.message = message or ""
+        self.code = code or ExecutionCode.SUCCESS
+        self.details = details or {}
+
+    @classmethod
+    def ok(cls, details: dict | None = None) -> Self:
+        """Create a successful result."""
+        return cls(True, details=details)
+
+    @classmethod
+    def error(
+        cls, code: ExecutionCode, message: str, details: dict | None = None
+    ) -> Self:
+        """Create a result containing an error. Enforces good exception practices through mandatory args."""
+        return cls(False, code=code, message=message, details=details)
+
+    def __repr__(self) -> str:
+        """Concise string representation of object."""
+        inner_str = "ok" if self.success else f"error, code={self.code}"
+        return "ExecutionResult(" + inner_str + ")"
