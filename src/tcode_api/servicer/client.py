@@ -20,8 +20,7 @@ class TCodeServicerClient:
 
     def __init__(self, servicer_url: str) -> None:
         self.servicer_url = servicer_url
-        self.timeout = 15  # Reference: https://docs.python-requests.org/en/latest/user/advanced/#timeouts
-        # Slightly higher in case you need to detect a robot
+        self.timeout = 5  # Reference: https://docs.python-requests.org/en/latest/user/advanced/#timeouts
 
     def clear_schedule(self) -> ClearScheduleResponse:
         """Clear all of the currently scheduled (but as yet unexecuted) TCode commands on the fleet.
@@ -77,7 +76,6 @@ class TCodeServicerClient:
             timeout=self.timeout,
         )
         if requests.codes.ok != rsp.status_code:
-            breakpoint()
             _logger.debug("command: %s", command)
             _logger.debug("response: %s", rsp.text)
         rsp.raise_for_status()
@@ -117,5 +115,5 @@ class TCodeServicerClient:
 
     def discover_fleet(self) -> None:
         """Scan the fleet for new robots, and update all robot states. Useful if you swapped tools manually as a developer."""
-        rsp = requests.get(f"{self.servicer_url}/discover_fleet", timeout=self.timeout)
+        rsp = requests.get(f"{self.servicer_url}/discover_fleet", timeout=20)
         rsp.raise_for_status()

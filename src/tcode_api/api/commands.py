@@ -1,4 +1,4 @@
-"""Definitions of TCode commands."""
+"""TCode command model, implemented in pydantic."""
 
 from typing import Annotated, Literal
 
@@ -25,22 +25,43 @@ from tcode_api.types import Matrix
 
 
 class _TCodeBase(_ConfiguredBaseModel):
-    """Base schema shared by all TCode commands in the TCODE discriminated union."""
+    """Base schema shared by all TCode commands in the TCODE discriminated union.
 
-    ...
+    :param type: Discriminator field, used to determine the specific command type.
+
+    :raises ValidatorError: ``ValidatorErrorCode.INTERNAL_ERROR`` if any unexpected error occurs
+        during validation. If this occurs, file an issue on
+        https://github.com/trilobio/tcode-api/issues.
+    """
+
+    type: str
 
 
 class _RobotSpecificTCodeBase(_TCodeBase):
     """Base schema shared by all TCode commands that are specific to a robot.
 
     This is used to ensure that the command is only executed on the robot with the specified id.
+
+    :param type: see :class: ``_TCodeBase``
+    :param robot_id: Identifier of the robot targeted by this command
     """
 
     robot_id: str
 
 
 class ADD_LABWARE(_TCodeBase):
-    """Resolve the given descriptor to a labware on the fleet and assign it the given id.If a lid_id is provided and a lid is described, assign the lid to the given lid_id."""
+    """Find a matching labware on the fleet and assign it the given id.
+
+    :param type: see :class: ``_TCodeBase``
+    :param id: Identifier to assign to the resolved labware. This id is used in subsequent commands
+        to reference this labware.
+    :param descriptor: Minimal descriptor of the desired labware; resolved on the fleet.
+    :param lid_id: Optional identifier of a lid to associate with the labware. If provided,
+        the labware descriptor must indicate that the labware has a lid.
+
+    :raises ValidatorError: ``ValidatorErrorCode.ID_EXISTS`` if ``id`` is already registered to
+        a labware.
+    """
 
     type: Literal["ADD_LABWARE"] = "ADD_LABWARE"
     id: str
@@ -57,15 +78,56 @@ class ADD_ROBOT(_TCodeBase):
 
 
 class ADD_PIPETTE_TIP_GROUP(_TCodeBase):
-    """Resolve the given descriptor to a list of pipette tips on the fleet and assign it the given id."""
+    """Find a matching group of pipette tips on the fleet and assign it the given id.
+
+    :param type: see :class: ``_TCodeBase``
+    :param id: Identifier to assign to the resolved pipette tip group. This id is used in subsequent
+        commands to reference this pipette tip group.
+    :param descriptor: Minimal descriptor of the desired pipette tip group; resolved on the fleet.
+
+    :raises ValidatorError: ``ValidatorErrorCode.ID_EXISTS`` if ``id`` is already registered to
+        a pipette tip group.
+    """
 
     type: Literal["ADD_PIPETTE_TIP_GROUP"] = "ADD_PIPETTE_TIP_GROUP"
     id: str
     descriptor: PipetteTipGroupDescriptor
 
 
+class ADD_ROBOT(_TCodeBase):
+    """Find a matching robot on the fleet and assign it the given id.
+
+    :param type: see :class: ``_TCodeBase``
+    :param id: Identifier to assign to the resolved robot. This id is used in subsequent commands
+        to reference this robot.
+    :param descriptor: Minimal descriptor of the desired robot; resolved on the fleet.
+
+    :raises ValidatorError: ``ValidatorErrorCode.ID_EXISTS`` if ``id`` is already registered to
+        a robot.
+    """
+
+    type: Literal["ADD_ROBOT"] = "ADD_ROBOT"
+    id: str
+    descriptor: RobotDescriptor
+
+
 class ADD_TOOL(_TCodeBase):
-    """Resolve the given descriptor to a tool on the fleet and assign it the given id."""
+    """Find a matching tool on the fleet and assign it the given id.
+
+    :note: Doesn't subclass ``_RobotSpecificTCodeBase`` because the robot_id parameter is used
+        to resolve the tool, NOT to subsequently target the command.
+
+    :param type: see :class: ``_TCodeBase``
+    :param id: Identifier to assign to the resolved tool. This id is used in subsequent commands
+        to reference this tool.
+    :param descriptor: Minimal descriptor of the desired tool; resolved on the fleet.
+    :param robot_id: Identifier of the robot on which to search for the tool.
+
+    :raises ValidatorError: ``ValidatorErrorCode.ID_EXISTS`` if ``id`` is already registered to
+        a tool.
+    :raises ValidatorError: ``ValidatorErrorCode.ID_NOT_FOUND`` if ``robot_id`` is not registered
+        to a robot.
+    """
 
     type: Literal["ADD_TOOL"] = "ADD_TOOL"
     id: str
@@ -74,7 +136,28 @@ class ADD_TOOL(_TCodeBase):
 
 
 class ASPIRATE(_RobotSpecificTCodeBase):
-    """Command the targeted robot to aspirate a given fluid volume at a given speed."""
+    """Aspirate a given fluid volume at a given speed into the target robot's pipette.
+
+    :param type: see :class: ``_TCodeBase``
+    :param robot_id: see :class: ``_RobotSpecificTCodeBase``
+    :param volume: Aspiration volume; expects volume units
+    :param speed: Aspiration speed; expects volume/time units
+
+    :raises ValidatorError: ``ValidatorErrorCode.ID_NOT_FOUND`` if ``robot_id`` is not registered
+        to a robot, or if the targeted robot's currently held tool id is not registered.
+    :raises ValidatorError: ``ValidatorErrorCode.TOOL_NOT_MOUNTED`` if the targeted robot is not
+        currently holding a tool.
+    :raises ValidatorError: ``ValidatorErrorCode.UNEXPECTED_TOOL`` if the targeted robot has a tool
+        mounted that is not a pipette.
+    :raises ValidatorError: ``ValidatorErrorCode.PIPETTE_TIP_NOT_MOUNTED`` if the targeted robot's
+        currently held pipette does not have a pipette tip mounted.
+    :raises ValidatorError: ``ValidatorErrorCode.EMPTY_PIPETTE_TIP_GROUP`` if the targeted robot's
+        currently held pipette has a pipette tip group mounted with no pipette tips.
+    :raises ValidatorError: ``ValidatorErrorCode.UNITS_ERROR`` if ``volume`` is not in volume units,
+        or if ``speed`` is not in volume/time units.
+    :raises ValidatorError: ``ValidatorErrorCode.PIPETTE_VOLUME_LIMIT_EXCEEDED`` if the targeted
+        robot's currently held pipette's maximum volume is exceeded by this aspiration.
+    """
 
     type: Literal["ASPIRATE"] = "ASPIRATE"
     volume: ValueWithUnits
@@ -82,15 +165,36 @@ class ASPIRATE(_RobotSpecificTCodeBase):
 
 
 class CALIBRATE_LABWARE_HEIGHT(_RobotSpecificTCodeBase):
-    """TCode command to use the currently held tool to tune the height of a target labware by probing.
+    """Use the target robot's currently held tool to tune the height of a target labware by probing.
 
+    :warning: This command is not robustly tested!
+
+    :param type: see :class: ``_TCodeBase``
+    :param robot_id: see :class: ``_RobotSpecificTCodeBase``
     :param location: The location attribute specifes which labware and where on the labware to probe.
-        Unlike other location-based commands (ex. :class: MOVE_TO_LOCATION), :class: CALIBRATE_LABWARE_HEIGHT
-        only supports locations that hold references to a labware.
-    :param persistent: When raised, all labware of the same type and brand will be modified. This
-        calibration DOES NOT APPLY
-        If not raised, only the current in-place transform is applied. Restarting the tcode
-        server will reset the calibration.
+        Unlike other location-based commands (ex. :class: MOVE_TO_LOCATION),
+        :class: ``CALIBRATE_LABWARE_HEIGHT`` only supports locations that hold references to a labware.
+
+    :param persistent: When raised, all labware of the same type and brand will be modified. If not
+        raised, only the current in-place transform is applied. Restarting the tcode server will
+        reset the calibration.
+
+    :raises ValidatorError: ``ValidatorErrorCode.ID_NOT_FOUND`` if any of the following are true:
+        * ``robot_id`` is not registered to a robot
+        * The targeted robot's currently held tool id is not registered
+        * The labware id referenced in ``location`` is not registered
+
+    :raises ValidatorError: ``ValidatorErrorCode.TOOL_NOT_MOUNTED`` if the targeted robot is not
+        currently holding a tool.
+
+    :raises ValidatorError: ``ValidatorErrorCode.UNEXPECTED_TOOL`` if the targeted robot has a tool
+        mounted that is not compatible with probing.
+
+    :raises ValidatorError: ``ValidatorErrorCode.PIPETTE_TIP_NOT_MOUNTED`` if the targeted robot's
+        currently held tool is a pipette that does not have a pipette tip mounted.
+
+    :raises ValidatorError: ``ValidatorErrorCode.EMPTY_PIPETTE_TIP_GROUP`` if the targeted robot's
+        currently held tool is a pipette that has a pipette tip group mounted with no pipette tips.
     """
 
     type: Literal["CALIBRATE_LABWARE_HEIGHT"] = "CALIBRATE_LABWARE_HEIGHT"
@@ -99,7 +203,9 @@ class CALIBRATE_LABWARE_HEIGHT(_RobotSpecificTCodeBase):
 
 
 class CALIBRATE_LABWARE_WELL_DEPTH(_RobotSpecificTCodeBase):
-    """TCode command to use the currently held tool to tune the depth of a target labware's well by probing.
+    """Use the target robot's held tool to tune the depth of a target labware's well by probing.
+
+    :warning: This command is not robustly tested!
 
     An example TCode snippet to calibrate using a pipette tip is here:
     ```
@@ -109,37 +215,77 @@ class CALIBRATE_LABWARE_WELL_DEPTH(_RobotSpecificTCodeBase):
     CALIBRATE_LABWARE_WELL_DEPTH(location=LocationAsLabwareIndex(labware_id=..., location_index=...))
     ```
 
-    :param location: The location attribute specifes which labware and where on the labware to probe.
-        Unlike other location-based commands (ex. :class: MOVE_TO_LOCATION), :class: CALIBRATE_LABWARE_WELL_DEPTH
-        only supports locations that hold references to a labware.
-    :param modify_all_wells: This flag indicates whether only the probed well's depth should be modified,
-        or if the depths of all of the wells in the labware should be modified.
-        Defaults to modifying all of the wells.
-    :param persistent: When raised, all labware of the same type and brand will be modified. This
-        calibration DOES NOT APPLY
-        If not raised, only the current in-place transform is applied. Restarting the tcode
-        server will reset the calibration.
+    :param type: see :class: ``_TCodeBase``
+    :param robot_id: see :class: ``_RobotSpecificTCodeBase``
+    :param location: The location attribute specifes which labware and where on the labware to
+        probe. Unlike other location-based commands (ex. :class: MOVE_TO_LOCATION),
+        :class: ``CALIBRATE_LABWARE_HEIGHT`` only supports locations that hold references to a
+        labware.
+
+    :param persistent: When raised, all labware of the same type and brand will be modified. If not
+        raised, only the current in-place transform is applied. Restarting the tcode server will
+        reset the calibration.
+
+    :param modify_all_wells: This flag indicates whether only the probed well's depth should be
+        modified, or if the depths of all of the wells in the labware should be modified. Defaults
+        to modifying all of the wells.
+
+    :raises ValidatorError: ``ValidatorErrorCode.ID_NOT_FOUND`` if any of the following are true:
+        * ``robot_id`` is not registered to a robot
+        * The targeted robot's currently held tool id is not registered
+        * The labware id referenced in ``location`` is not registered
+
+    :raises ValidatorError: ``ValidatorErrorCode.TOOL_NOT_MOUNTED`` if the targeted robot is not
+        currently holding a tool.
+
+    :raises ValidatorError: ``ValidatorErrorCode.UNEXPECTED_TOOL`` if the targeted robot has a tool
+        mounted that is not compatible with probing.
+
+    :raises ValidatorError: ``ValidatorErrorCode.PIPETTE_TIP_NOT_MOUNTED`` if the targeted robot's
+        currently held tool is a pipette that does not have a pipette tip mounted.
+
+    :raises ValidatorError: ``ValidatorErrorCode.EMPTY_PIPETTE_TIP_GROUP`` if the targeted robot's
+        currently held tool is a pipette that has a pipette tip group mounted with no pipette tips.
     """
 
     type: Literal["CALIBRATE_LABWARE_WELL_DEPTH"] = "CALIBRATE_LABWARE_WELL_DEPTH"
     location: LocationAsLabwareIndex | LocationRelativeToLabware
-    modify_all_wells: bool = True
     persistent: bool
+    modify_all_wells: bool = True
 
 
 class CALIBRATE_TOOL_FOR_PROBING(_RobotSpecificTCodeBase):
-    """Command the targeted robot to calibrate the currently held tool for probing.
+    """Calibrate the target robot's currently held tool for probing.
 
     :note: If a bare tool is held, the tool's transform will be calibrated.
     :note: If a pipette tip is held, the pipette tip's relationship to the tool will be calibrated.
 
-    :param z_only: When raised, tool is only calibrated for z-axis probing. If not raised,
-        tool is calibrated for x, y, and z.
+    :param type: see :class: ``_TCodeBase``
+    :param robot_id: see :class: ``_RobotSpecificTCodeBase``
+    :param z_only: When raised, tool is only calibrated for z-axis probing. If not raised, tool is
+        calibrated for x, y, and z.
+
     :param persistent: When raised, the behavior is dependent on the tool mounted.
-        If a bare tool is mounted, the transform is saved to the tool's configuration.
-        If a pipette tip is mounted, the transform is applied to all pipette tips of that brand.
-        If not raised, only the currently in-place transform is applied. Restarting the tcode
-        server will reset the calibration.
+        * If a bare tool is mounted, the transform is saved to the tool's configuration.
+        * If a pipette tip is mounted, the transform is applied to all pipette tips of that brand.
+        * If not raised, only the currently in-place transform is applied. Restarting the tcode
+            server will reset the calibration.
+
+    :raises ValidatorError: ``ValidatorErrorCode.ID_NOT_FOUND`` if any of the following are true:
+        * ``robot_id`` is not registered to a robot
+        * The targeted robot's currently held tool id is not registered
+
+    :raises ValidatorError: ``ValidatorErrorCode.TOOL_NOT_MOUNTED`` if the targeted robot is not
+        currently holding a tool.
+
+    :raises ValidatorError: ``ValidatorErrorCode.UNEXPECTED_TOOL`` if the targeted robot has a tool
+        mounted that is not compatible with probing.
+
+    :raises ValidatorError: ``ValidatorErrorCode.NOT_IMPLEMENTED`` if any of the following are true:
+        * ``z_only`` is False, and the targeted robot's currently held tool is an eight-channel
+            pipette
+        * ``z_only`` is False, and the targeted robot's currently held tool is a pipette with a
+            pipette tip group mounted
     """
 
     type: Literal["CALIBRATE_TOOL_FOR_PROBING"] = "CALIBRATE_TOOL_FOR_PROBING"
@@ -150,8 +296,28 @@ class CALIBRATE_TOOL_FOR_PROBING(_RobotSpecificTCodeBase):
 class CREATE_LABWARE(_RobotSpecificTCodeBase):
     """Create a new physical labware on the targeted robot's deck.
 
-    :note: This command adds a labware to TCode's internal state; the description provided is NOT a descriptor, and is NOT resolved.
-    :note: The labware will be created in the specified deck slot, and TCode will from here on assume that the slot is occupied by this labware.
+    :note: This command adds a labware to TCode's internal state; the description provided is NOT
+        a descriptor, and is NOT resolved.
+
+    :note: The labware will be created in the specified deck slot, and TCode will from here on
+        assume that the slot is occupied by this labware.
+
+    :warning: This command does NOT raise a ValidatorError if the target deck slot doesn't exist on
+        the target robot, or if the target deck slot is already occupied. These features are coming
+        in a future release.
+
+    :param type: see :class: ``_TCodeBase``
+    :param robot_id: see :class: ``_RobotSpecificTCodeBase``
+    :param description: Full description of the labware to create.
+        See also :class: ``LabwareDescription``.
+
+    :param holder: The holder in which to place the new labware.
+
+    :raises ValidatorError: ``ValidatorErrorCode.ID_NOT_FOUND`` if ``robot_id`` is not registered
+        to a robot.
+
+    :raise ValidatorError: ``ValidatorErrorCode.UNITS_ERROR`` if ``description`` contains invalid
+        units data.
     """
 
     type: Literal["CREATE_LABWARE"] = "CREATE_LABWARE"
@@ -160,7 +326,11 @@ class CREATE_LABWARE(_RobotSpecificTCodeBase):
 
 
 class COMMENT(_TCodeBase):
-    """A comment, included for human readability and comprehension of the TCode script."""
+    """A comment, included for human readability and comprehension of the TCode script.
+
+    :param type: see :class: ``_TCodeBase``
+    :param text: The comment text.
+    """
 
     type: Literal["COMMENT"] = "COMMENT"
     text: str
@@ -171,6 +341,14 @@ class DELETE_LABWARE(_RobotSpecificTCodeBase):
 
     :note: This labware will no longer be available to future ADD_LABWARE resolution
     :note: TCode will assume that the holder previously occupied by this labware is now empty.
+
+    :param type: see :class: ``_TCodeBase``
+    :param robot_id: see :class: ``_RobotSpecificTCodeBase``
+    :param labware_id: Identifier of the labware to remove, as previously assigned by
+        ``ADD_LABWARE``.
+
+    :raises ValidatorError: ``ValidatorErrorCode.ID_NOT_FOUND`` if ``robot_id`` is not registered to
+        a robot.
     """
 
     type: Literal["DELETE_LABWARE"] = "DELETE_LABWARE"
@@ -178,13 +356,56 @@ class DELETE_LABWARE(_RobotSpecificTCodeBase):
 
 
 class DISCARD_PIPETTE_TIP_GROUP(_RobotSpecificTCodeBase):
-    """Command the targeted robot to dispose of its currently held pipette tip(s) into any accessible dry waste disposal location."""
+    """Dispose of the target robot's currently held pipette tip(s) into any accessible dry waste
+        disposal location.
+
+    :param type: see :class: ``_TCodeBase``
+    :param robot_id: see :class: ``_RobotSpecificTCodeBase``
+
+    :raises ValidatorError: ``ValidatorErrorCode.ID_NOT_FOUND`` if any of the following are true:
+        * ``robot_id`` is not registered to a robot
+        * The targeted robot's currently held tool id is not registered
+        * The targeted robot's currently held pipette tip group id is not registered
+
+    :raises ValidatorError: ``ValidatorErrorCode.TOOL_NOT_MOUNTED`` if the targeted robot is not
+        currently holding a tool.
+
+    :raises ValidatorError: ``ValidatorErrorCode.UNEXPECTED_TOOL`` if the targeted robot has a tool
+        mounted that is not a pipette.
+
+    :raises ValidatorError: ``ValidatorErrorCode.PIPETTE_TIP_NOT_MOUNTED`` if the targeted robot's
+        currently held pipette does not have a pipette tip mounted.
+
+    :raises ValidatorError: ``ValidatorErrorCode.EMPTY_PIPETTE_TIP_GROUP`` if the targeted robot's
+        currently held pipette has a pipette tip group mounted with no pipette tips.
+    """
 
     type: Literal["DISCARD_PIPETTE_TIP_GROUP"] = "DISCARD_PIPETTE_TIP_GROUP"
 
 
 class DISPENSE(_RobotSpecificTCodeBase):
-    """Command the targeted robot to dispense a given fluid volume at a given speed."""
+    """Dispense a given fluid volume at a given speed from the target robot's pipette.
+
+    :param type: see :class: ``_TCodeBase``
+    :param robot_id: see :class: ``_RobotSpecificTCodeBase``
+    :param volume: Dispense volume; expects volume units
+    :param speed: Dispense speed; expects volume/time units
+
+    :raises ValidatorError: ``ValidatorErrorCode.ID_NOT_FOUND`` if ``robot_id`` is not registered
+        to a robot, or if the targeted robot's currently held tool id is not registered.
+    :raises ValidatorError: ``ValidatorErrorCode.TOOL_NOT_MOUNTED`` if the targeted robot is not
+        currently holding a tool.
+    :raises ValidatorError: ``ValidatorErrorCode.UNEXPECTED_TOOL`` if the targeted robot has a tool
+        mounted that is not a pipette.
+    :raises ValidatorError: ``ValidatorErrorCode.PIPETTE_TIP_NOT_MOUNTED`` if the targeted robot's
+        currently held pipette does not have a pipette tip mounted.
+    :raises ValidatorError: ``ValidatorErrorCode.EMPTY_PIPETTE_TIP_GROUP`` if the targeted robot's
+        currently held pipette has a pipette tip group mounted with no pipette tips.
+    :raises ValidatorError: ``ValidatorErrorCode.UNITS_ERROR`` if ``volume`` is not in volume units,
+        or if ``speed`` is not in volume/time units.
+    :raises ValidatorError: ``ValidatorErrorCode.PIPETTE_VOLUME_LIMIT_EXCEEDED`` if the targeted
+        robot's currently held pipette's minimum volume is exceeded by this dispense.
+    """
 
     type: Literal["DISPENSE"] = "DISPENSE"
     volume: ValueWithUnits
@@ -192,6 +413,44 @@ class DISPENSE(_RobotSpecificTCodeBase):
 
 
 class MOVE_TO_LOCATION(_RobotSpecificTCodeBase):
+    """Move the target robot's control point to the specified location.
+
+    :warning: Currently, only ``location`` as a ``LocationAsLabwareIndex`` is fully validated.
+        Other location types are not yet validated before runtime, and may result in unexpected
+        behavior.
+
+    :param type: see :class: ``_TCodeBase``
+    :param robot_id: see :class: ``_RobotSpecificTCodeBase``
+    :param location: Target location to move to.
+    :param location_offset: Optional offset transform to apply to the target location before
+        moving. Defaults to the identity transform.
+
+    :param flange: Optional location describing a robot control point other than the default. If
+        not specified, the robot's default control point will be used.
+
+    :param flange_offset: Optional offset transform to apply to the flange location before
+        moving. Defaults to the identity transform.
+
+    :param path_type: Optional path type to use during the move. See ``PathType`` enum for options.
+        defaults to the ``PathType.SAFE`` if not given.
+
+    :param trajectory_type: Optional trajectory type to use during the move. See ``TrajectoryType``
+        enum for options. Defaults to the robot's default trajectory type if not given.
+
+    :raises ValidatorError: ``ValidatorErrorCode.ID_NOT_FOUND`` if any of the following are true:
+        * ``robot_id`` is not registered to a robot
+        * ``location`` is a ``LocationAsLabwareIndex`` and the referenced labware id is not yet
+            registered.
+        * ``location`` is a ``LocationAsLabwareIndex`` and the ``location_index`` is out of bounds
+
+    :raises ValidatorError: ``ValidatorErrorCode.TRANSFORM_SIZE_LIMIT_EXCEEDED`` if either
+        ``location_offset`` or ``flange_offset`` contains a linear distance exceeding 100 mm.
+
+    :raises ValidatorError: ``ValidatorErrorCode.UNEXPECTED_LABWARE_TYPE`` if ``location`` is a
+        ``LocationAsLabwareIndex`` and the referenced labware is not a type that supports indexing.
+        (ex. AGAR_PLATE)
+    """
+
     type: Literal["MOVE_TO_LOCATION"] = "MOVE_TO_LOCATION"
     location: Location
     location_offset: Matrix = Field(default_factory=identity_transform_factory)
@@ -202,72 +461,336 @@ class MOVE_TO_LOCATION(_RobotSpecificTCodeBase):
 
 
 class MOVE_TO_JOINT_POSE(_RobotSpecificTCodeBase):
+    """Move the target robot to the specified joint positions.
+
+    :param type: see :class: ``_TCodeBase``
+    :param robot_id: see :class: ``_RobotSpecificTCodeBase``
+    :param joint_positions: List of joint positions to move to; expects joint-specific position
+        units for SCARA-type robots.
+
+    :param relative: When true, the joint positions are interpreted as relative offsets from the
+        robot's current joint positions. When false, the joint positions are interpreted as absolute
+        positions.
+
+    :raises ValidatorError: ``ValidatorErrorCode.ID_NOT_FOUND`` if ``robot_id`` is not registered
+        to a robot.
+
+    :raises ValidatorError: ``ValidatorErrorCode.JOINT_COUNT_MISMATCH`` if the length of
+        ``joint_positions`` is not four.
+
+    :raises ValidatorError: ``ValidatorErrorCode.UNITS_ERROR`` if any of the values in
+        ``joint_positions`` are not in joint-specific position units (length | angle).
+    """
+
     type: Literal["MOVE_TO_JOINT_POSE"] = "MOVE_TO_JOINT_POSE"
     joint_positions: list[ValueWithUnits]
     relative: bool
 
 
 class PAUSE(_TCodeBase):
+    """Pause execution until resumed by the user.
+
+    While ``WAIT`` delays a target robot for a set duration, ``PAUSE`` halts the entire fleet
+    until the user manually resumes execution.
+
+    :param type: see :class: ``_TCodeBase``
+    """
+
     type: Literal["PAUSE"] = "PAUSE"
 
 
 class PICK_UP_LABWARE(_RobotSpecificTCodeBase):
+    """Pick up the target labware with the target robot's currently held plate gripper.
+
+    :param type: see :class: ``_TCodeBase``
+    :param robot_id: see :class: ``_RobotSpecificTCodeBase``
+    :param labware_id: Identifier of the labware to pick up, as previously assigned by
+        ``ADD_LABWARE``.
+    :param grasp_type: Optional grasp type to use when picking up the labware. See
+        :class: ``GraspType`` enum for options. Defaults to ``GraspType.UNSPECIFIED``.
+
+    :raises ValidatorError: ``ValidatorErrorCode.ID_NOT_FOUND`` if any of the following are true:
+        * ``robot_id`` is not registered to a robot
+        * The targeted robot's currently held tool id is not registered
+        * ``labware_id`` is not registered to a labware
+
+    :raises ValidatorError: ``ValidatorErrorCode.TOOL_NOT_MOUNTED`` if the targeted robot is not
+        currently holding a tool.
+    :raises ValidatorError: ``ValidatorErrorCode.UNEXPECTED_TOOL`` if the targeted robot has a tool
+        mounted that is not a plate gripper.
+    """
+
     type: Literal["PICK_UP_LABWARE"] = "PICK_UP_LABWARE"
     labware_id: str
     grasp_type: str = GraspType.UNSPECIFIED.value
 
 
 class PUT_DOWN_LABWARE(_RobotSpecificTCodeBase):
+    """Put down the target robot's currently held labware at the specified location.
+
+    :param type: see :class: ``_TCodeBase``
+    :param robot_id: see :class: ``_RobotSpecificTCodeBase``
+    :param holder: Holder in which to put down the labware.
+        :warning: The holder is currently unverified!
+
+    :raises ValidatorError: ``ValidatorErrorCode.ID_NOT_FOUND`` if any of the following are true:
+        * ``robot_id`` is not registered to a robot
+        * The targeted robot's currently held tool id is not registered
+
+    :raises ValidatorError: ``ValidatorErrorCode.TOOL_NOT_MOUNTED`` if the targeted robot is not
+        currently holding a tool.
+
+    :raises ValidatorError: ``ValidatorErrorCode.UNEXPECTED_TOOL`` if the targeted robot has a tool
+        mounted that is not a plate gripper.
+
+    :raises ValidatorError: ``ValidatorErrorCode.UNNECESSARY`` it the targeted robot is  has a
+        plate gripper that is not holding a labware.
+    """
+
     type: Literal["PUT_DOWN_LABWARE"] = "PUT_DOWN_LABWARE"
     holder: LabwareHolder
 
 
 class REMOVE_LABWARE_LID(_RobotSpecificTCodeBase):
+    """Remove the lid from the target labware.
+
+    :error: This command is not yet implemented, and will always raise a ``ValidatorError`` with
+        code ``ValidatorErrorCode.NOT_IMPLEMENTED``.
+
+    :param type: see :class: ``_TCodeBase``
+    :param robot_id: see :class: ``_RobotSpecificTCodeBase``
+    :param labware_id: Identifier of the labware from which to remove the lid, as previously
+        assigned by ``ADD_LABWARE``.
+    :param storage_holder: Optional holder at which to store the removed lid. If not specified,
+        the lid will be stored in a default holder, if available.
+
+    raises ValidatorError: ``ValidatorErrorCode.NOT_IMPLEMENTED`` all the time.
+    """
+
     type: Literal["REMOVE_LABWARE_LID"] = "REMOVE_LABWARE_LID"
     labware_id: str
     storage_holder: LabwareHolder | None = None
 
 
 class REPLACE_LABWARE_LID(_RobotSpecificTCodeBase):
+    """Replace the lid on the target labware.
+
+    :error: This command is not yet implemented, and will always raise a ``ValidatorError`` with
+        code ``ValidatorErrorCode.NOT_IMPLEMENTED``.
+
+    :param type: see :class: ``_TCodeBase``
+    :param robot_id: see :class: ``_RobotSpecificTCodeBase``
+    :param labware_id: Identifier of the labware on which to replace the lid, as previously
+        assigned by ``ADD_LABWARE``.
+    :param lid_id: Optional identifier of the lid to replace. If not specified, the most recently
+        removed lid will be used, if available.`
+
+    raises ValidatorError: ``ValidatorErrorCode.NOT_IMPLEMENTED`` all the time.
+    """
+
     type: Literal["REPLACE_LABWARE_LID"] = "REPLACE_LABWARE_LID"
     labware_id: str
     lid_id: str | None = None
 
 
 class PICK_UP_PIPETTE_TIP(_RobotSpecificTCodeBase):
+    """Pick up pipette tip(s) with the target robot's currently held pipette at the specified
+        location.
+
+    :note: This is a lower-level TCode command - most users are suggested to use
+        :class: ``RETRIEVE_PIPETTE_TIP_GROUP`` instead.
+
+    :param type: see :class: ``_TCodeBase``
+    :param robot_id: see :class: ``_RobotSpecificTCodeBase``
+    :param location: Location at which to pick up the pipette tip(s).
+        :warning: The location is currently unverified!
+
+    :raises ValidatorError: ``ValidatorErrorCode.ID_NOT_FOUND`` if any of the following are true:
+        * ``robot_id`` is not registered to a robot
+        * The targeted robot's currently held tool id is not registered
+
+    :raises ValidatorError: ``ValidatorErrorCode.TOOL_NOT_MOUNTED`` if the targeted robot is not
+        currently holding a tool.
+
+    :raises ValidatorError: ``ValidatorErrorCode.UNEXPECTED_TOOL`` if the targeted robot has a tool
+        mounted that is not a pipette.
+
+    :raises ValidatorError: ``ValidatorErrorCode.UNEXPECTED_PIPETTE_TIP`` if the targeted robot
+        is currently holding a pipette tip group.
+    """
+
     type: Literal["PICK_UP_PIPETTE_TIP"] = "PICK_UP_PIPETTE_TIP"
     location: Location
 
 
 class PUT_DOWN_PIPETTE_TIP(_RobotSpecificTCodeBase):
+    """Put down the target robot's currently held pipette tip(s) at the specified location.
+
+    :note: This is a lower-level TCode command - most users are suggested to use
+        :class: ``RETURN_PIPETTE_TIP_GROUP`` or :class: ``DISCARD_PIPETTE_TIP_GROUP`` instead.
+
+    :param type: see :class: ``_TCodeBase``
+    :param robot_id: see :class: ``_RobotSpecificTCodeBase``
+    :param location: Location at which to put down the pipette tip(s).
+        :warning: The location is currently unverified!
+
+    :raises ValidatorError: ``ValidatorErrorCode.ID_NOT_FOUND`` if any of the following are true:
+        * ``robot_id`` is not registered to a robot
+        * The targeted robot's currently held tool id is not registered
+        * The targeted robot's currently held pipette tip group id is not registered
+
+    :raises ValidatorError: ``ValidatorErrorCode.TOOL_NOT_MOUNTED`` if the targeted robot is not
+        currently holding a tool.
+
+    :raises ValidatorError: ``ValidatorErrorCode.UNEXPECTED_TOOL`` if the targeted robot has a tool
+        mounted that is not a pipette.
+
+    :raises ValidatorError: ``ValidatorErrorCode.PIPETTE_TIP_NOT_MOUNTED`` if the targeted robot's
+        currently held pipette does not have a pipette tip mounted.
+
+    :raises ValidatorError: ``ValidatorErrorCode.EMPTY_PIPETTE_TIP_GROUP`` if the targeted robot's
+        currently held pipette has a pipette tip group mounted with no pipette tips.
+    """
+
     type: Literal["PUT_DOWN_PIPETTE_TIP"] = "PUT_DOWN_PIPETTE_TIP"
     location: Location
 
 
 class RETRIEVE_PIPETTE_TIP_GROUP(_RobotSpecificTCodeBase):
+    """Pick up the target pipette tip group using the target robot's currently held pipette.
+
+    :param type: see :class: ``_TCodeBase``
+    :param robot_id: see :class: ``_RobotSpecificTCodeBase``
+    :param id: Target pipette tip group identifier.
+
+    :raises ValidatorError: ``ValidatorErrorCode.ID_NOT_FOUND`` if any of the following are true:
+        * ``robot_id`` is not registered to a robot
+        * The targeted robot's currently held tool id is not registered
+        * ``id`` is not registered to a pipette tip group
+
+    :raises ValidatorError: ``ValidatorErrorCode.TOOL_NOT_MOUNTED`` if the targeted robot is not
+        currently holding a tool.
+
+    :raises ValidatorError: ``ValidatorErrorCode.UNEXPECTED_TOOL`` if the targeted robot has a tool
+        mounted that is not a pipette.
+
+    :raises ValidatorError: ``ValidatorErrorCode.UNEXPECTED_PIPETTE_TIP_GROUP`` if the targeted
+        robot is currently holding a pipette tip group.
+    """
+
     type: Literal["RETRIEVE_PIPETTE_TIP_GROUP"] = "RETRIEVE_PIPETTE_TIP_GROUP"
     id: str
 
 
 class RETRIEVE_TOOL(_RobotSpecificTCodeBase):
+    """Pick up the target tool using the target robot's empty flange.
+
+    :param type: see :class: ``_TCodeBase``
+    :param robot_id: see :class: ``_RobotSpecificTCodeBase``
+    :param id: Target tool identifier.
+
+    :raises ValidatorError: ``ValidatorErrorCode.ID_NOT_FOUND`` if any of the following are true:
+        * ``robot_id`` is not registered to a robot
+        * ``id`` is not registered to a tool
+
+    :raises ValidatorError: ``ValidatorErrorCode.UNNECESSARY`` if the targeted robot is already
+        holding the targeted tool.
+
+    :raises ValidatorError: ``ValidatorErrorCode.WRONG_TOOL_MOUNTED`` if the targeted robot is
+        currently holding a tool that is not the targeted tool.
+    """
+
     type: Literal["RETRIEVE_TOOL"] = "RETRIEVE_TOOL"
     id: str
 
 
 class RETURN_PIPETTE_TIP_GROUP(_RobotSpecificTCodeBase):
+    """Return the pipette tip group currently held by the target robot to the location from which
+        it was picked up.
+
+    :param type: see :class: ``_TCodeBase``
+    :param robot_id: see :class: ``_RobotSpecificTCodeBase``
+
+    :raises ValidatorError: ``ValidatorErrorCode.ID_NOT_FOUND`` if any of the following are true:
+        * ``robot_id`` is not registered to a robot
+        * The targeted robot's currently held tool id is not registered
+        * The targeted robot's currently held pipette tip group id is not registered
+
+    :raises ValidatorError: ``ValidatorErrorCode.TOOL_NOT_MOUNTED`` if the targeted robot is not
+        currently holding a tool.
+
+    :raises ValidatorError: ``ValidatorErrorCode.UNEXPECTED_TOOL`` if the targeted robot has a tool
+        mounted that is not a pipette.
+
+    :raises ValidatorError: ``ValidatorErrorCode.PIPETTE_TIP_NOT_MOUNTED`` if the targeted robot's
+        currently held pipette does not have a pipette tip mounted.
+
+    :raises ValidatorError: ``ValidatorErrorCode.EMPTY_PIPETTE_TIP_GROUP`` if the targeted robot's
+        currently held pipette has a pipette tip group mounted with no pipette tips.
+    """
+
     type: Literal["RETURN_PIPETTE_TIP_GROUP"] = "RETURN_PIPETTE_TIP_GROUP"
 
 
 class RETURN_TOOL(_RobotSpecificTCodeBase):
+    """Return the tool currently held by the target robot to the tool rack.
+
+    :param type: see :class: ``_TCodeBase``
+    :param robot_id: see :class: ``_RobotSpecificTCodeBase``
+
+    :raises ValidatorError: ``ValidatorErrorCode.ID_NOT_FOUND`` if any of the following are true:
+        * ``robot_id`` is not registered to a robot
+        * The targeted robot's currently held tool id is not registered
+
+    :raises ValidatorError: ``ValidatorErrorCode.UNNECESSARY`` if the targeted robot is already
+        holding the targeted tool.
+
+    :raises ValidatorError: ``ValidatorErrorCode.UNEXPECTED_PIPETTE_TIP_GROUP`` if the targeted
+        robot is currently holding a pipette with a pipette tip group.
+
+    :raises ValidatorError: ``ValidatorErrorCode.UNEXPECTED_LABWARE`` if the targeted robot is
+        currently holding a plate gripper which is in turn holding a labware.
+    """
+
     type: Literal["RETURN_TOOL"] = "RETURN_TOOL"
 
 
 class SWAP_TO_TOOL(_RobotSpecificTCodeBase):
+    """Return any tool currently held by the target robot to the tool rack, then pick up the target
+        tool using the target robot's empty flange.
+
+    :warning: This command doesn't yet have all of the validation functionality of ``RETRIEVE_TOOL``
+        and ``RETURN_TOOL`` - for example, it doesn't yet error if the robot is holding a pipette
+        with a pipette tip group, or a plate gripper holding a labware.
+
+    :param type: see :class: ``_TCodeBase``
+    :param robot_id: see :class: ``_RobotSpecificTCodeBase``
+    :param id: Target tool identifier.
+
+    :raises ValidatorError: ``ValidatorErrorCode.ID_NOT_FOUND`` if any of the following are true:
+        * ``robot_id`` is not registered to a robot
+        * ``id`` is not registered to a tool
+
+    :raises ValidatorError: ``ValidatorErrorCode.UNNECESSARY`` if the targeted robot is already
+        holding the targeted tool.
+    """
+
     type: Literal["SWAP_TO_TOOL"] = "SWAP_TO_TOOL"
     id: str
 
 
 class WAIT(_RobotSpecificTCodeBase):
+    """Delay the subsequent commands to the target robot for the specified duration.
+
+    :param type: see :class: ``_TCodeBase``
+    :param robot_id: see :class: ``_RobotSpecificTCodeBase``
+    :param duration: Duration to wait; expects time units
+
+    :raises ValidatorError: ``ValidatorErrorCode.ID_NOT_FOUND`` if ``robot_id`` is not registered
+        to a robot.
+    :raises ValidatorError: ``ValidatorErrorCode.UNITS_ERROR`` if ``duration`` is not in time units.
+    """
+
     type: Literal["WAIT"] = "WAIT"
     duration: ValueWithUnits
 

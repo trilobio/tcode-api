@@ -23,6 +23,14 @@ class LocationRelativeToCurrentPosition(_Location):
     matrix: Matrix  # 4x4 transformation matrix
 
 
+class LocationAsLabwareHolder(_Location):
+    """Location specified by a labware holder's name."""
+
+    type: Literal["LocationAsLabwareHolder"] = "LocationAsLabwareHolder"
+    robot_id: str
+    labware_holder_name: str
+
+
 class LocationAsLabwareIndex(_Location):
     """Location specified by a tuple of labware id and labware location index."""
 

@@ -98,6 +98,10 @@ class ResolverCode(str, enum.Enum):
     NOT_IMPLEMENTED = "not_implemented"
     DECK_SLOT_NOT_EMPTY = "deck_slot_not_empty"
     SUCCESS = "success"
+    INTERNAL_ERROR = "internal_error"
+    LABWARE_HOLDER_NOT_EMPTY = "labware_holder_occupied"
+    LABWARE_HOLDER_EMPTY = "labware_holder_empty"
+    PLATE_NOT_STACKABLE = "plate_not_stackable"
 
 
 class ResolverResult(_TCodeResultReportBase):
