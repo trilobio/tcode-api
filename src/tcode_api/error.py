@@ -6,7 +6,7 @@ Resources:
 """
 
 import enum
-from typing import Protocol
+from typing import Protocol, Self
 
 
 class TCodeResultReportInterface(Protocol):
@@ -87,3 +87,52 @@ class SchedulerError(TCodeResultReportInterface, Exception):
         self.code = code
         self.details = details or {}
         self.message = message
+
+
+# Resolver
+
+
+class ResolverCode(str, enum.Enum):
+    """Domain-specific code returned from TCode resolution.
+
+    This code used in conjunction with the ResolverResult object to return fine-grained
+    resolution debugging info to the user.
+    """
+
+    ID_EXISTS = "id_exists"
+    HOLDER_NOT_FOUND = "holder_not_found"
+    MULTIPLE_MATCHING_ENTITIES = "multiple_entities"
+    NO_DISCOVERED_ENTITIES = "no_discovered_entities"
+    NO_MATCHING_ENTITIES = "no_matching_entities"
+    NO_UNRESOLVED_ENTITIES = "no_unresolved_entites"
+    NOT_IMPLEMENTED = "not_implemented"
+    DECK_SLOT_NOT_EMPTY = "deck_slot_not_empty"
+    SUCCESS = "success"
+
+
+class ResolverResult(TCodeResultReportInterface):
+    """Base class for results returned from the resolver submodule."""
+
+    def __init__(
+        self,
+        success: bool,
+        message: str | None = None,
+        code: ResolverCode | None = None,
+        details: dict | None = None,
+    ) -> None:
+        self.success = success
+        self.message = message or ""
+        self.code = code or ResolverCode.SUCCESS
+        self.details = details or {}
+
+    @classmethod
+    def ok(cls, message: str | None = None, details: dict | None = None) -> Self:
+        """Create a successful result."""
+        return cls(True, message=message, details=details)
+
+    @classmethod
+    def error(
+        cls, code: ResolverCode, message: str, details: dict | None = None
+    ) -> Self:
+        """Create a result containing an error. Enforces good exception practices through mandatory args."""
+        return cls(False, code=code, message=message, details=details)
