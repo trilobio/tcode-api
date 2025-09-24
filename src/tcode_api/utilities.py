@@ -5,7 +5,7 @@ import random
 import string
 
 import tcode_api.api as tc
-from tcode_api.types import NamedTags, Tags
+from tcode_api.types import NamedTags, Tags, UnsanitizedFloat
 
 
 def generate_id(length: int = 22) -> str:
@@ -19,7 +19,7 @@ def generate_id(length: int = 22) -> str:
     return "".join(random.choice(letters) for i in range(length))
 
 
-def _cast_to_float(value: float | int | str) -> float:
+def _cast_to_float(value: UnsanitizedFloat) -> float:
     """Cast int to float or try to parse string as float."""
     if isinstance(value, (float, int)):
         return float(value)
@@ -29,7 +29,7 @@ def _cast_to_float(value: float | int | str) -> float:
         raise ValueError(f"Cannot convert {value} to float") from e
 
 
-def mm(length: float | int | str) -> tc.ValueWithUnits:
+def mm(length: UnsanitizedFloat) -> tc.ValueWithUnits:
     """tc.ValueWithUnits constructor for millimeters.
 
     :return: tc.ValueWithUnits with magnitude in mm.
@@ -37,7 +37,7 @@ def mm(length: float | int | str) -> tc.ValueWithUnits:
     return tc.ValueWithUnits(magnitude=_cast_to_float(length), units="mm")
 
 
-def m(length: float | int | str) -> tc.ValueWithUnits:
+def m(length: UnsanitizedFloat) -> tc.ValueWithUnits:
     """tc.ValueWithUnits constructor for meters.
 
     :return: tc.ValueWithUnits with magnitude in m.
@@ -45,7 +45,7 @@ def m(length: float | int | str) -> tc.ValueWithUnits:
     return tc.ValueWithUnits(magnitude=_cast_to_float(length), units="m")
 
 
-def rad(angle: float | int | str) -> tc.ValueWithUnits:
+def rad(angle: UnsanitizedFloat) -> tc.ValueWithUnits:
     """tc.ValueWithUnits constructor for radians.
 
     :return: tc.ValueWithUnits with magnitude in rad.
@@ -53,7 +53,7 @@ def rad(angle: float | int | str) -> tc.ValueWithUnits:
     return tc.ValueWithUnits(magnitude=_cast_to_float(angle), units="rad")
 
 
-def ul(volume: float | int | str) -> tc.ValueWithUnits:
+def ul(volume: UnsanitizedFloat) -> tc.ValueWithUnits:
     """tc.ValueWithUnits constructor for uL.
 
     :return: tc.ValueWithUnits with magnitude in uL.
@@ -61,7 +61,7 @@ def ul(volume: float | int | str) -> tc.ValueWithUnits:
     return tc.ValueWithUnits(magnitude=_cast_to_float(volume), units="uL")
 
 
-def ul_per_s(volume: float | int | str) -> tc.ValueWithUnits:
+def ul_per_s(volume: UnsanitizedFloat) -> tc.ValueWithUnits:
     """tc.ValueWithUnits constructor for uL/s.
 
     :return: tc.ValueWithUnits with magnitude in uL/s.
