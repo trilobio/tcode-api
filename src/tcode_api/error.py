@@ -6,18 +6,22 @@ Resources:
 """
 
 import enum
-from typing import Protocol, Self
+from typing import Annotated, Literal, Self
+
+from pydantic import BaseModel, Field
 
 
-class TCodeResultReportInterface(Protocol):
-    """Interface for returning results through TCode API for successful and failed operations.
-    Any class that exposes this interface can be returned to the API caller.
-    """
+class _TCodeResultReportBase(BaseModel):
+    """Interface for returning results through TCode API for successful and failed operations."""
 
+    type: str
     success: bool  # True if the operation was successful, False otherwise
-    code: str  # Domain-specific error code - verified in unittests
     details: dict  # Machine-readable details about the error
     message: str  # Human-readable error message
+    # code: str  # Domain-specific error code - defined in subclasses
+
+
+# Validator
 
 
 class ValidatorErrorCode(enum.StrEnum):
@@ -51,18 +55,11 @@ class ValidatorErrorCode(enum.StrEnum):
     WRONG_TOOL_MOUNTED = "wrong_tool_mounted"
 
 
-class ValidatorError(TCodeResultReportInterface, Exception):
+class ValidatorError(_TCodeResultReportBase):
     """Base class for all tcode.validator errors."""
 
-    success: bool = False
-
-    def __init__(
-        self, message: str, code: ValidatorErrorCode, details: dict | None = None
-    ) -> None:
-        super().__init__(message)
-        self.code = code
-        self.details = details or {}
-        self.message = message
+    type: Literal["ValidatorError"] = "ValidatorError"
+    code: ValidatorErrorCode
 
 
 # Scheduler
@@ -75,18 +72,11 @@ class SchedulerCode(enum.StrEnum):
     NOT_IMPLEMENTED = "not_implemented"
 
 
-class SchedulerError(TCodeResultReportInterface, Exception):
+class SchedulerError(_TCodeResultReportBase):
     """Custom exception for the scheduler."""
 
-    success: bool = False
-
-    def __init__(
-        self, message: str, code: SchedulerCode, details: dict | None = None
-    ) -> None:
-        super().__init__(message)
-        self.code = code
-        self.details = details or {}
-        self.message = message
+    type: Literal["SchedulerError"] = "SchedulerError"
+    code: SchedulerCode
 
 
 # Resolver
@@ -110,32 +100,27 @@ class ResolverCode(str, enum.Enum):
     SUCCESS = "success"
 
 
-class ResolverResult(TCodeResultReportInterface):
+class ResolverResult(_TCodeResultReportBase):
     """Base class for results returned from the resolver submodule."""
 
-    def __init__(
-        self,
-        success: bool,
-        message: str | None = None,
-        code: ResolverCode | None = None,
-        details: dict | None = None,
-    ) -> None:
-        self.success = success
-        self.message = message or ""
-        self.code = code or ResolverCode.SUCCESS
-        self.details = details or {}
+    type: Literal["ResolverResult"] = "ResolverResult"
+    code: ResolverCode
 
     @classmethod
-    def ok(cls, message: str | None = None, details: dict | None = None) -> Self:
+    def ok(cls, message: str = "", details: dict | None = None) -> Self:
         """Create a successful result."""
-        return cls(True, message=message, details=details)
+        details = details or {}
+        return cls(
+            success=True, code=ResolverCode.SUCCESS, message=message, details=details
+        )
 
     @classmethod
     def error(
         cls, code: ResolverCode, message: str, details: dict | None = None
     ) -> Self:
         """Create a result containing an error. Enforces good exception practices through mandatory args."""
-        return cls(False, code=code, message=message, details=details)
+        details = details or {}
+        return cls(success=False, code=code, message=message, details=details)
 
 
 # Executor
@@ -155,34 +140,35 @@ class ExecutionCode(enum.StrEnum):
     INTERNAL_ERROR = enum.auto()
 
 
-class ExecutionResult(TCodeResultReportInterface):
+class ExecutionResult(_TCodeResultReportBase):
     """Base class for results returned from the tcode.servicer execution."""
 
-    def __init__(
-        self,
-        success: bool,
-        message: str | None = None,
-        code: ExecutionCode | None = None,
-        details: dict | None = None,
-    ) -> None:
-        self.success = success
-        self.message = message or ""
-        self.code = code or ExecutionCode.SUCCESS
-        self.details = details or {}
+    type: Literal["ExecutionResult"] = "ExecutionResult"
+    code: ExecutionCode
 
     @classmethod
     def ok(cls, details: dict | None = None) -> Self:
         """Create a successful result."""
-        return cls(True, details=details)
+        details = details or {}
+        return cls(
+            success=True, code=ExecutionCode.SUCCESS, message="", details=details
+        )
 
     @classmethod
     def error(
         cls, code: ExecutionCode, message: str, details: dict | None = None
     ) -> Self:
         """Create a result containing an error. Enforces good exception practices through mandatory args."""
-        return cls(False, code=code, message=message, details=details)
+        details = details or {}
+        return cls(success=False, code=code, message=message, details=details)
 
     def __repr__(self) -> str:
         """Concise string representation of object."""
         inner_str = "ok" if self.success else f"error, code={self.code}"
         return "ExecutionResult(" + inner_str + ")"
+
+
+TCodeResultReport = Annotated[
+    ValidatorError | SchedulerError | ResolverResult | ExecutionResult,
+    Field(discriminator="type"),
+]

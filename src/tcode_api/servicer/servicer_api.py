@@ -5,7 +5,7 @@ from typing import Any, MutableMapping, Self
 from pydantic import BaseModel, field_serializer
 
 import tcode_api.api as tc
-from tcode_api.error import TCodeResultReportInterface
+from tcode_api.error import TCodeResultReport
 from tcode_api.types import CommandID
 
 # Response structures #
@@ -21,7 +21,7 @@ class Result(BaseModel):
 
     @classmethod
     def from_tcode_result_report_interface(
-        cls, result_report: TCodeResultReportInterface
+        cls, result_report: TCodeResultReport
     ) -> Self:
         return cls(
             success=result_report.success,
