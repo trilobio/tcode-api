@@ -1,7 +1,7 @@
 """tcode_api.api interface (to hide the internal sorting of modules)."""
 
+from tcode_api.api.commands import ADD_LABWARE  # noqa: F401
 from tcode_api.api.commands import (
-    ADD_LABWARE,  # noqa: F401
     ADD_PIPETTE_TIP_GROUP,
     ADD_ROBOT,
     ADD_TOOL,
@@ -34,8 +34,8 @@ from tcode_api.api.commands import (
     TCodeScript,
 )
 from tcode_api.api.core import ValueWithUnits  # noqa: F401
+from tcode_api.api.entity import EightChannelPipetteDescriptor  # noqa: F401
 from tcode_api.api.entity import (
-    EightChannelPipetteDescriptor,  # noqa: F401
     GraspType,
     GripperDescriptor,
     LabwareHolderDescriptor,
@@ -87,8 +87,8 @@ from tcode_api.api.labware import (  # noqa: F401
     WellShapeDescription,
     WellShapeDescriptor,
 )
+from tcode_api.api.location import Location  # noqa: F401
 from tcode_api.api.location import (
-    Location,  # noqa: F401
     LocationAsLabwareHolder,
     LocationAsLabwareIndex,
     LocationAsNodeId,
