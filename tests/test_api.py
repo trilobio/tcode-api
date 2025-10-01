@@ -5,6 +5,7 @@ import unittest
 from typing import get_args
 
 import tcode_api.api as tc
+from tcode_api.api.commands import _RobotSpecificTCodeBase, _TCodeBase
 from tcode_api.utilities import generate_id
 
 
@@ -72,14 +73,13 @@ class TestTCodeEndpoints(unittest.TestCase):
 
     def test_endpoints(self) -> None:
         """Test that all endpoints are included in the type."""
-        ENDPOINTS_TO_SKIP = [tc._RobotSpecificTCodeBase]
+        ENDPOINTS_TO_SKIP = [_RobotSpecificTCodeBase]
         endpoints = [
             obj
             for obj in tc.__dict__.values()
             if hasattr(obj, "__bases__")
             and (
-                tc._TCodeBase in obj.__bases__
-                or tc._RobotSpecificTCodeBase in obj.__bases__
+                _TCodeBase in obj.__bases__ or _RobotSpecificTCodeBase in obj.__bases__
             )
         ]
         # https://stackoverflow.com/a/64643971
