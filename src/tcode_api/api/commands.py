@@ -39,24 +39,28 @@ class _RobotSpecificTCodeBase(_TCodeBase):
 
 
 class ADD_LABWARE(_TCodeBase):
+    """Resolve the given descriptor to a labware on the fleet and assign it the given id."""
     type: Literal["ADD_LABWARE"] = "ADD_LABWARE"
     id: str
     descriptor: LabwareDescriptor
 
 
 class ADD_ROBOT(_TCodeBase):
+    """Resolve the given descriptor to a robot on the fleet and assign it the given id."""
     type: Literal["ADD_ROBOT"] = "ADD_ROBOT"
     id: str
     descriptor: RobotDescriptor
 
 
 class ADD_PIPETTE_TIP_GROUP(_TCodeBase):
+    """Resolve the given descriptor to a list of pipette tips on the fleet and assign it the given id."""
     type: Literal["ADD_PIPETTE_TIP_GROUP"] = "ADD_PIPETTE_TIP_GROUP"
     id: str
     descriptor: PipetteTipGroupDescriptor
 
 
 class ADD_TOOL(_TCodeBase):
+    """Resolve the given descriptor to a tool on the fleet and assign it the given id."""
     type: Literal["ADD_TOOL"] = "ADD_TOOL"
     id: str
     descriptor: ToolDescriptor
@@ -64,6 +68,7 @@ class ADD_TOOL(_TCodeBase):
 
 
 class ASPIRATE(_RobotSpecificTCodeBase):
+    """Command the targeted robot to aspirate a given fluid volume at a given speed."""
     type: Literal["ASPIRATE"] = "ASPIRATE"
     volume: ValueWithUnits
     speed: ValueWithUnits
@@ -116,10 +121,10 @@ class CALIBRATE_LABWARE_WELL_DEPTH(_RobotSpecificTCodeBase):
 
 
 class CALIBRATE_TOOL_FOR_PROBING(_RobotSpecificTCodeBase):
-    """TCode command to calibrate the tool for probing.
+    """Command the targeted robot to calibrate the currently held tool for probing.
 
-    If a bare tool is held, the tool's transform will be calibrated. If a pipette tip is held, the
-    pipette tip's relationship to the tool will be calibrated.
+    :note: If a bare tool is held, the tool's transform will be calibrated.
+    :note: If a pipette tip is held, the pipette tip's relationship to the tool will be calibrated.
 
     :param z_only: When raised, tool is only calibrated for z-axis probing. If not raised,
         tool is calibrated for x, y, and z.
@@ -136,12 +141,10 @@ class CALIBRATE_TOOL_FOR_PROBING(_RobotSpecificTCodeBase):
 
 
 class CREATE_LABWARE(_RobotSpecificTCodeBase):
-    """TCode command to create a new labware on the deck of a robot in the fleet.
+    """Create a new physical labware on the targeted robot's deck.
 
-    :param robot_id: The ID of the robot on which to create the labware.
-    :param description: The labware descriptor that describes the labware to be created.
-        Must be fully filled out, UNLIKE typical labware descriptors (which may have unprovided fields).
-    :param deck_slot_name: The name of the deck slot where the labware will be created on the target robot.
+    :note: This command adds a labware to TCode's internal state; the description provided is NOT a descriptor, and is NOT resolved.
+    :note: The labware will be created in the specified deck slot, and TCode will from here on assume that the slot is occupied by this labware.
     """
 
     type: Literal["CREATE_LABWARE"] = "CREATE_LABWARE"
@@ -150,25 +153,28 @@ class CREATE_LABWARE(_RobotSpecificTCodeBase):
 
 
 class COMMENT(_TCodeBase):
+    """A comment, included for human readability and comprehension of the TCode script."""
     type: Literal["COMMENT"] = "COMMENT"
     text: str
 
 
 class DELETE_LABWARE(_RobotSpecificTCodeBase):
-    """TCode command to delete a labware from the fleet.
+    """Physically remove the labware associated with the given id from the targeted robot's deck.
 
-    :param labware_id: The ID of the labware to be deleted.
+    :note: This labware will no longer be available to future ADD_LABWARE resolution
+    :note: TCode will assume that the holder previously occupied by this labware is now empty.
     """
-
     type: Literal["DELETE_LABWARE"] = "DELETE_LABWARE"
     labware_id: str
 
 
 class DISCARD_PIPETTE_TIP_GROUP(_RobotSpecificTCodeBase):
+    """Command the targeted robot to dispose of its currently held pipette tip(s) into any accessible dry waste disposal location."""
     type: Literal["DISCARD_PIPETTE_TIP_GROUP"] = "DISCARD_PIPETTE_TIP_GROUP"
 
 
 class DISPENSE(_RobotSpecificTCodeBase):
+    """Command the targeted robot to dispense a given fluid volume at a given speed."""
     type: Literal["DISPENSE"] = "DISPENSE"
     volume: ValueWithUnits
     speed: ValueWithUnits

@@ -26,6 +26,7 @@ extensions = [
     "sphinx.ext.napoleon",  # Google/NumPy-style docstrings
     "sphinx_autodoc_typehints",
     "sphinx_copybutton",
+    "sphinxcontrib.autodoc_pydantic",
     # "myst_parser",               # Markdown support
 ]
 

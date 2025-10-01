@@ -26,13 +26,17 @@ class _BaseModelWithId(_ConfiguredBaseModel):
 class ValueWithUnits(_ConfiguredBaseModel):
     """A numeric value with associated units.
 
-    The following values are all equivalent:
-        ValueWithUnits(magnitude=0.005, units="L")
-        ValueWithUnits(magnitude=5, units="mL")
-        ValueWithUnits(magnitude=5000, units="uL")
-        ValueWithUnits(magnitude=5000, units="mm³")
+    :note: The following values are all equivalent:
 
-    In python, `pint` is used to resolve units.
+        ``ValueWithUnits(magnitude=0.005, units="L")``
+
+        ``ValueWithUnits(magnitude=5, units="mL")``
+
+        ``ValueWithUnits(magnitude=5000, units="uL")``
+
+        ``ValueWithUnits(magnitude=5000, units="mm³")``
+
+    :note: In the python implementation, ``pint`` is used to resolve units.
     """
 
     type: Literal["ValueWithUnits"] = "ValueWithUnits"
