@@ -95,7 +95,6 @@ from tcode_api.api.labware_holder import (  # noqa: F401  # isort:skip
 )
 from tcode_api.api.location import (  # noqa: F401  # isort:skip
     Location,
-    LocationAsLabwareHolder,
     LocationAsLabwareIndex,
     LocationAsNodeId,
     LocationRelativeToCurrentPosition,
