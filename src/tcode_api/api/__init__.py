@@ -87,8 +87,13 @@ from tcode_api.api.labware import (  # noqa: F401
     WellShapeDescription,
     WellShapeDescriptor,
 )
-from tcode_api.api.location import Location  # noqa: F401
+from tcode_api.api.labware_holder import (
+    LabwareHolder,  # noqa: F401
+    LabwareHolderName,
+    LabwareId,
+)
 from tcode_api.api.location import (
+    Location,  # noqa: F401
     LocationAsLabwareHolder,
     LocationAsLabwareIndex,
     LocationAsNodeId,

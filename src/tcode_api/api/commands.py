@@ -15,6 +15,7 @@ from tcode_api.api.labware import (
     LabwareDescriptor,
     PipetteTipGroupDescriptor,
 )
+from tcode_api.api.labware_holder import LabwareHolder
 from tcode_api.api.location import (
     Location,
     LocationAsLabwareIndex,
@@ -39,11 +40,12 @@ class _RobotSpecificTCodeBase(_TCodeBase):
 
 
 class ADD_LABWARE(_TCodeBase):
-    """Resolve the given descriptor to a labware on the fleet and assign it the given id."""
+    """Resolve the given descriptor to a labware on the fleet and assign it the given id.If a lid_id is provided and a lid is described, assign the lid to the given lid_id."""
 
     type: Literal["ADD_LABWARE"] = "ADD_LABWARE"
     id: str
     descriptor: LabwareDescriptor
+    lid_id: str | None = None
 
 
 class ADD_ROBOT(_TCodeBase):
@@ -154,7 +156,7 @@ class CREATE_LABWARE(_RobotSpecificTCodeBase):
 
     type: Literal["CREATE_LABWARE"] = "CREATE_LABWARE"
     description: LabwareDescription
-    deck_slot_name: str
+    holder: LabwareHolder
 
 
 class COMMENT(_TCodeBase):
@@ -217,13 +219,13 @@ class PICK_UP_LABWARE(_RobotSpecificTCodeBase):
 
 class PUT_DOWN_LABWARE(_RobotSpecificTCodeBase):
     type: Literal["PUT_DOWN_LABWARE"] = "PUT_DOWN_LABWARE"
-    location: Location
+    holder: LabwareHolder
 
 
 class REMOVE_LABWARE_LID(_RobotSpecificTCodeBase):
     type: Literal["REMOVE_LABWARE_LID"] = "REMOVE_LABWARE_LID"
     labware_id: str
-    storage_location: Location | None = None
+    storage_holder: LabwareHolder | None = None
 
 
 class REPLACE_LABWARE_LID(_RobotSpecificTCodeBase):
