@@ -69,14 +69,6 @@ class ADD_LABWARE(_TCodeBase):
     lid_id: str | None = None
 
 
-class ADD_ROBOT(_TCodeBase):
-    """Resolve the given descriptor to a robot on the fleet and assign it the given id."""
-
-    type: Literal["ADD_ROBOT"] = "ADD_ROBOT"
-    id: str
-    descriptor: RobotDescriptor
-
-
 class ADD_PIPETTE_TIP_GROUP(_TCodeBase):
     """Find a matching group of pipette tips on the fleet and assign it the given id.
 
