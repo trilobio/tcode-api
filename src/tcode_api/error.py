@@ -53,6 +53,7 @@ class ValidatorErrorCode(enum.StrEnum):
     UNITS_ERROR = "units_error"
     UNNECESSARY = "unnecessary"
     WRONG_TOOL_MOUNTED = "wrong_tool_mounted"
+    INVALID_INDEX = "invalid_index"
 
 
 class ValidatorError(_TCodeResultReportBase):
