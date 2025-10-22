@@ -58,9 +58,9 @@ class LabwareIO:
         """
         file_path = self._resolve_file_path(identifier, exists=True)
         with file_path.open("r", encoding="utf-8") as f:
-            data = json.load(f)
+            data = f.read()
 
-        model_constructor = self.labware_type_adapter.validate_python(data)
+        model_constructor = self.labware_type_adapter.validate_python(json.loads(data))
         return model_constructor.model_validate_json(data)
 
     def write(

@@ -1,6 +1,7 @@
 """Client for scheduling, executing, and clearing TCode from a fleet."""
 
 import logging
+import time
 
 import requests
 
@@ -117,3 +118,30 @@ class TCodeServicerClient:
         """Scan the fleet for new robots, and update all robot states. Useful if you swapped tools manually as a developer."""
         rsp = requests.get(f"{self.servicer_url}/discover_fleet", timeout=20)
         rsp.raise_for_status()
+
+    def execute_run_loop(self) -> None:
+        """Run a blocking loop that monitors the servicer's status and exits when the current
+            script is complete or an error occurs.
+
+        :note: This method can be interrupted with <Ctrl-C>, which will clear the robot state
+            and exit cleanly.
+        """
+        while True:
+            try:
+                time.sleep(0.1)
+                status = self.get_status()
+
+                if status.operation_count == 0:
+                    self.set_run_state(False)
+                    return
+
+                if not status.result.success:
+                    print(status.result.message)
+                    self.set_run_state(False)
+                    return
+
+            except KeyboardInterrupt:
+                self.set_run_state(False)
+                self.clear_tcode_resolution()
+                self.clear_labware()
+                return
