@@ -1,0 +1,31 @@
+{
+  "type": "PipetteTip",
+  "tags": [
+    "manifold_match_6"
+  ],
+  "named_tags": {
+    "brand": "biotix_utip",
+    "model": "biotix_utip_p1000.obj"
+  },
+  "has_filter": false,
+  "height": {
+    "type": "ValueWithUnits",
+    "magnitude": 81.7,
+    "units": "mm"
+  },
+  "flange_height": {
+    "type": "ValueWithUnits",
+    "magnitude": 24.1,
+    "units": "mm"
+  },
+  "max_volume": {
+    "type": "ValueWithUnits",
+    "magnitude": 1000.0,
+    "units": "uL"
+  },
+  "min_volume": {
+    "type": "ValueWithUnits",
+    "magnitude": 100.0,
+    "units": "uL"
+  }
+}

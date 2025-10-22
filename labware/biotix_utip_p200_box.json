@@ -1,0 +1,82 @@
+{
+  "tags": [],
+  "named_tags": {
+    "name": "biotix_utip_p200_box",
+    "brand": "biotix_utip",
+    "model": "biotix_utip_p300_box.obj",
+    "kind": "PIPETTE_TIP_BOX"
+  },
+  "x_length": {
+    "type": "ValueWithUnits",
+    "magnitude": 127.76,
+    "units": "mm"
+  },
+  "y_length": {
+    "type": "ValueWithUnits",
+    "magnitude": 85.48,
+    "units": "mm"
+  },
+  "z_length": {
+    "type": "ValueWithUnits",
+    "magnitude": 42.1,
+    "units": "mm"
+  },
+  "type": "PipetteTipBox",
+  "grid": {
+    "type": "Grid",
+    "row_count": 8,
+    "column_count": 12,
+    "row_pitch": {
+      "type": "ValueWithUnits",
+      "magnitude": 9.0,
+      "units": "mm"
+    },
+    "column_pitch": {
+      "type": "ValueWithUnits",
+      "magnitude": 9.0,
+      "units": "mm"
+    },
+    "row_offset": {
+      "type": "ValueWithUnits",
+      "magnitude": 0.0,
+      "units": "mm"
+    },
+    "column_offset": {
+      "type": "ValueWithUnits",
+      "magnitude": 0.0,
+      "units": "mm"
+    }
+  },
+  "full": true,
+  "pipette_tip": {
+    "type": "PipetteTip",
+    "tags": [
+      "manifold_match_8"
+    ],
+    "named_tags": {
+      "brand": "biotix_utip",
+      "model": "biotix_utip_p200.obj"
+    },
+    "has_filter": false,
+    "height": {
+      "type": "ValueWithUnits",
+      "magnitude": 50.6,
+      "units": "mm"
+    },
+    "flange_height": {
+      "type": "ValueWithUnits",
+      "magnitude": 16.05,
+      "units": "mm"
+    },
+    "max_volume": {
+      "type": "ValueWithUnits",
+      "magnitude": 200.0,
+      "units": "uL"
+    },
+    "min_volume": {
+      "type": "ValueWithUnits",
+      "magnitude": 20.0,
+      "units": "uL"
+    }
+  }
+}

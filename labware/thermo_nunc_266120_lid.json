@@ -1,0 +1,26 @@
+{
+  "tags": [],
+  "named_tags": {
+    "name": "266120_Thermo NUNC_96W_flat_lid",
+    "brand": "thermofisher-scientific",
+    "model": "nunc_omnitray_lid.obj",
+    "kind": "LID"
+  },
+  "x_length": {
+    "type": "ValueWithUnits",
+    "magnitude": 127.35,
+    "units": "mm"
+  },
+  "y_length": {
+    "type": "ValueWithUnits",
+    "magnitude": 85.4,
+    "units": "mm"
+  },
+  "z_length": {
+    "type": "ValueWithUnits",
+    "magnitude": 8.0,
+    "units": "mm"
+  },
+  "type": "Lid",
+  "stackable": true
+}
