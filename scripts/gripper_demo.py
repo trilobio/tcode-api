@@ -60,7 +60,7 @@ builder.add_command(
 builder.add_command(tc.RETURN_TOOL(robot_id=robot_id))
 
 # Run the script
-client = TCodeServicerClient("http://192.168.8.157:8002")
+client = TCodeServicerClient()
 
 # Set up stuff
 client.clear_schedule()

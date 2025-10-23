@@ -1,6 +1,8 @@
 """TCode command model, implemented in pydantic."""
 
-from typing import Annotated, Literal
+from __future__ import annotations
+
+from typing import Annotated, Literal, TextIO
 
 from pydantic import Field
 
@@ -834,3 +836,22 @@ class TCodeScript(_ConfiguredBaseModel):
 
     metadata: Metadata
     commands: list[TCode] = Field(default_factory=list)
+
+    @classmethod
+    def read(cls, file_object: TextIO) -> TCodeScript:
+        """Load a TCode script from a file-like object.
+
+        :param file_object: A file-like object containing the TCode script.
+
+        :returns: The loaded TCode script.
+        """
+        data = file_object.read()
+        return cls.model_validate_json(data)
+
+    def write(self, file_object: TextIO) -> None:
+        """Write the TCode script to a file-like object.
+
+        :param file_object: A file-like object to which to write the TCode script.
+        """
+        data = self.model_dump_json(indent=2)
+        file_object.write(data)

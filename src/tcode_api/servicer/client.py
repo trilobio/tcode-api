@@ -15,12 +15,14 @@ from tcode_api.servicer.servicer_api import (
 
 _logger = logging.getLogger(__name__)
 
+_default_servicer_url = "http://localhost:8002"
+
 
 class TCodeServicerClient:
     """Simple requests-based client for a TCode servicer."""
 
-    def __init__(self, servicer_url: str) -> None:
-        self.servicer_url = servicer_url
+    def __init__(self, servicer_url: str | None = None) -> None:
+        self.servicer_url = servicer_url or _default_servicer_url
         self.timeout = 5  # Reference: https://docs.python-requests.org/en/latest/user/advanced/#timeouts
 
     def clear_schedule(self) -> ClearScheduleResponse:
