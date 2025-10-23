@@ -126,6 +126,7 @@ class TCodeServicerClient:
         :note: This method can be interrupted with <Ctrl-C>, which will clear the robot state
             and exit cleanly.
         """
+        self.set_run_state(True)
         while True:
             try:
                 time.sleep(0.1)
