@@ -140,6 +140,14 @@ def ul_per_s(volume: UnsanitizedFloat) -> tc.ValueWithUnits:
     return tc.ValueWithUnits(magnitude=_cast_to_float(volume), units="uL/s")
 
 
+def s(seconds: UnsanitizedFloat) -> tc.ValueWithUnits:
+    """tc.ValueWithUnits constructor for seconds.
+
+    :return: tc.ValueWithUnits with magnitude in s.
+    """
+    return tc.ValueWithUnits(magnitude=_cast_to_float(seconds), units="s")
+
+
 def create_transform(
     x: tc.ValueWithUnits | None = None,
     y: tc.ValueWithUnits | None = None,
