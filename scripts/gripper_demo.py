@@ -1,10 +1,13 @@
-"""TCode demonstration script of moving labware on deck."""
+"""Demonstrate using a labware gripper to move a plate by lifting and pinching."""
 
 import tcode_api.api as tc
 from tcode_api.servicer import TCodeServicerClient
 from tcode_api.utilities import describe_well_plate, generate_id, labware_loader
 
-script = tc.TCodeScript.new(name="Gripper Demo")
+script = tc.TCodeScript.new(
+    name=__file__,
+    description=__doc__,
+)
 
 # FLEET
 robot_id, gripper_id, labware_id = [generate_id() for _ in range(3)]

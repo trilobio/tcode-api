@@ -9,6 +9,7 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "mypy>=1.15.0", # Installed to ensure type checking of pydantic
+    "pint>=0.25",
     "plac>=1.4.5",
     "pydantic>=2.10.6",
 ]

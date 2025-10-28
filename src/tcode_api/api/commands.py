@@ -9,11 +9,7 @@ from typing import Annotated, Literal, TextIO
 
 from pydantic import Field
 
-from tcode_api.api.core import (
-    ValueWithUnits,
-    _ConfiguredBaseModel,
-    identity_transform_factory,
-)
+from tcode_api.api.core import ValueWithUnits, _ConfiguredBaseModel
 from tcode_api.api.entity import GraspType, RobotDescriptor, ToolDescriptor
 from tcode_api.api.labware import (
     LabwareDescription,
@@ -411,6 +407,16 @@ class DISPENSE(_RobotSpecificTCodeBase):
     speed: ValueWithUnits
 
 
+def _identity_transform() -> Matrix:
+    """Generate an identity transform matrix."""
+    return [
+        [1.0, 0.0, 0.0, 0.0],
+        [0.0, 1.0, 0.0, 0.0],
+        [0.0, 0.0, 1.0, 0.0],
+        [0.0, 0.0, 0.0, 1.0],
+    ]
+
+
 class MOVE_TO_LOCATION(_RobotSpecificTCodeBase):
     """Move the target robot's control point to the specified location.
 
@@ -452,9 +458,9 @@ class MOVE_TO_LOCATION(_RobotSpecificTCodeBase):
 
     type: Literal["MOVE_TO_LOCATION"] = "MOVE_TO_LOCATION"
     location: Location
-    location_offset: Matrix = Field(default_factory=identity_transform_factory)
+    location_offset: Matrix = Field(default_factory=_identity_transform)
     flange: Location | None = None
-    flange_offset: Matrix = Field(default_factory=identity_transform_factory)
+    flange_offset: Matrix = Field(default_factory=_identity_transform)
     path_type: int | None = None  # PathType | None = None
     trajectory_type: int | None = None  # TrajectoryType | None = None
 

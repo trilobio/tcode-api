@@ -4,7 +4,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict
 
-from tcode_api.types import Matrix
+from tcode_api.units import Q_
 
 
 class _ConfiguredBaseModel(BaseModel):
@@ -36,7 +36,7 @@ class ValueWithUnits(_ConfiguredBaseModel):
 
         ``ValueWithUnits(magnitude=5000, units="mm³")``
 
-    :note: In the python implementation, ``pint`` is used to resolve units.
+    :note: In the python implementation, ``pint`` is used to resolve units. see `tcode_api.units`.
     """
 
     type: Literal["ValueWithUnits"] = "ValueWithUnits"
@@ -50,18 +50,15 @@ class ValueWithUnits(_ConfiguredBaseModel):
     def __str__(self):
         return f"{self.magnitude} {self.units}"
 
+    def to(self, units: str) -> "ValueWithUnits":
+        """Convert to the specified units.
 
-def identity_transform_factory() -> Matrix:
-    """Create new list of lists representing an identity matrix.
+        :note: Units implementation in python uses `pint` under the hood.
+        :param units: The units to convert to.
 
-    :return: 4x4 identity matrix as list of floats
-    """
-    return [
-        [1.0, 0.0, 0.0, 0.0],
-        [0.0, 1.0, 0.0, 0.0],
-        [0.0, 0.0, 1.0, 0.0],
-        [0.0, 0.0, 0.0, 1.0],
-    ]
+        """
+        pint_quantity = Q_(self.magnitude, self.units).to(units)
+        return ValueWithUnits(magnitude=pint_quantity.magnitude, units=units)
 
 
 def _verify_positive_nonzero_int(value: int) -> int:

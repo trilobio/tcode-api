@@ -100,25 +100,6 @@ def _cast_to_float(value: UnsanitizedFloat) -> float:
         raise ValueError(f"Cannot convert {value} to float") from e
 
 
-def tf(
-    x: UnsanitizedFloat = 0.0, y: UnsanitizedFloat = 0.0, z: UnsanitizedFloat = 0.0
-) -> Matrix:
-    """tc.Matrix constructor for translation frames.
-
-    :param x: translation in x direction; units of meters; defaults to 0.0
-    :param y: translation in y direction; units of meters; defaults to 0.
-    :param z: translation in z direction; units of meters; defaults to 0.0
-
-    :return: tc.Matrix representing a transformation matrix for the specified translation.
-    """
-    return [
-        [1.0, 0.0, 0.0, _cast_to_float(x)],
-        [0.0, 1.0, 0.0, _cast_to_float(y)],
-        [0.0, 0.0, 1.0, _cast_to_float(z)],
-        [0.0, 0.0, 0.0, 1.0],
-    ]
-
-
 def mm(length: UnsanitizedFloat) -> tc.ValueWithUnits:
     """tc.ValueWithUnits constructor for millimeters.
 
@@ -157,6 +138,47 @@ def ul_per_s(volume: UnsanitizedFloat) -> tc.ValueWithUnits:
     :return: tc.ValueWithUnits with magnitude in uL/s.
     """
     return tc.ValueWithUnits(magnitude=_cast_to_float(volume), units="uL/s")
+
+
+def create_transform(
+    x: tc.ValueWithUnits | None = None,
+    y: tc.ValueWithUnits | None = None,
+    z: tc.ValueWithUnits | None = None,
+    a: tc.ValueWithUnits | None = None,
+    b: tc.ValueWithUnits | None = None,
+    c: tc.ValueWithUnits | None = None,
+) -> Matrix:
+    """Factory function for creating transformation matrices.
+
+    :param x: translation in x direction; defaults to 0.
+    :param y: translation in y direction; defaults to 0.
+    :param z: translation in z direction; defaults to 0.
+    :param a: rotation about z axis in radians; defaults to 0.
+    :param b: rotation about y axis in radians; defaults to 0.
+    :param c: rotation about x axis in radians; defaults to 0.
+
+    :return: tc.Matrix representing a transformation matrix for the specified transformation.
+    """
+    if b is not None or c is not None:
+        raise NotImplementedError(
+            "Rotation about x and y axes not yet implemented in create_transform"
+        )
+
+    if x is None:
+        x = tc.ValueWithUnits(magnitude=0.0, units="m")
+    if y is None:
+        y = tc.ValueWithUnits(magnitude=0.0, units="m")
+    if z is None:
+        z = tc.ValueWithUnits(magnitude=0.0, units="m")
+    if a is None:
+        a = tc.ValueWithUnits(magnitude=0.0, units="radians")
+
+    return [
+        [1.0, 0.0, 0.0, x.to("m").magnitude],
+        [0.0, 1.0, 0.0, y.to("m").magnitude],
+        [0.0, 0.0, 1.0, z.to("m").magnitude],
+        [0.0, 0.0, 0.0, 1.0],
+    ]
 
 
 def location_as_labware_index(
