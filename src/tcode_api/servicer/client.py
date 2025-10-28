@@ -12,6 +12,7 @@ from tcode_api.servicer.servicer_api import (
     ScheduleCommandRequest,
     ScheduleCommandResponse,
 )
+from tcode_api.utilities import generate_id
 
 _logger = logging.getLogger(__name__)
 
@@ -19,7 +20,11 @@ _default_servicer_url = "http://localhost:8002"
 
 
 class TCodeServicerClient:
-    """Simple requests-based client for a TCode servicer."""
+    """Python client for a TCode servicer.
+
+    Intended to provide an interface with the Trilobio fleet via a single python class, sufficient
+    for interacting with the fleet programmatically.
+    """
 
     def __init__(self, servicer_url: str | None = None) -> None:
         self.servicer_url = servicer_url or _default_servicer_url
@@ -148,3 +153,23 @@ class TCodeServicerClient:
                 self.clear_tcode_resolution()
                 self.clear_labware()
                 return
+
+    def run_script(self, script: tc.TCodeScript) -> None:
+        """Schedule and execute a TCode script on the fleet, starting from an empty state.
+
+        This is a convenience method that combines scheduling, starting execution, and monitoring
+        into a single call.
+
+        :param script: The TCode script to run.
+        """
+        self.clear_schedule()
+        self.clear_labware()
+        self.clear_tcode_resolution()
+        self.discover_fleet()
+
+        for command in script.commands:
+            rsp = self.schedule_command(generate_id(), command)
+            if not rsp.result.success:
+                raise RuntimeError(rsp)
+
+        self.execute_run_loop()

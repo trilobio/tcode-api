@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import datetime
+import importlib.metadata
+import logging
 from typing import Annotated, Literal, TextIO
 
 from pydantic import Field
@@ -24,6 +27,8 @@ from tcode_api.api.location import (
     LocationRelativeToLabware,
 )
 from tcode_api.types import Matrix
+
+_logger = logging.getLogger(__name__)
 
 
 class _TCodeBase(_ConfiguredBaseModel):
@@ -838,6 +843,24 @@ class TCodeScript(_ConfiguredBaseModel):
     commands: list[TCode] = Field(default_factory=list)
 
     @classmethod
+    def new(cls, name: str, description: str | None = None) -> TCodeScript:
+        """Create a new, empty TCode script with the given name and optional description.
+
+        :param name: Name of the TCode script.
+        :param description: Optional description of the TCode script.
+
+        :returns: A new, empty TCode script.
+        """
+        metadata = Metadata(
+            name=name,
+            description=description,
+            timestamp=datetime.datetime.now().isoformat(),
+            tcode_api_version=importlib.metadata.version("tcode_api"),
+        )
+
+        return cls(metadata=metadata, commands=[])
+
+    @classmethod
     def read(cls, file_object: TextIO) -> TCodeScript:
         """Load a TCode script from a file-like object.
 
@@ -846,7 +869,15 @@ class TCodeScript(_ConfiguredBaseModel):
         :returns: The loaded TCode script.
         """
         data = file_object.read()
-        return cls.model_validate_json(data)
+        script = cls.model_validate_json(data)
+        current_version = importlib.metadata.version("tcode_api")
+        if script.metadata.tcode_api_version != current_version:
+            _logger.warning(
+                "Loaded TCode script was created with API version %s, current version is %s",
+                script.metadata.tcode_api_version,
+                current_version,
+            )
+        return script
 
     def write(self, file_object: TextIO) -> None:
         """Write the TCode script to a file-like object.
