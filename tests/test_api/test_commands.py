@@ -5,6 +5,7 @@ import tempfile
 import unittest
 from typing import get_args
 
+# Using the below import style because it's how we expect users to import tcode_api
 import tcode_api.api as tc
 from tcode_api.api.commands import _RobotSpecificTCodeBase, _TCodeBase
 

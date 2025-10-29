@@ -169,3 +169,7 @@ TCodeResultReport = Annotated[
     ValidatorError | SchedulerError | ResolverResult | ExecutionResult,
     Field(discriminator="type"),
 ]
+
+
+class UnitsError(Exception):
+    """Exception raised for errors in unit conversions."""

@@ -2,6 +2,7 @@
 
 import unittest
 
+# Using the below import style because it's how we expect users to import tcode_api
 import tcode_api.api as tc
 from tcode_api.utilities import generate_id
 

@@ -5,8 +5,10 @@ from __future__ import annotations
 from typing import Literal
 
 from pint import Unit
+from pint.errors import DimensionalityError
 from pydantic import BaseModel, ConfigDict
 
+from tcode_api.error import UnitsError
 from tcode_api.units import Q_
 
 
@@ -72,7 +74,7 @@ class ValueWithUnits(_ConfiguredBaseModel):
 
         :param other: The scalar to multiply by.
 
-        :return: A new ValueWithUnits representing the product.
+        :return: A new ValueWithUnits with a magnitude multiplied by the scalar.
         """
         try:
             other = float(other)
@@ -86,7 +88,7 @@ class ValueWithUnits(_ConfiguredBaseModel):
 
         :param other: The scalar to multiply by.
 
-        :return: A new ValueWithUnits representing the product.
+        :return: A new ValueWithUnits with a magnitude multiplied by the scalar.
         """
         return self.__mul__(other)
 
@@ -98,6 +100,8 @@ class ValueWithUnits(_ConfiguredBaseModel):
         :param other: The other ValueWithUnits to add.
 
         :return: A new ValueWithUnits representing the sum.
+
+        :raises UnitsError: If the units are incompatible.
         """
         if not isinstance(other, ValueWithUnits):
             return NotImplemented
@@ -106,7 +110,13 @@ class ValueWithUnits(_ConfiguredBaseModel):
             # This logic path is approx. 3x faster
             return ValueWithUnits(magnitude=self.magnitude + other.magnitude, units=self.units)
 
-        pint_quantity = Q_(self.magnitude, self.units) + Q_(other.magnitude, other.units)
+        try:
+            pint_quantity = Q_(self.magnitude, self.units) + Q_(other.magnitude, other.units)
+        except DimensionalityError as e:
+            raise UnitsError(
+                f"Cannot add quantities with incompatible units: "
+                f"'{self.units}' and '{other.units}'"
+            ) from e
         return ValueWithUnits(magnitude=pint_quantity.magnitude, units=str(pint_quantity.units))
 
     def __sub__(self, other: object) -> ValueWithUnits:
@@ -117,6 +127,8 @@ class ValueWithUnits(_ConfiguredBaseModel):
         :param other: The other ValueWithUnits to subtract.
 
         :return: A new ValueWithUnits representing the difference.
+
+        :raises UnitsError: If the units are incompatible.
         """
         if not isinstance(other, ValueWithUnits):
             return NotImplemented
@@ -125,7 +137,13 @@ class ValueWithUnits(_ConfiguredBaseModel):
             # This logic path is approx. 3x faster
             return ValueWithUnits(magnitude=self.magnitude - other.magnitude, units=self.units)
 
-        pint_quantity = Q_(self.magnitude, self.units) - Q_(other.magnitude, other.units)
+        try:
+            pint_quantity = Q_(self.magnitude, self.units) - Q_(other.magnitude, other.units)
+        except DimensionalityError as e:
+            raise UnitsError(
+                f"Cannot subtract quantities with incompatible units: "
+                f"'{self.units}' and '{other.units}'"
+            ) from e
         return ValueWithUnits(magnitude=pint_quantity.magnitude, units=str(pint_quantity.units))
 
     def __eq__(self, other: object) -> bool:
@@ -134,18 +152,30 @@ class ValueWithUnits(_ConfiguredBaseModel):
         :param other: The other ValueWithUnits to compare.
 
         :return: True if the two ValueWithUnits are equal, False otherwise.
+
+        :raises UnitsError: If the units are incompatible.
         """
         if not isinstance(other, ValueWithUnits):
             return NotImplemented
 
         if other.units == self.units:
             return self.magnitude == other.magnitude
-        return Q_(self.magnitude, self.units) == Q_(other.magnitude, other.units)
+        self_q = Q_(self.magnitude, self.units)
+
+        # Pint pythonically allows equality checks between incompatible units, but we can't
+        # come up with a beneficial scenario for this behavior in TCode, so we raise an error.
+        if not self_q.check(other.units):
+            raise UnitsError(
+                f"Cannot compare quantities with incompatible units: "
+                f"'{self.units}' and '{other.units}'"
+            )
+
+        return self_q == Q_(other.magnitude, other.units)
 
     def __neg__(self) -> ValueWithUnits:
         """Negate the ValueWithUnits.
 
-        :return: A new ValueWithUnits representing the negation.
+        :return: A new ValueWithUnits with a negated magnitude
         """
         return ValueWithUnits(magnitude=-self.magnitude, units=self.units)
 
@@ -155,6 +185,8 @@ class ValueWithUnits(_ConfiguredBaseModel):
         :param other: The other ValueWithUnits to compare.
 
         :return: True if this ValueWithUnits is less than the other, False otherwise.
+
+        :raises UnitsError: If the units are incompatible.
         """
         if not isinstance(other, ValueWithUnits):
             return NotImplemented
@@ -162,7 +194,13 @@ class ValueWithUnits(_ConfiguredBaseModel):
         if other.units == self.units:
             return self.magnitude < other.magnitude
 
-        return Q_(self.magnitude, self.units) < Q_(other.magnitude, other.units)
+        try:
+            return Q_(self.magnitude, self.units) < Q_(other.magnitude, other.units)
+        except DimensionalityError:
+            raise UnitsError(
+                f"Cannot compare quantities with incompatible units: "
+                f"'{self.units}' and '{other.units}'"
+            )
 
     def __le__(self, other: object) -> bool:
         """Check if this ValueWithUnits is less than or equal to another, converting units as necessary.
@@ -170,6 +208,8 @@ class ValueWithUnits(_ConfiguredBaseModel):
         :param other: The other ValueWithUnits to compare.
 
         :return: True if this ValueWithUnits is less than or equal to the other, False otherwise.
+
+        :raises UnitsError: If the units are incompatible.
         """
         if not isinstance(other, ValueWithUnits):
             return NotImplemented
@@ -177,7 +217,13 @@ class ValueWithUnits(_ConfiguredBaseModel):
         if other.units == self.units:
             return self.magnitude <= other.magnitude
 
-        return Q_(self.magnitude, self.units) <= Q_(other.magnitude, other.units)
+        try:
+            return Q_(self.magnitude, self.units) <= Q_(other.magnitude, other.units)
+        except DimensionalityError:
+            raise UnitsError(
+                f"Cannot compare quantities with incompatible units: "
+                f"'{self.units}' and '{other.units}'"
+            )
 
     def __gt__(self, other: object) -> bool:
         """Check if this ValueWithUnits is greater than another, converting units as necessary.
@@ -185,6 +231,8 @@ class ValueWithUnits(_ConfiguredBaseModel):
         :param other: The other ValueWithUnits to compare.
 
         :return: True if this ValueWithUnits is greater than the other, False otherwise.
+
+        :raises UnitsError: If the units are incompatible.
         """
         if not isinstance(other, ValueWithUnits):
             return NotImplemented
@@ -192,7 +240,13 @@ class ValueWithUnits(_ConfiguredBaseModel):
         if other.units == self.units:
             return self.magnitude > other.magnitude
 
-        return Q_(self.magnitude, self.units) > Q_(other.magnitude, other.units)
+        try:
+            return Q_(self.magnitude, self.units) > Q_(other.magnitude, other.units)
+        except DimensionalityError:
+            raise UnitsError(
+                f"Cannot compare quantities with incompatible units: "
+                f"'{self.units}' and '{other.units}'"
+            )
 
     def __ge__(self, other: object) -> bool:
         """Check if this ValueWithUnits is greater than or equal to another, converting units as necessary.
@@ -200,6 +254,8 @@ class ValueWithUnits(_ConfiguredBaseModel):
         :param other: The other ValueWithUnits to compare.
 
         :return: True if this ValueWithUnits is greater than or equal to the other, False otherwise.
+
+        :raises UnitsError: If the units are incompatible.
         """
         if not isinstance(other, ValueWithUnits):
             return NotImplemented
@@ -207,7 +263,13 @@ class ValueWithUnits(_ConfiguredBaseModel):
         if other.units == self.units:
             return self.magnitude >= other.magnitude
 
-        return Q_(self.magnitude, self.units) >= Q_(other.magnitude, other.units)
+        try:
+            return Q_(self.magnitude, self.units) >= Q_(other.magnitude, other.units)
+        except DimensionalityError:
+            raise UnitsError(
+                f"Cannot compare quantities with incompatible units: "
+                f"'{self.units}' and '{other.units}'"
+            )
 
 
 def _verify_positive_nonzero_int(value: int) -> int:
