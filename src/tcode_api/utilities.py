@@ -91,7 +91,7 @@ def load_labware(
     except FileNotFoundError as err:
         if labware_dir is None:
             err.add_note(
-                "When importing tcode_api as a package (rather than running inside the tcode_api repository), the default labware directory is not available."
+                "When importing tcode_api as a package (rather than running inside the tcode_api repository), the default labware directory is not available. Please use the `labware_dir` parameter to manually specify a labware directory."
             )
         raise err
     return labware_io.load(identifier)
