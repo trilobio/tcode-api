@@ -66,9 +66,7 @@ class TestTCodeEndpoints(unittest.TestCase):
             obj
             for obj in tc.__dict__.values()
             if hasattr(obj, "__bases__")
-            and (
-                _TCodeBase in obj.__bases__ or _RobotSpecificTCodeBase in obj.__bases__
-            )
+            and (_TCodeBase in obj.__bases__ or _RobotSpecificTCodeBase in obj.__bases__)
         ]
         # https://stackoverflow.com/a/64643971
         type_options = get_args(get_args(tc.TCode)[0])

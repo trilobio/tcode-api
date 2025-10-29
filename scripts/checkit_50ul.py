@@ -65,9 +65,7 @@ def main(
     """Generate and execute the `checkit_50ul` TCode script."""
     pipette_volume_ul = pipette_volume.to("ul").magnitude
     if pipette_volume_ul not in (20.0, 300.0, 1000.0):
-        raise ValueError(
-            "Pipette volume must be 20, 300, or 1000 uL, got %s" % pipette_volume_ul
-        )
+        raise ValueError("Pipette volume must be 20, 300, or 1000 uL, got %s" % pipette_volume_ul)
 
     if channel_count not in (1, 8):
         raise ValueError("Channel count must be 1 or 8, got %s" % channel_count)
@@ -133,15 +131,11 @@ def main(
             holder=tc.LabwareHolderName(robot_id=robot_id, name="DeckSlot_13"),
         )
     )
-    script.commands.append(
-        tc.ADD_LABWARE(id=plate_id, descriptor=describe_well_plate())
-    )
+    script.commands.append(tc.ADD_LABWARE(id=plate_id, descriptor=describe_well_plate()))
     script.commands.append(
         tc.ADD_LABWARE(id=tip_box_id, descriptor=describe_pipette_tip_box(full=True))
     )
-    script.commands.append(
-        tc.ADD_LABWARE(id=trash_can_id, descriptor=tc.TrashDescriptor())
-    )
+    script.commands.append(tc.ADD_LABWARE(id=trash_can_id, descriptor=tc.TrashDescriptor()))
     script.commands.append(
         tc.ADD_PIPETTE_TIP_GROUP(
             id=pipette_tip_group_id_1,

@@ -27,9 +27,7 @@ script.commands.append(
         ),
     ),
 )
-script.commands.append(
-    tc.ADD_LABWARE(id=labware_id, descriptor=describe_well_plate(has_lid=True))
-)
+script.commands.append(tc.ADD_LABWARE(id=labware_id, descriptor=describe_well_plate(has_lid=True)))
 
 # ACTIONS #
 script.commands.append(tc.SWAP_TO_TOOL(robot_id=robot_id, id=gripper_id))
@@ -46,9 +44,7 @@ script.commands.append(
 )
 script.commands.append(tc.COMMENT(text="Move labware with pinch"))
 script.commands.append(
-    tc.PICK_UP_LABWARE(
-        robot_id=robot_id, labware_id=labware_id, grasp_type=tc.GraspType.PINCH
-    )
+    tc.PICK_UP_LABWARE(robot_id=robot_id, labware_id=labware_id, grasp_type=tc.GraspType.PINCH)
 )
 script.commands.append(
     tc.PUT_DOWN_LABWARE(

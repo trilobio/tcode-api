@@ -28,7 +28,9 @@ class TCodeServicerClient:
 
     def __init__(self, servicer_url: str | None = None) -> None:
         self.servicer_url = servicer_url or _default_servicer_url
-        self.timeout = 5  # Reference: https://docs.python-requests.org/en/latest/user/advanced/#timeouts
+        self.timeout = (
+            5  # Reference: https://docs.python-requests.org/en/latest/user/advanced/#timeouts
+        )
 
     def clear_schedule(self) -> ClearScheduleResponse:
         """Clear all of the currently scheduled (but as yet unexecuted) TCode commands on the fleet.
@@ -46,9 +48,7 @@ class TCodeServicerClient:
         :note: This command does not clear the physical labware from the deck, merely their ids.
         """
 
-        rsp = requests.delete(
-            f"{self.servicer_url}/tcode_resolution", timeout=self.timeout
-        )
+        rsp = requests.delete(f"{self.servicer_url}/tcode_resolution", timeout=self.timeout)
         rsp.raise_for_status()
 
     def clear_labware(self) -> None:
@@ -105,9 +105,7 @@ class TCodeServicerClient:
             timeout=self.timeout,
         )
         rsp.raise_for_status()
-        return [
-            ScheduleCommandResponse.model_validate(rsp_dict) for rsp_dict in rsp.json()
-        ]
+        return [ScheduleCommandResponse.model_validate(rsp_dict) for rsp_dict in rsp.json()]
 
     def set_run_state(self, state: bool) -> None:
         """Pause or start the execution of the current schedule.

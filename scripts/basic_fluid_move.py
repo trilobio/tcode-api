@@ -99,18 +99,14 @@ script.commands.append(
 )
 #  Actions
 script.commands.append(tc.RETRIEVE_TOOL(robot_id=robot_id, id=pipette_id))
-script.commands.append(
-    tc.RETRIEVE_PIPETTE_TIP_GROUP(id=pipette_tip_group_id_1, robot_id=robot_id)
-)
+script.commands.append(tc.RETRIEVE_PIPETTE_TIP_GROUP(id=pipette_tip_group_id_1, robot_id=robot_id))
 script.commands.append(
     tc.MOVE_TO_LOCATION(
         robot_id=robot_id,
         location=location_as_labware_index(trough_id, 0, tc.WellPartType.TOP),
     )
 )
-script.commands.append(
-    tc.ASPIRATE(robot_id=robot_id, volume=blowout_volume, speed=ul_per_s(25))
-)
+script.commands.append(tc.ASPIRATE(robot_id=robot_id, volume=blowout_volume, speed=ul_per_s(25)))
 script.commands.append(
     tc.MOVE_TO_LOCATION(
         robot_id=robot_id,
@@ -119,9 +115,7 @@ script.commands.append(
         location_offset=well_bottom_offset,
     )
 )
-script.commands.append(
-    tc.ASPIRATE(robot_id=robot_id, volume=transfer_volume, speed=ul_per_s(25))
-)
+script.commands.append(tc.ASPIRATE(robot_id=robot_id, volume=transfer_volume, speed=ul_per_s(25)))
 script.commands.append(
     tc.MOVE_TO_LOCATION(
         robot_id=robot_id,
@@ -129,9 +123,7 @@ script.commands.append(
         location_offset=well_bottom_offset,
     )
 )
-script.commands.append(
-    tc.DISPENSE(robot_id=robot_id, volume=transfer_volume, speed=ul_per_s(25))
-)
+script.commands.append(tc.DISPENSE(robot_id=robot_id, volume=transfer_volume, speed=ul_per_s(25)))
 script.commands.append(
     tc.MOVE_TO_LOCATION(
         robot_id=robot_id,
@@ -139,9 +131,7 @@ script.commands.append(
         path_type=tc.PathType.DIRECT,
     )
 )
-script.commands.append(
-    tc.DISPENSE(robot_id=robot_id, volume=blowout_volume, speed=ul_per_s(25))
-)
+script.commands.append(tc.DISPENSE(robot_id=robot_id, volume=blowout_volume, speed=ul_per_s(25)))
 script.commands.append(tc.DISCARD_PIPETTE_TIP_GROUP(robot_id=robot_id))
 script.commands.append(tc.RETURN_TOOL(robot_id=robot_id))
 

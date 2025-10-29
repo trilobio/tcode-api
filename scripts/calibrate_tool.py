@@ -20,9 +20,7 @@ _filename = pathlib.Path(__file__).stem
 
 
 _tool_options: tuple[Literal["pipette", "probe"], ...] = ("pipette", "probe")
-_tool_menu = "\n".join(
-    [f"{i}. {name}" for i, name in enumerate(("pipette", "probe"), start=1)]
-)
+_tool_menu = "\n".join([f"{i}. {name}" for i, name in enumerate(("pipette", "probe"), start=1)])
 
 
 def prompt_probeable_tool_kind() -> Literal["pipette", "probe"]:
@@ -141,9 +139,7 @@ def yes_no_prompt(question: str) -> bool:
 
 
 @plac.annotations(
-    z_only=plac.Annotation(
-        "If set, only calibrate the Z axis (no XY)", kind="flag", abbrev="z"
-    ),
+    z_only=plac.Annotation("If set, only calibrate the Z axis (no XY)", kind="flag", abbrev="z"),
 )
 def main(
     output_file_path: pathlib.Path | None = None,
@@ -195,9 +191,7 @@ def main(
         pipette_tip_group_id,
     ) = [generate_id() for _ in range(4)]
     script.commands.append(tc.ADD_ROBOT(id=robot_id, descriptor=tc.RobotDescriptor()))
-    script.commands.append(
-        tc.ADD_TOOL(robot_id=robot_id, id=pipette_id, descriptor=descriptor)
-    )
+    script.commands.append(tc.ADD_TOOL(robot_id=robot_id, id=pipette_id, descriptor=descriptor))
 
     # LABWARE
     if calibrate_pipette_tip:
@@ -215,9 +209,7 @@ def main(
         elif pipette_tip_volume_ul <= 1000:
             tip_box_name = "biotix_utip_p1000_box"
         else:
-            raise AssertionError(
-                f"unhandled pipette tip volume {pipette_tip_volume_ul}"
-            )
+            raise AssertionError(f"unhandled pipette tip volume {pipette_tip_volume_ul}")
 
         script.commands.append(
             tc.CREATE_LABWARE(
@@ -227,9 +219,7 @@ def main(
             )
         )
         script.commands.append(
-            tc.ADD_LABWARE(
-                id=tip_box_id, descriptor=describe_pipette_tip_box(full=True)
-            )
+            tc.ADD_LABWARE(id=tip_box_id, descriptor=describe_pipette_tip_box(full=True))
         )
         script.commands.append(
             tc.ADD_PIPETTE_TIP_GROUP(
@@ -248,9 +238,7 @@ def main(
             tc.RETRIEVE_PIPETTE_TIP_GROUP(robot_id=robot_id, id=pipette_tip_group_id)
         )
     script.commands.append(
-        tc.CALIBRATE_TOOL_FOR_PROBING(
-            robot_id=robot_id, z_only=z_only, persistent=True
-        ),
+        tc.CALIBRATE_TOOL_FOR_PROBING(robot_id=robot_id, z_only=z_only, persistent=True),
     )
     if calibrate_pipette_tip:
         script.commands.append(tc.RETURN_PIPETTE_TIP_GROUP(robot_id=robot_id))

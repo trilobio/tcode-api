@@ -50,9 +50,7 @@ def main(
     match pipette:
         case "c1":
             labware_indices = list(range(96))  # All wells
-            descriptor: tc.PipetteDescriptor = tc.SingleChannelPipetteDescriptor(
-                max_volume=volume
-            )
+            descriptor: tc.PipetteDescriptor = tc.SingleChannelPipetteDescriptor(max_volume=volume)
         case "c8":
             labware_indices = list(range(12))  # Only columns
             descriptor = tc.EightChannelPipetteDescriptor(max_volume=volume)
@@ -62,9 +60,7 @@ def main(
     # ROBOT
     script = tc.TCodeScript.new(name=__file__, description=__doc__)
     script.commands.append(tc.ADD_ROBOT(id=robot_id, descriptor=tc.RobotDescriptor()))
-    script.commands.append(
-        tc.ADD_TOOL(robot_id=robot_id, id=tool_id, descriptor=descriptor)
-    )
+    script.commands.append(tc.ADD_TOOL(robot_id=robot_id, id=tool_id, descriptor=descriptor))
 
     # LABWARE
     full_labware_ids, empty_labware_ids = [], []
@@ -74,15 +70,11 @@ def main(
             tc.CREATE_LABWARE(
                 robot_id=robot_id,
                 description=labware_loader.load("biotix_utip_300ul"),
-                holder=tc.LabwareHolderName(
-                    robot_id=robot_id, name=f"DeckSlot_{deck_slot_number}"
-                ),
+                holder=tc.LabwareHolderName(robot_id=robot_id, name=f"DeckSlot_{deck_slot_number}"),
             )
         )
         script.commands.append(
-            tc.ADD_LABWARE(
-                id=full_labware_ids[-1], descriptor=describe_pipette_tip_box(full=True)
-            )
+            tc.ADD_LABWARE(id=full_labware_ids[-1], descriptor=describe_pipette_tip_box(full=True))
         )
 
     # Make custom description for empty tip box
@@ -96,9 +88,7 @@ def main(
             tc.CREATE_LABWARE(
                 robot_id=robot_id,
                 description=empty_pipette_tip_box_description,
-                holder=tc.LabwareHolderName(
-                    robot_id=robot_id, name=f"DeckSlot_{deck_slot_number}"
-                ),
+                holder=tc.LabwareHolderName(robot_id=robot_id, name=f"DeckSlot_{deck_slot_number}"),
             )
         )
         script.commands.append(
@@ -124,9 +114,7 @@ def main(
             script.commands.append(
                 tc.PUT_DOWN_PIPETTE_TIP(
                     robot_id=robot_id,
-                    location=location_as_labware_index(
-                        destination_plate_id, labware_index
-                    ),
+                    location=location_as_labware_index(destination_plate_id, labware_index),
                 )
             )
 

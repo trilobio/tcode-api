@@ -17,9 +17,7 @@ class _Location(_ConfiguredBaseModel):
 class LocationRelativeToCurrentPosition(_Location):
     """Location specified by a transformation matrix relative to position of the robot's current control node."""
 
-    type: Literal["LocationRelativeToCurrentPosition"] = (
-        "LocationRelativeToCurrentPosition"
-    )
+    type: Literal["LocationRelativeToCurrentPosition"] = "LocationRelativeToCurrentPosition"
     matrix: Matrix  # 4x4 transformation matrix
 
 

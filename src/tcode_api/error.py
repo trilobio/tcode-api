@@ -115,14 +115,10 @@ class ResolverResult(_TCodeResultReportBase):
     def ok(cls, message: str = "", details: dict | None = None) -> Self:
         """Create a successful result."""
         details = details or {}
-        return cls(
-            success=True, code=ResolverCode.SUCCESS, message=message, details=details
-        )
+        return cls(success=True, code=ResolverCode.SUCCESS, message=message, details=details)
 
     @classmethod
-    def error(
-        cls, code: ResolverCode, message: str, details: dict | None = None
-    ) -> Self:
+    def error(cls, code: ResolverCode, message: str, details: dict | None = None) -> Self:
         """Create a result containing an error. Enforces good exception practices through mandatory args."""
         details = details or {}
         return cls(success=False, code=code, message=message, details=details)
@@ -155,14 +151,10 @@ class ExecutionResult(_TCodeResultReportBase):
     def ok(cls, details: dict | None = None) -> Self:
         """Create a successful result."""
         details = details or {}
-        return cls(
-            success=True, code=ExecutionCode.SUCCESS, message="", details=details
-        )
+        return cls(success=True, code=ExecutionCode.SUCCESS, message="", details=details)
 
     @classmethod
-    def error(
-        cls, code: ExecutionCode, message: str, details: dict | None = None
-    ) -> Self:
+    def error(cls, code: ExecutionCode, message: str, details: dict | None = None) -> Self:
         """Create a result containing an error. Enforces good exception practices through mandatory args."""
         details = details or {}
         return cls(success=False, code=code, message=message, details=details)

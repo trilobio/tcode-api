@@ -104,16 +104,10 @@ class ValueWithUnits(_ConfiguredBaseModel):
 
         if other.units == self.units:
             # This logic path is approx. 3x faster
-            return ValueWithUnits(
-                magnitude=self.magnitude + other.magnitude, units=self.units
-            )
+            return ValueWithUnits(magnitude=self.magnitude + other.magnitude, units=self.units)
 
-        pint_quantity = Q_(self.magnitude, self.units) + Q_(
-            other.magnitude, other.units
-        )
-        return ValueWithUnits(
-            magnitude=pint_quantity.magnitude, units=str(pint_quantity.units)
-        )
+        pint_quantity = Q_(self.magnitude, self.units) + Q_(other.magnitude, other.units)
+        return ValueWithUnits(magnitude=pint_quantity.magnitude, units=str(pint_quantity.units))
 
     def __sub__(self, other: object) -> ValueWithUnits:
         """Subtract two ValueWithUnits, converting units as necessary.
@@ -129,16 +123,10 @@ class ValueWithUnits(_ConfiguredBaseModel):
 
         if other.units == self.units:
             # This logic path is approx. 3x faster
-            return ValueWithUnits(
-                magnitude=self.magnitude - other.magnitude, units=self.units
-            )
+            return ValueWithUnits(magnitude=self.magnitude - other.magnitude, units=self.units)
 
-        pint_quantity = Q_(self.magnitude, self.units) - Q_(
-            other.magnitude, other.units
-        )
-        return ValueWithUnits(
-            magnitude=pint_quantity.magnitude, units=str(pint_quantity.units)
-        )
+        pint_quantity = Q_(self.magnitude, self.units) - Q_(other.magnitude, other.units)
+        return ValueWithUnits(magnitude=pint_quantity.magnitude, units=str(pint_quantity.units))
 
     def __eq__(self, other: object) -> bool:
         """Check equality between two ValueWithUnits, converting units as necessary.

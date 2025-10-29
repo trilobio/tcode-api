@@ -63,9 +63,7 @@ class LabwareIO:
         model_constructor = self.labware_type_adapter.validate_python(json.loads(data))
         return model_constructor.model_validate_json(data)
 
-    def write(
-        self, identifier: str | pathlib.Path, labware: tc.LabwareDescription
-    ) -> None:
+    def write(self, identifier: str | pathlib.Path, labware: tc.LabwareDescription) -> None:
         """Write labware description to JSON file.
 
         :param identifier: Path to file where description will be written.
