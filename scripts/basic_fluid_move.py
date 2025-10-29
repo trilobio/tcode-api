@@ -16,7 +16,7 @@ from tcode_api.utilities import (
     describe_pipette_tip_box,
     describe_well_plate,
     generate_id,
-    labware_loader,
+    load_labware,
     location_as_labware_index,
     mm,
     ul,
@@ -66,28 +66,28 @@ def main(
     script.commands.append(
         tc.CREATE_LABWARE(
             robot_id=robot_id,
-            description=labware_loader.load("costar_3603_plate"),
+            description=load_labware("costar_3603_plate"),
             holder=tc.LabwareHolderName(robot_id=robot_id, name="DeckSlot_5"),
         )
     )
     script.commands.append(
         tc.CREATE_LABWARE(
             robot_id=robot_id,
-            description=labware_loader.load("biotix_utip_p300_box"),
+            description=load_labware("biotix_utip_p300_box"),
             holder=tc.LabwareHolderName(robot_id=robot_id, name="DeckSlot_8"),
         )
     )
     script.commands.append(
         tc.CREATE_LABWARE(
             robot_id=robot_id,
-            description=labware_loader.load("mtcbiotech_4_channel_trough"),
+            description=load_labware("mtcbiotech_4_channel_trough"),
             holder=tc.LabwareHolderName(robot_id=robot_id, name="DeckSlot_6"),
         )
     )
     script.commands.append(
         tc.CREATE_LABWARE(
             robot_id=robot_id,
-            description=labware_loader.load("3d_printed_trash_can"),
+            description=load_labware("3d_printed_trash_can"),
             holder=tc.LabwareHolderName(robot_id=robot_id, name="DeckSlot_11"),
         )
     )

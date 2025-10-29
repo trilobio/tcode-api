@@ -74,7 +74,27 @@ class LabwareIO:
             f.write(labware.model_dump_json(indent=2))
 
 
-labware_loader = LabwareIO()
+def load_labware(
+    identifier: str | pathlib.Path, labware_dir: pathlib.Path | None = None
+) -> tc.LabwareDescription:
+    """Return LabwareDescription object loaded from file source.
+
+    :param identifier: Name of labware or path to file containing description. If file_path is a string,
+        checks tcode_api/labware for a file whose name matches file_path. If no such file exists,
+        file_path is cast to a pathlib Path.
+    :param labware_dir: Path to labware directory. If None, defaults to tcode_api/labware.
+
+    :return: loaded tc.LabwareDescription.
+    """
+    try:
+        labware_io = LabwareIO(labware_dir=labware_dir)
+    except FileNotFoundError as err:
+        if labware_dir is None:
+            err.add_note(
+                "When importing tcode_api as a package (rather than running inside the tcode_api repository), the default labware directory is not available. Please use the `labware_dir` parameter to manually specify a labware directory."
+            )
+        raise err
+    return labware_io.load(identifier)
 
 
 def generate_id(length: int = 22) -> str:

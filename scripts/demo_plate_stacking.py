@@ -11,7 +11,7 @@ from tcode_api.cli import (
     servicer_url_annotation,
 )
 from tcode_api.servicer import TCodeServicerClient
-from tcode_api.utilities import describe_well_plate, generate_id, labware_loader
+from tcode_api.utilities import describe_well_plate, generate_id, load_labware
 
 
 @plac.annotations(
@@ -46,7 +46,7 @@ def main(
         script.commands.append(
             tc.CREATE_LABWARE(
                 robot_id=robot_id,
-                description=labware_loader.load("thermo_nunc_266120_plate"),
+                description=load_labware("thermo_nunc_266120_plate"),
                 holder=holder,
             ),
         )

@@ -17,7 +17,7 @@ from tcode_api.utilities import (
     describe_pipette_tip_box,
     describe_well_plate,
     generate_id,
-    labware_loader,
+    load_labware,
     location_as_labware_index,
     mm,
     ul,
@@ -113,17 +113,17 @@ def main(
     script.commands.append(
         tc.CREATE_LABWARE(
             robot_id=robot_id,
-            description=labware_loader.load("checkit_50ul"),
+            description=load_labware("checkit_50ul"),
             holder=tc.LabwareHolderName(robot_id=robot_id, name="DeckSlot_16"),
         )
     )
     pipette_volume_ul = pipette_volume.to("ul").magnitude
     if pipette_volume_ul == 20.0:
-        tip_box_description = labware_loader.load("biotix_utip_p20_box")
+        tip_box_description = load_labware("biotix_utip_p20_box")
     elif pipette_volume_ul == 300.0:
-        tip_box_description = labware_loader.load("biotix_utip_p300_box")
+        tip_box_description = load_labware("biotix_utip_p300_box")
     elif pipette_volume_ul == 1000.0:
-        tip_box_description = labware_loader.load("biotix_utip_p1000_box")
+        tip_box_description = load_labware("biotix_utip_p1000_box")
     else:
         raise AssertionError("pipette_volume var should already be validated")
 
@@ -137,7 +137,7 @@ def main(
     script.commands.append(
         tc.CREATE_LABWARE(
             robot_id=robot_id,
-            description=labware_loader.load("3d_printed_trash_can"),
+            description=load_labware("3d_printed_trash_can"),
             holder=tc.LabwareHolderName(robot_id=robot_id, name="DeckSlot_13"),
         )
     )
