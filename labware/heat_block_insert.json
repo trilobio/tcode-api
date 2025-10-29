@@ -1,0 +1,85 @@
+{
+  "tags": [],
+  "named_tags": {
+    "name": "An abandoned heat block insert",
+    "model": "heat_block_insert.obj",
+    "kind": "TUBE_RACK"
+  },
+  "x_length": {
+    "type": "ValueWithUnits",
+    "magnitude": 127.76,
+    "units": "mm"
+  },
+  "y_length": {
+    "type": "ValueWithUnits",
+    "magnitude": 85.48,
+    "units": "mm"
+  },
+  "z_length": {
+    "type": "ValueWithUnits",
+    "magnitude": 42.0,
+    "units": "mm"
+  },
+  "type": "TubeHolder",
+  "grid": {
+    "type": "Grid",
+    "row_count": 4,
+    "column_count": 6,
+    "row_pitch": {
+      "type": "ValueWithUnits",
+      "magnitude": 17.25,
+      "units": "mm"
+    },
+    "column_pitch": {
+      "type": "ValueWithUnits",
+      "magnitude": 17.25,
+      "units": "mm"
+    },
+    "row_offset": {
+      "type": "ValueWithUnits",
+      "magnitude": 0.0,
+      "units": "mm"
+    },
+    "column_offset": {
+      "type": "ValueWithUnits",
+      "magnitude": 0.0,
+      "units": "mm"
+    }
+  },
+  "tube": {
+    "type": "Tube",
+    "tags": [],
+    "named_tags": {},
+    "depth": {
+      "type": "ValueWithUnits",
+      "magnitude": 38.6,
+      "units": "mm"
+    },
+    "shape": {
+      "type": "Circle",
+      "diameter": {
+        "type": "ValueWithUnits",
+        "magnitude": 11.5,
+        "units": "mm"
+      }
+    },
+    "bottom_shape": {
+      "type": "Flat"
+    },
+    "min_volume": {
+      "type": "ValueWithUnits",
+      "magnitude": 1000.0,
+      "units": "uL"
+    },
+    "max_volume": {
+      "type": "ValueWithUnits",
+      "magnitude": 16300.0,
+      "units": "uL"
+    },
+    "top_height": {
+      "type": "ValueWithUnits",
+      "magnitude": 0.0,
+      "units": "mm"
+    }
+  }
+}

@@ -1,11 +1,80 @@
 """Helpful constructors for common tcode_api objects."""
 
 import functools
+import json
+import pathlib
 import random
 import string
 
+from pydantic import TypeAdapter
+
 import tcode_api.api as tc
-from tcode_api.types import NamedTags, Tags, UnsanitizedFloat
+from tcode_api.types import Matrix, NamedTags, Tags, UnsanitizedFloat
+
+
+class LabwareIO:
+    """Class for reading/writing labware descriptions from storage."""
+
+    def __init__(self, labware_dir: pathlib.Path | None = None) -> None:
+        """Initialize LabwareIO."""
+        if labware_dir is None:
+            self.labware_dir = pathlib.Path(__file__).parent.parent.parent / "labware"
+
+        if not self.labware_dir.exists():
+            raise FileNotFoundError(f"Labware directory not found: {self.labware_dir}")
+
+        self.labware_type_adapter: TypeAdapter = TypeAdapter(tc.LabwareDescription)
+
+    def _resolve_file_path(
+        self, file_path: str | pathlib.Path, exists: bool | None = None
+    ) -> pathlib.Path:
+        """Resolve file path to labware description file.
+
+        :param file_path: Name of file or path to file containing description. If file_path is a string,
+            checks tcode_api/labware for a file whose name matches file_path. If no such file exists,
+            file_path is cast to a pathlib Path.
+        :param exists: If True, raises FileNotFoundError if the resolved file does not exist. If
+            False, does not check for existence. If None, doesn't check file existence.
+        :return: Resolved pathlib.Path to the labware description file.
+        """
+        if isinstance(file_path, str):
+            file_path = self.labware_dir / f"{file_path}.json"
+            if not file_path.exists():
+                file_path = pathlib.Path(file_path)
+
+        if exists is True and not file_path.exists():
+            raise FileNotFoundError(f"Labware file not found: {file_path}")
+        if exists is False and file_path.exists():
+            raise FileExistsError(f"Labware file already exists: {file_path}")
+        return file_path
+
+    def load(self, identifier: str | pathlib.Path) -> tc.LabwareDescription:
+        """Read labware description from JSON file.
+
+        :param identifier: Name of file or path to file containing description. If file_path is a string,
+            checks tcode_api/labware for a file whose name matches file_path. If no such file exists,
+            file_path is cast to a pathlib Path.
+        :return: tc.LabwareDescription loaded from the file.
+        """
+        file_path = self._resolve_file_path(identifier, exists=True)
+        with file_path.open("r", encoding="utf-8") as f:
+            data = f.read()
+
+        model_constructor = self.labware_type_adapter.validate_python(json.loads(data))
+        return model_constructor.model_validate_json(data)
+
+    def write(self, identifier: str | pathlib.Path, labware: tc.LabwareDescription) -> None:
+        """Write labware description to JSON file.
+
+        :param identifier: Path to file where description will be written.
+        :param labware: tc.LabwareDescription to write to file.
+        """
+        file_path = pathlib.Path(identifier)
+        with file_path.open("w", encoding="utf-8") as f:
+            f.write(labware.model_dump_json(indent=2))
+
+
+labware_loader = LabwareIO()
 
 
 def generate_id(length: int = 22) -> str:
@@ -67,6 +136,55 @@ def ul_per_s(volume: UnsanitizedFloat) -> tc.ValueWithUnits:
     :return: tc.ValueWithUnits with magnitude in uL/s.
     """
     return tc.ValueWithUnits(magnitude=_cast_to_float(volume), units="uL/s")
+
+
+def s(seconds: UnsanitizedFloat) -> tc.ValueWithUnits:
+    """tc.ValueWithUnits constructor for seconds.
+
+    :return: tc.ValueWithUnits with magnitude in s.
+    """
+    return tc.ValueWithUnits(magnitude=_cast_to_float(seconds), units="s")
+
+
+def create_transform(
+    x: tc.ValueWithUnits | None = None,
+    y: tc.ValueWithUnits | None = None,
+    z: tc.ValueWithUnits | None = None,
+    a: tc.ValueWithUnits | None = None,
+    b: tc.ValueWithUnits | None = None,
+    c: tc.ValueWithUnits | None = None,
+) -> Matrix:
+    """Factory function for creating transformation matrices.
+
+    :param x: translation in x direction; defaults to 0.
+    :param y: translation in y direction; defaults to 0.
+    :param z: translation in z direction; defaults to 0.
+    :param a: rotation about z axis in radians; defaults to 0.
+    :param b: rotation about y axis in radians; defaults to 0.
+    :param c: rotation about x axis in radians; defaults to 0.
+
+    :return: tc.Matrix representing a transformation matrix for the specified transformation.
+    """
+    if b is not None or c is not None:
+        raise NotImplementedError(
+            "Rotation about x and y axes not yet implemented in create_transform"
+        )
+
+    if x is None:
+        x = tc.ValueWithUnits(magnitude=0.0, units="m")
+    if y is None:
+        y = tc.ValueWithUnits(magnitude=0.0, units="m")
+    if z is None:
+        z = tc.ValueWithUnits(magnitude=0.0, units="m")
+    if a is None:
+        a = tc.ValueWithUnits(magnitude=0.0, units="radians")
+
+    return [
+        [1.0, 0.0, 0.0, x.to("m").magnitude],
+        [0.0, 1.0, 0.0, y.to("m").magnitude],
+        [0.0, 0.0, 1.0, z.to("m").magnitude],
+        [0.0, 0.0, 0.0, 1.0],
+    ]
 
 
 def location_as_labware_index(

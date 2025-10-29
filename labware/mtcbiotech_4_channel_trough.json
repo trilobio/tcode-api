@@ -1,0 +1,94 @@
+{
+  "tags": [],
+  "named_tags": {
+    "name": "mtcbiotech_4_channel_trough",
+    "brand": "mtcbiotech",
+    "model": "4_channel_trough.obj",
+    "kind": "WELL_PLATE"
+  },
+  "x_length": {
+    "type": "ValueWithUnits",
+    "magnitude": 127.76,
+    "units": "mm"
+  },
+  "y_length": {
+    "type": "ValueWithUnits",
+    "magnitude": 85.48,
+    "units": "mm"
+  },
+  "z_length": {
+    "type": "ValueWithUnits",
+    "magnitude": 31.4,
+    "units": "mm"
+  },
+  "type": "WellPlate",
+  "grid": {
+    "type": "Grid",
+    "row_count": 1,
+    "column_count": 4,
+    "row_pitch": {
+      "type": "ValueWithUnits",
+      "magnitude": 0.0,
+      "units": "mm"
+    },
+    "column_pitch": {
+      "type": "ValueWithUnits",
+      "magnitude": 27.0,
+      "units": "mm"
+    },
+    "row_offset": {
+      "type": "ValueWithUnits",
+      "magnitude": 0.0,
+      "units": "mm"
+    },
+    "column_offset": {
+      "type": "ValueWithUnits",
+      "magnitude": 0.0,
+      "units": "mm"
+    }
+  },
+  "well": {
+    "type": "Well",
+    "depth": {
+      "type": "ValueWithUnits",
+      "magnitude": 28.8,
+      "units": "mm"
+    },
+    "shape": {
+      "type": "AxisAlignedRectangle",
+      "x_length": {
+        "type": "ValueWithUnits",
+        "magnitude": 26.15,
+        "units": "mm"
+      },
+      "y_length": {
+        "type": "ValueWithUnits",
+        "magnitude": 71.0,
+        "units": "mm"
+      }
+    },
+    "bottom_shape": {
+      "type": "V-Shape",
+      "direction": "y-axis",
+      "offset": {
+        "type": "ValueWithUnits",
+        "magnitude": 4.25,
+        "units": "mm"
+      }
+    },
+    "min_volume": {
+      "type": "ValueWithUnits",
+      "magnitude": 1000.0,
+      "units": "uL"
+    },
+    "max_volume": {
+      "type": "ValueWithUnits",
+      "magnitude": 47500.0,
+      "units": "uL"
+    },
+    "well_tags": [],
+    "well_named_tags": {}
+  },
+  "lid_offset": null,
+  "lid": null
+}

@@ -1,6 +1,6 @@
 [project]
 name = "tcode-api"
-version = "1.27.0"
+version = "1.28.0"
 description = "Python implementation of Trilobio's TCode API"
 authors = [
     { name = "Trilobio", email = "hello@trilo.bio" }
@@ -9,6 +9,7 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "mypy>=1.15.0", # Installed to ensure type checking of pydantic
+    "pint>=0.25",
     "plac>=1.4.5",
     "pydantic>=2.10.6",
 ]
@@ -17,9 +18,6 @@ dependencies = [
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
-[tool.mypy]
-plugins = ['pydantic.mypy']
-
 [dependency-groups]
 dev = [
     "autodoc-pydantic>=2.2.0",
@@ -27,6 +25,7 @@ dev = [
     "build>=1.3.0",
     "coverage>=7.8.2",
     "furo>=2025.7.19",
+    "ipython>=9.6.0",
     "isort>=6.0.1",
     "mypy>=1.15.0",
     "sphinx>=8.2.3",
@@ -35,6 +34,21 @@ dev = [
     "types-requests>=2.32.4.20250913",
 ]
 
+[tool.black]
+line-length = 100
+
+[tool.isort]
+profile = "black"
+
+[tool.mypy]
+# https://adamj.eu/tech/2021/05/25/python-type-hints-specific-type-ignore/
+show_error_codes = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+plugins = ['pydantic.mypy']
+
+[tool.ruff]
+line-length = 100
 
 [tool.coverage.run]
 branch = true

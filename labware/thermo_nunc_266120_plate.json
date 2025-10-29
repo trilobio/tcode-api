@@ -1,0 +1,112 @@
+{
+  "tags": [],
+  "named_tags": {
+    "name": "266120_Thermo NUNC_96W_flat",
+    "brand": "thermofisher-scientific",
+    "model": "well_plate_96.obj",
+    "kind": "WELL_PLATE"
+  },
+  "x_length": {
+    "type": "ValueWithUnits",
+    "magnitude": 127.76,
+    "units": "mm"
+  },
+  "y_length": {
+    "type": "ValueWithUnits",
+    "magnitude": 85.47,
+    "units": "mm"
+  },
+  "z_length": {
+    "type": "ValueWithUnits",
+    "magnitude": 14.4,
+    "units": "mm"
+  },
+  "type": "WellPlate",
+  "grid": {
+    "type": "Grid",
+    "row_count": 8,
+    "column_count": 12,
+    "row_pitch": {
+      "type": "ValueWithUnits",
+      "magnitude": 9.0,
+      "units": "mm"
+    },
+    "column_pitch": {
+      "type": "ValueWithUnits",
+      "magnitude": 9.0,
+      "units": "mm"
+    },
+    "row_offset": {
+      "type": "ValueWithUnits",
+      "magnitude": 0.0,
+      "units": "mm"
+    },
+    "column_offset": {
+      "type": "ValueWithUnits",
+      "magnitude": 0.0,
+      "units": "mm"
+    }
+  },
+  "well": {
+    "type": "Well",
+    "depth": {
+      "type": "ValueWithUnits",
+      "magnitude": 11.3,
+      "units": "mm"
+    },
+    "shape": {
+      "type": "Circle",
+      "diameter": {
+        "type": "ValueWithUnits",
+        "magnitude": 6.6,
+        "units": "mm"
+      }
+    },
+    "bottom_shape": {
+      "type": "Flat"
+    },
+    "min_volume": {
+      "type": "ValueWithUnits",
+      "magnitude": 50.0,
+      "units": "uL"
+    },
+    "max_volume": {
+      "type": "ValueWithUnits",
+      "magnitude": 250.0,
+      "units": "uL"
+    },
+    "well_tags": [],
+    "well_named_tags": {}
+  },
+  "lid_offset": {
+    "type": "ValueWithUnits",
+    "magnitude": 9.3,
+    "units": "mm"
+  },
+  "lid": {
+    "tags": [],
+    "named_tags": {
+      "name": "266120_Thermo NUNC_96W_flat_lid",
+      "brand": "thermofisher-scientific",
+      "model": "nunc_omnitray_lid.obj",
+      "kind": "LID"
+    },
+    "x_length": {
+      "type": "ValueWithUnits",
+      "magnitude": 127.35,
+      "units": "mm"
+    },
+    "y_length": {
+      "type": "ValueWithUnits",
+      "magnitude": 85.4,
+      "units": "mm"
+    },
+    "z_length": {
+      "type": "ValueWithUnits",
+      "magnitude": 8.0,
+      "units": "mm"
+    },
+    "type": "Lid",
+    "stackable": true
+  }
+}

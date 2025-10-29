@@ -1,0 +1,64 @@
+{
+  "tags": [
+    "trash_can",
+    "dry_waste"
+  ],
+  "named_tags": {
+    "name": "3d_printed_trash_can",
+    "brand": "trilobio",
+    "model": "trash_bin_dry.obj",
+    "kind": "TRASH"
+  },
+  "x_length": {
+    "type": "ValueWithUnits",
+    "magnitude": 127.76,
+    "units": "mm"
+  },
+  "y_length": {
+    "type": "ValueWithUnits",
+    "magnitude": 85.48,
+    "units": "mm"
+  },
+  "z_length": {
+    "type": "ValueWithUnits",
+    "magnitude": 65.0,
+    "units": "mm"
+  },
+  "type": "Trash",
+  "well": {
+    "type": "Well",
+    "depth": {
+      "type": "ValueWithUnits",
+      "magnitude": 62.0,
+      "units": "mm"
+    },
+    "shape": {
+      "type": "AxisAlignedRectangle",
+      "x_length": {
+        "type": "ValueWithUnits",
+        "magnitude": 121.5,
+        "units": "mm"
+      },
+      "y_length": {
+        "type": "ValueWithUnits",
+        "magnitude": 79.25,
+        "units": "mm"
+      }
+    },
+    "bottom_shape": {
+      "type": "Flat"
+    },
+    "min_volume": {
+      "type": "ValueWithUnits",
+      "magnitude": 0.0,
+      "units": "uL"
+    },
+    "max_volume": {
+      "type": "ValueWithUnits",
+      "magnitude": 597000.0,
+      "units": "uL"
+    },
+    "well_tags": [],
+    "well_named_tags": {}
+  }
+}

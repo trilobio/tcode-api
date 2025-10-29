@@ -20,9 +20,7 @@ class Result(BaseModel):
     details: dict | None = None
 
     @classmethod
-    def from_tcode_result_report_interface(
-        cls, result_report: TCodeResultReport
-    ) -> Self:
+    def from_tcode_result_report_interface(cls, result_report: TCodeResultReport) -> Self:
         return cls(
             success=result_report.success,
             code=result_report.code,

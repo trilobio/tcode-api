@@ -53,6 +53,7 @@ class ValidatorErrorCode(enum.StrEnum):
     UNITS_ERROR = "units_error"
     UNNECESSARY = "unnecessary"
     WRONG_TOOL_MOUNTED = "wrong_tool_mounted"
+    INVALID_INDEX = "invalid_index"
 
 
 class ValidatorError(_TCodeResultReportBase):
@@ -98,6 +99,10 @@ class ResolverCode(str, enum.Enum):
     NOT_IMPLEMENTED = "not_implemented"
     DECK_SLOT_NOT_EMPTY = "deck_slot_not_empty"
     SUCCESS = "success"
+    INTERNAL_ERROR = "internal_error"
+    LABWARE_HOLDER_NOT_EMPTY = "labware_holder_occupied"
+    LABWARE_HOLDER_EMPTY = "labware_holder_empty"
+    PLATE_NOT_STACKABLE = "plate_not_stackable"
 
 
 class ResolverResult(_TCodeResultReportBase):
@@ -110,14 +115,10 @@ class ResolverResult(_TCodeResultReportBase):
     def ok(cls, message: str = "", details: dict | None = None) -> Self:
         """Create a successful result."""
         details = details or {}
-        return cls(
-            success=True, code=ResolverCode.SUCCESS, message=message, details=details
-        )
+        return cls(success=True, code=ResolverCode.SUCCESS, message=message, details=details)
 
     @classmethod
-    def error(
-        cls, code: ResolverCode, message: str, details: dict | None = None
-    ) -> Self:
+    def error(cls, code: ResolverCode, message: str, details: dict | None = None) -> Self:
         """Create a result containing an error. Enforces good exception practices through mandatory args."""
         details = details or {}
         return cls(success=False, code=code, message=message, details=details)
@@ -150,14 +151,10 @@ class ExecutionResult(_TCodeResultReportBase):
     def ok(cls, details: dict | None = None) -> Self:
         """Create a successful result."""
         details = details or {}
-        return cls(
-            success=True, code=ExecutionCode.SUCCESS, message="", details=details
-        )
+        return cls(success=True, code=ExecutionCode.SUCCESS, message="", details=details)
 
     @classmethod
-    def error(
-        cls, code: ExecutionCode, message: str, details: dict | None = None
-    ) -> Self:
+    def error(cls, code: ExecutionCode, message: str, details: dict | None = None) -> Self:
         """Create a result containing an error. Enforces good exception practices through mandatory args."""
         details = details or {}
         return cls(success=False, code=code, message=message, details=details)
@@ -172,3 +169,7 @@ TCodeResultReport = Annotated[
     ValidatorError | SchedulerError | ResolverResult | ExecutionResult,
     Field(discriminator="type"),
 ]
+
+
+class UnitsError(Exception):
+    """Exception raised for errors in unit conversions."""

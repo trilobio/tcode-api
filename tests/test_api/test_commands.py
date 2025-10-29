@@ -1,17 +1,19 @@
-"""Unittests for tcode_api.api module."""
+"""tcode_api.api.commands unittests."""
 
 import datetime
+import tempfile
 import unittest
 from typing import get_args
 
+# Using the below import style because it's how we expect users to import tcode_api
 import tcode_api.api as tc
 from tcode_api.api.commands import _RobotSpecificTCodeBase, _TCodeBase
-from tcode_api.utilities import generate_id
 
 
-class TestAPI(unittest.TestCase):
+class TestTCodeScript(unittest.TestCase):
+    """TCodeScript class unittests."""
 
-    def test_tcodeast(self) -> None:
+    def test_instantiate_tcodescript(self) -> None:
         """Ensure that TCodeScript can be instantiated."""
         script = tc.TCodeScript(
             metadata=tc.Metadata(
@@ -21,6 +23,26 @@ class TestAPI(unittest.TestCase):
             ),
         )
         self.assertEqual(len(script.commands), 0)
+
+    def test_file_io(self) -> None:
+        """Test file serialization and deserialization of TCodeScript."""
+        script = tc.TCodeScript(
+            metadata=tc.Metadata(
+                name="unittest_file_io",
+                timestamp=datetime.datetime.now().isoformat(),
+                tcode_api_version="0.1.0",
+            ),
+        )
+        with tempfile.TemporaryFile(mode="w+") as text_io:
+            script.write(text_io)
+            text_io.seek(0)
+            script_read = tc.TCodeScript.read(text_io)
+
+        self.assertEqual(script, script_read)
+
+
+class TestAPI(unittest.TestCase):
+    """Various unsorted unittests."""
 
     def test_descriptors(self) -> None:
         """Ensure that LabwareDescriptors can be instantiated without specifying certain attributes."""
@@ -35,39 +57,6 @@ class TestAPI(unittest.TestCase):
         tc.WellPlateDescriptor()
 
 
-class TestLocationAsLabwareIndex(unittest.TestCase):
-    """Regression test for verifying that LocationAsLabwareIndex can be
-    loaded using FastAPI.
-
-    The fundamental issue (and solution) is outlined here, has to do with pydantic's strict-by-default type coercion:
-        https://github.com/pydantic/pydantic/discussions/8726#discussioncomment-10427646
-
-    Update: changed typehint in LocationAsLabwareIndex from WellPartType enum to str as temp fix, but this sucks!
-    """
-
-    def test_enum_validation_as_enum_entry(self) -> None:
-        """Test that model_validate method works for enum entry."""
-        tc.LocationAsLabwareIndex.model_validate(
-            {
-                "labware_id": generate_id(),
-                "location_index": 0,
-                "well_part": "TOP",
-            },
-            strict=True,
-        )
-
-    def test_enum_validation_as_str(self) -> None:
-        """Test that model_validate method works for string."""
-        tc.LocationAsLabwareIndex.model_validate(
-            {
-                "labware_id": generate_id(),
-                "location_index": 0,
-                "well_part": tc.WellPartType.BOTTOM,
-            },
-            strict=True,
-        )
-
-
 class TestTCodeEndpoints(unittest.TestCase):
     """Mypy-compliant testing to make sure that all endpoints are included in type."""
 
@@ -78,9 +67,7 @@ class TestTCodeEndpoints(unittest.TestCase):
             obj
             for obj in tc.__dict__.values()
             if hasattr(obj, "__bases__")
-            and (
-                _TCodeBase in obj.__bases__ or _RobotSpecificTCodeBase in obj.__bases__
-            )
+            and (_TCodeBase in obj.__bases__ or _RobotSpecificTCodeBase in obj.__bases__)
         ]
         # https://stackoverflow.com/a/64643971
         type_options = get_args(get_args(tc.TCode)[0])
@@ -93,7 +80,3 @@ class TestTCodeEndpoints(unittest.TestCase):
                     type_options,
                     f"\n\nACTION ITEM: Add {endpoint} to tcode_api.api.TCode type",
                 )
-
-
-if __name__ == "__main__":
-    unittest.main()

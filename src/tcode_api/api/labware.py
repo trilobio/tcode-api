@@ -95,17 +95,11 @@ class ConicalBottomDescriptor(_ConfiguredBaseModel):
 
 
 WellBottomShapeDescription = Annotated[
-    ConicalBottomDescription
-    | FlatBottomDescription
-    | RoundBottomDescription
-    | VBottomDescription,
+    ConicalBottomDescription | FlatBottomDescription | RoundBottomDescription | VBottomDescription,
     Field(discriminator="type"),
 ]
 WellBottomShapeDescriptor = Annotated[
-    ConicalBottomDescriptor
-    | FlatBottomDescriptor
-    | RoundBottomDescriptor
-    | VBottomDescriptor,
+    ConicalBottomDescriptor | FlatBottomDescriptor | RoundBottomDescriptor | VBottomDescriptor,
     Field(discriminator="type"),
 ]
 

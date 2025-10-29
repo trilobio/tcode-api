@@ -1,0 +1,83 @@
+{
+  "tags": [],
+  "named_tags": {
+    "name": "checkit_50ul",
+    "brand": "checkit",
+    "model": "well_plate_96.obj",
+    "kind": "WELL_PLATE"
+  },
+  "x_length": {
+    "type": "ValueWithUnits",
+    "magnitude": 127.76,
+    "units": "mm"
+  },
+  "y_length": {
+    "type": "ValueWithUnits",
+    "magnitude": 85.48,
+    "units": "mm"
+  },
+  "z_length": {
+    "type": "ValueWithUnits",
+    "magnitude": 14.3,
+    "units": "mm"
+  },
+  "type": "WellPlate",
+  "grid": {
+    "type": "Grid",
+    "row_count": 8,
+    "column_count": 12,
+    "row_pitch": {
+      "type": "ValueWithUnits",
+      "magnitude": 9.0,
+      "units": "mm"
+    },
+    "column_pitch": {
+      "type": "ValueWithUnits",
+      "magnitude": 9.0,
+      "units": "mm"
+    },
+    "row_offset": {
+      "type": "ValueWithUnits",
+      "magnitude": 0.0,
+      "units": "mm"
+    },
+    "column_offset": {
+      "type": "ValueWithUnits",
+      "magnitude": 0.0,
+      "units": "mm"
+    }
+  },
+  "well": {
+    "type": "Well",
+    "depth": {
+      "type": "ValueWithUnits",
+      "magnitude": 10.85,
+      "units": "mm"
+    },
+    "shape": {
+      "type": "Circle",
+      "diameter": {
+        "type": "ValueWithUnits",
+        "magnitude": 6.5,
+        "units": "mm"
+      }
+    },
+    "bottom_shape": {
+      "type": "Flat"
+    },
+    "min_volume": {
+      "type": "ValueWithUnits",
+      "magnitude": 10.0,
+      "units": "uL"
+    },
+    "max_volume": {
+      "type": "ValueWithUnits",
+      "magnitude": 300.0,
+      "units": "uL"
+    },
+    "well_tags": [],
+    "well_named_tags": {}
+  },
+  "lid_offset": null,
+  "lid": null
+}
