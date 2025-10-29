@@ -7,6 +7,11 @@ from typing import Iterable, Literal
 import plac  # type: ignore [import-untyped]
 
 import tcode_api.api as tc
+from tcode_api.cli import (
+    DEFAULT_SERVICER_URL,
+    output_file_path_annotation,
+    servicer_url_annotation,
+)
 from tcode_api.servicer import TCodeServicerClient
 from tcode_api.utilities import (
     describe_pipette_tip_box,
@@ -139,9 +144,12 @@ def yes_no_prompt(question: str) -> bool:
 
 
 @plac.annotations(
+    servicer_url=servicer_url_annotation,
+    output_file_path=output_file_path_annotation,
     z_only=plac.Annotation("If set, only calibrate the Z axis (no XY)", kind="flag", abbrev="z"),
 )
 def main(
+    servicer_url: str = DEFAULT_SERVICER_URL,
     output_file_path: pathlib.Path | None = None,
     z_only: bool = False,
 ) -> None:
@@ -248,7 +256,7 @@ def main(
         with output_file_path.open("w") as f:
             script.write(f)
 
-    client = TCodeServicerClient()
+    client = TCodeServicerClient(servicer_url=servicer_url)
     client.run_script(script)
 
 

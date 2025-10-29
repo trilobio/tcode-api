@@ -7,6 +7,11 @@ from typing import Literal
 import plac  # type: ignore [import-untyped]
 
 import tcode_api.api as tc
+from tcode_api.cli import (
+    DEFAULT_SERVICER_URL,
+    output_file_path_annotation,
+    servicer_url_annotation,
+)
 from tcode_api.servicer import TCodeServicerClient
 from tcode_api.utilities import (
     describe_pipette_tip_box,
@@ -36,11 +41,15 @@ def str_list_from_csv(input: str) -> list[str]:
         "Pipette type to use ('c1' for single-channel, 'c8' for 8-channel)",
         choices=("c1", "c8"),
     ),
+    servicer_url=servicer_url_annotation,
+    output_file_path=output_file_path_annotation,
 )
 def main(
     deck_slots_with_full_boxes: list[str],
     deck_slots_with_empty_boxes: list[str],
     pipette: Literal["c1", "c8"],
+    servicer_url: str = DEFAULT_SERVICER_URL,
+    output_file_path: str | None = None,
 ) -> None:
     random.seed(0)  # Standardize the generated ids
     robot_id, tool_id = [generate_id() for _ in range(2)]
@@ -126,8 +135,11 @@ def main(
 
     script.commands.append(tc.RETURN_TOOL(robot_id=robot_id))
 
-    # Run script
-    client = TCodeServicerClient()
+    if output_file_path is not None:
+        with open(output_file_path, "w") as f:
+            script.write(f)
+
+    client = TCodeServicerClient(servicer_url=servicer_url)
     client.run_script(script)
 
 

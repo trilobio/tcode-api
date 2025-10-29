@@ -1,10 +1,16 @@
 """Verify a pipette's volumetric accuracy using a 50μl Checkit."""
 
 import logging
+import pathlib
 
 import plac  # type: ignore [import-untyped]
 
 import tcode_api.api as tc
+from tcode_api.cli import (
+    DEFAULT_SERVICER_URL,
+    output_file_path_annotation,
+    servicer_url_annotation,
+)
 from tcode_api.servicer import TCodeServicerClient
 from tcode_api.utilities import (
     create_transform,
@@ -30,6 +36,8 @@ DEFAULT_WELL_BOTTOM_OFFSET = mm(3)
 
 
 @plac.annotations(
+    servicer_url=servicer_url_annotation,
+    output_file_path=output_file_path_annotation,
     transfer_volume=plac.Annotation(
         "volume to transfer in microliters",
         kind="option",
@@ -56,6 +64,8 @@ DEFAULT_WELL_BOTTOM_OFFSET = mm(3)
     ),
 )
 def main(
+    servicer_url: str = DEFAULT_SERVICER_URL,
+    output_file_path: pathlib.Path | None = None,
     transfer_volume: tc.ValueWithUnits = DEFAULT_TRANSFER_VOLUME,
     blowout_volume: tc.ValueWithUnits = DEFAULT_BLOWOUT_VOLUME,
     pipette_volume: tc.ValueWithUnits = DEFAULT_PIPETTE_VOLUME,
@@ -197,8 +207,11 @@ def main(
     script.commands.append(tc.DISCARD_PIPETTE_TIP_GROUP(robot_id=robot_id))
     script.commands.append(tc.RETURN_TOOL(robot_id=robot_id))
 
-    # Run the script
-    client = TCodeServicerClient()
+    if output_file_path is not None:
+        with output_file_path.open("w") as f:
+            script.write(f)
+
+    client = TCodeServicerClient(servicer_url=servicer_url)
     client.run_script(script)
 
 
