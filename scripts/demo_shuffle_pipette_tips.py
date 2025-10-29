@@ -16,7 +16,7 @@ from tcode_api.servicer import TCodeServicerClient
 from tcode_api.utilities import (
     describe_pipette_tip_box,
     generate_id,
-    labware_loader,
+    load_labware,
     location_as_labware_index,
 )
 
@@ -78,7 +78,7 @@ def main(
         script.commands.append(
             tc.CREATE_LABWARE(
                 robot_id=robot_id,
-                description=labware_loader.load("biotix_utip_300ul"),
+                description=load_labware("biotix_utip_300ul"),
                 holder=tc.LabwareHolderName(robot_id=robot_id, name=f"DeckSlot_{deck_slot_number}"),
             )
         )
@@ -87,7 +87,7 @@ def main(
         )
 
     # Make custom description for empty tip box
-    empty_pipette_tip_box_description = labware_loader.load("biotix_utip_300ul")
+    empty_pipette_tip_box_description = load_labware("biotix_utip_300ul")
     assert isinstance(empty_pipette_tip_box_description, tc.PipetteTipBoxDescription)
     empty_pipette_tip_box_description.full = False
 

@@ -16,7 +16,7 @@ from tcode_api.servicer import TCodeServicerClient
 from tcode_api.utilities import (
     describe_pipette_tip_box,
     generate_id,
-    labware_loader,
+    load_labware,
     ul,
 )
 
@@ -222,7 +222,7 @@ def main(
         script.commands.append(
             tc.CREATE_LABWARE(
                 robot_id=robot_id,
-                description=labware_loader.load(tip_box_name),
+                description=load_labware(tip_box_name),
                 holder=tc.LabwareHolderName(robot_id=robot_id, name="DeckSlot_8"),
             )
         )
