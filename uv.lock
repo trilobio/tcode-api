@@ -1107,6 +1107,7 @@ dependencies = [
     { name = "pint" },
     { name = "plac" },
     { name = "pydantic" },
+    { name = "requests" },
     { name = "uvicorn" },
 ]
 
@@ -1133,6 +1134,7 @@ requires-dist = [
     { name = "pint", specifier = ">=0.25" },
     { name = "plac", specifier = ">=1.4.5" },
     { name = "pydantic", specifier = ">=2.10.6" },
+    { name = "requests", specifier = ">=2.32.5" },
     { name = "uvicorn", specifier = ">=0.38.0" },
 ]
 
