@@ -7,7 +7,7 @@ import importlib.metadata
 import logging
 from typing import Annotated, Literal, TextIO
 
-from pydantic import Field
+from pydantic import BaseModel, Field
 
 from tcode_api.api.core import ValueWithUnits, _ConfiguredBaseModel
 from tcode_api.api.entity import GraspType, RobotDescriptor, ToolDescriptor
@@ -800,6 +800,42 @@ class WAIT(_RobotSpecificTCodeBase):
     duration: ValueWithUnits
 
 
+class WebHookBody(BaseModel):
+    """The webhook request that is sent out with SEND_WEBHOOK
+
+    :param timestamp: UNIX timestamp of the request in seconds
+    :param fleet_name: Name of the fleet controller that triggered the request
+    :param destination_url: The destination URL of this request as specified in TCode
+    :param is_execution_paused: Whether the execution of the script is paused
+    :param payload: The custom message as specified
+    """
+
+    timestamp: int
+    fleet_name: str
+    destination_url: str
+    is_execution_paused: bool
+    payload: str | None
+
+
+class SEND_WEBHOOK(_TCodeBase):
+    """Send a webhook call to the specified URL with the specified payload
+
+    :param type: see :class: ``_TCodeBase``
+    :param pause_execution: whether to pause execution of the script when this command is run
+    :param url: The URL to send the request to
+    :param payload: An optional payload to include in the request. The maximum payload size is 32KiB
+
+    On encountering command, the scheduler will send an HTTP POST request to
+    the specified URL with a JSON body as specified in :class:`WebHookBody`
+
+    """
+
+    type: Literal["SEND_WEBHOOK"] = "SEND_WEBHOOK"
+    pause_execution: bool
+    url: str
+    payload: str | None
+
+
 TCode = Annotated[
     ASPIRATE
     | ADD_LABWARE
@@ -828,7 +864,8 @@ TCode = Annotated[
     | RETURN_PIPETTE_TIP_GROUP
     | RETURN_TOOL
     | SWAP_TO_TOOL
-    | WAIT,
+    | WAIT
+    | SEND_WEBHOOK,
     Field(discriminator="type"),
 ]
 

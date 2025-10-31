@@ -1,6 +1,6 @@
 [project]
 name = "tcode-api"
-version = "1.28.1"
+version = "1.29.0"
 description = "Python implementation of Trilobio's TCode API"
 authors = [
     { name = "Trilobio", email = "hello@trilo.bio" }
@@ -8,10 +8,12 @@ authors = [
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "fastapi>=0.120.3",
     "mypy>=1.15.0", # Installed to ensure type checking of pydantic
     "pint>=0.25",
     "plac>=1.4.5",
     "pydantic>=2.10.6",
+    "uvicorn>=0.38.0",
 ]
 
 [build-system]
