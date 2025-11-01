@@ -2,11 +2,16 @@ from typing import Annotated
 
 import uvicorn
 from fastapi import Body, FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 
 from tcode_api.api.commands import WebHookBody
 from tcode_api.servicer.client import TCodeServicerClient
 
 TCODE_SERVER_DEFAULT_PORT = 8002
+
+# This magic string is checked in tcode server to make sure
+# everything is on the same version
+MAGIC_STRING = f"TCode integrator v1"
 
 
 class TCodeIntegratorBase:
@@ -21,6 +26,10 @@ class TCodeIntegratorBase:
             if request.client is not None:
                 self.incoming_request_host = request.client.host
             self.perform_action(args)
+
+        @self.app.get("/")
+        def handler():
+            return f"{MAGIC_STRING} {self.__class__.__name__}"
 
     def resume_tcode(self):
         server_host = self.tcode_server_host or self.incoming_request_host

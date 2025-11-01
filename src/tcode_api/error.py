@@ -30,6 +30,8 @@ class ValidatorErrorCode(enum.StrEnum):
     EMPTY_DECK_SLOT_NOT_FOUND = "empty_deck_slot_not_found"
     EMPTY_PIPETTE_TIP_GROUP = "empty_pipette_tip_group"
     EMPTY_TOOL_HOLDER_NOT_FOUND = "empty_tool_holder_not_found"
+    EXTERNAL_SERVICE_UNREACHABLE = "external_service_unreachable"
+    SIZE_LIMIT_EXCEEDED = "size_limit_exceeded"
     ID_EXISTS = "id_exists"
     ID_NOT_FOUND = "id_not_found"
     INTERNAL_ERROR = "internal_error"

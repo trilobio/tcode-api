@@ -810,7 +810,7 @@ class WebHookBody(BaseModel):
     :param payload: The custom message as specified
     """
 
-    timestamp: int
+    timestamp: float
     fleet_name: str
     destination_url: str
     is_execution_paused: bool
@@ -864,8 +864,8 @@ TCode = Annotated[
     | RETURN_PIPETTE_TIP_GROUP
     | RETURN_TOOL
     | SWAP_TO_TOOL
-    | WAIT
-    | SEND_WEBHOOK,
+    | SEND_WEBHOOK
+    | WAIT,
     Field(discriminator="type"),
 ]
 
