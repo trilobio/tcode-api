@@ -1,7 +1,10 @@
+from pprint import pprint
 from typing import Annotated
 
+import fastapi
 import uvicorn
-from fastapi import Body, FastAPI, Request
+from fastapi import BackgroundTasks, Body, FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 
 from tcode_api.api.commands import WebHookBody
@@ -21,14 +24,29 @@ class TCodeIntegratorBase:
         self.incoming_request_host = None
         self.app = FastAPI()
 
+        @self.app.exception_handler(RequestValidationError)
+        async def validation_exception_handler(request: Request, exc: RequestValidationError):
+            pprint(request)
+            pprint(exc.errors())
+            return fastapi.responses.JSONResponse(
+                status_code=fastapi.status.HTTP_422_UNPROCESSABLE_ENTITY,
+                content=fastapi.encoders.jsonable_encoder(exc.errors()),
+            )
+
         @self.app.post("/")
-        def handler(args: Annotated[WebHookBody, Body()], request: Request):
+        def _(
+            args: Annotated[WebHookBody, Body()],
+            request: Request,
+            background_tasks: BackgroundTasks,
+        ):
+
             if request.client is not None:
                 self.incoming_request_host = request.client.host
-            self.perform_action(args)
+
+            background_tasks.add_task(self.perform_action, args)
 
         @self.app.get("/")
-        def handler():
+        def _():
             return f"{MAGIC_STRING} {self.__class__.__name__}"
 
     def resume_tcode(self):

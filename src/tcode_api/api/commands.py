@@ -833,7 +833,7 @@ class SEND_WEBHOOK(_TCodeBase):
     type: Literal["SEND_WEBHOOK"] = "SEND_WEBHOOK"
     pause_execution: bool
     url: str
-    payload: str | None
+    payload: str | None = None
 
 
 TCode = Annotated[
