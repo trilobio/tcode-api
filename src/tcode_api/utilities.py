@@ -21,6 +21,7 @@ for p in site.getsitepackages():
     site_path = pathlib.Path(p)
     if current_path.is_relative_to(site_path):
         DEFAULT_LABWARE_PATH = site_path / DEFAULT_LABWARE_DIR
+        break
 else:
     DEFAULT_LABWARE_PATH = current_path.parent.parent.parent / DEFAULT_LABWARE_DIR
 
