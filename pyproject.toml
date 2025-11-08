@@ -1,6 +1,6 @@
 [project]
 name = "tcode-api"
-version = "1.29.1.dev1"
+version = "1.29.1.dev2"
 description = "Python implementation of Trilobio's TCode API"
 authors = [
     { name = "Trilobio", email = "hello@trilo.bio" }
@@ -31,7 +31,7 @@ include = [
 packages = ["src/", "labware/"]
 
 [tool.hatch.build.targets.wheel.sources]
-"labware" = "tcode_labware"
+"tcode_labware" = "tcode_labware"
 "src/tcode_api" = "tcode_api"
 
 [dependency-groups]
