@@ -11,6 +11,8 @@ from pydantic import TypeAdapter
 import tcode_api.api as tc
 from tcode_api.types import Matrix, NamedTags, Tags, UnsanitizedFloat
 
+DEFAULT_LABWARE_DIR = "tcode_labware"
+
 
 class LabwareIO:
     """Class for reading/writing labware descriptions from storage."""
@@ -18,7 +20,7 @@ class LabwareIO:
     def __init__(self, labware_dir: pathlib.Path | None = None) -> None:
         """Initialize LabwareIO."""
         if labware_dir is None:
-            self.labware_dir = pathlib.Path(__file__).parent.parent.parent / "labware"
+            self.labware_dir = pathlib.Path(__file__).parent.parent.parent / DEFAULT_LABWARE_DIR
 
         if not self.labware_dir.exists():
             raise FileNotFoundError(f"Labware directory not found: {self.labware_dir}")
@@ -26,7 +28,7 @@ class LabwareIO:
         self.labware_type_adapter: TypeAdapter = TypeAdapter(tc.LabwareDescription)
 
     def _resolve_file_path(
-        self, file_path: str | pathlib.Path, exists: bool | None = None
+            self, file_path: str | pathlib.Path, exists: bool | None = None
     ) -> pathlib.Path:
         """Resolve file path to labware description file.
 
@@ -75,7 +77,7 @@ class LabwareIO:
 
 
 def load_labware(
-    identifier: str | pathlib.Path, labware_dir: pathlib.Path | None = None
+        identifier: str | pathlib.Path, labware_dir: pathlib.Path | None = None
 ) -> tc.LabwareDescription:
     """Return LabwareDescription object loaded from file source.
 
@@ -86,14 +88,7 @@ def load_labware(
 
     :return: loaded tc.LabwareDescription.
     """
-    try:
-        labware_io = LabwareIO(labware_dir=labware_dir)
-    except FileNotFoundError as err:
-        if labware_dir is None:
-            err.add_note(
-                "When importing tcode_api as a package (rather than running inside the tcode_api repository), the default labware directory is not available. Please use the `labware_dir` parameter to manually specify a labware directory."
-            )
-        raise err
+    labware_io = LabwareIO(labware_dir=labware_dir)
     return labware_io.load(identifier)
 
 
@@ -167,12 +162,12 @@ def s(seconds: UnsanitizedFloat) -> tc.ValueWithUnits:
 
 
 def create_transform(
-    x: tc.ValueWithUnits | None = None,
-    y: tc.ValueWithUnits | None = None,
-    z: tc.ValueWithUnits | None = None,
-    a: tc.ValueWithUnits | None = None,
-    b: tc.ValueWithUnits | None = None,
-    c: tc.ValueWithUnits | None = None,
+        x: tc.ValueWithUnits | None = None,
+        y: tc.ValueWithUnits | None = None,
+        z: tc.ValueWithUnits | None = None,
+        a: tc.ValueWithUnits | None = None,
+        b: tc.ValueWithUnits | None = None,
+        c: tc.ValueWithUnits | None = None,
 ) -> Matrix:
     """Factory function for creating transformation matrices.
 
@@ -208,9 +203,9 @@ def create_transform(
 
 
 def location_as_labware_index(
-    labware_id: str,
-    location_index: int,
-    well_part: str | tc.WellPartType | None = None,
+        labware_id: str,
+        location_index: int,
+        well_part: str | tc.WellPartType | None = None,
 ) -> tc.LocationAsLabwareIndex:
     """tc.LocationAsLabwareIndex constructor.
 
@@ -227,13 +222,13 @@ def location_as_labware_index(
 
 
 def describe_well_plate(
-    tags: Tags | None = None,
-    named_tags: NamedTags | None = None,
-    row_count: int = 8,
-    column_count: int = 12,
-    row_pitch: float = 0.009,
-    column_pitch: float = 0.009,
-    has_lid: bool = False,
+        tags: Tags | None = None,
+        named_tags: NamedTags | None = None,
+        row_count: int = 8,
+        column_count: int = 12,
+        row_pitch: float = 0.009,
+        column_pitch: float = 0.009,
+        has_lid: bool = False,
 ) -> tc.WellPlateDescriptor:
     """tc.WellPlateDescriptor constructor with nice defaults.
 
@@ -266,13 +261,13 @@ def describe_well_plate(
 
 
 def describe_pipette_tip_box(
-    tags: Tags | None = None,
-    named_tags: NamedTags | None = None,
-    row_count: int = 8,
-    column_count: int = 12,
-    row_pitch: float = 0.009,
-    column_pitch: float = 0.009,
-    full: bool = True,
+        tags: Tags | None = None,
+        named_tags: NamedTags | None = None,
+        row_count: int = 8,
+        column_count: int = 12,
+        row_pitch: float = 0.009,
+        column_pitch: float = 0.009,
+        full: bool = True,
 ) -> tc.PipetteTipBoxDescriptor:
     """tc.PipetteTipBoxDescriptor constructor with nice defaults.
 
@@ -303,10 +298,10 @@ def describe_pipette_tip_box(
 
 
 def describe_pipette_tip_group(
-    row_count: int = 1,
-    column_count: int = 1,
-    tags: Tags | None = None,
-    named_tags: NamedTags | None = None,
+        row_count: int = 1,
+        column_count: int = 1,
+        tags: Tags | None = None,
+        named_tags: NamedTags | None = None,
 ) -> tc.PipetteTipGroupDescriptor:
     """tc.PipetteTipGroup constructor with nice defaults.
 
