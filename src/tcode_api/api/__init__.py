@@ -33,7 +33,6 @@ from tcode_api.api.commands import (  # noqa: F401  # isort:skip
     Metadata,
     TCode,
     TCodeScript,
-    WebHookBody,
 )
 from tcode_api.api.core import ValueWithUnits  # noqa: F401
 

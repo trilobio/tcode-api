@@ -30,3 +30,13 @@ The components that allow you runtime control of your fleet are exposed in the `
    :maxdepth: 1
 
    servicer
+
+TCode Integrator API
+--------------------
+
+This API allows you to integrate with external devices in one direction
+
+.. toctree::
+    :maxdepth: 2
+
+    integrator

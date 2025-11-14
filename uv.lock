@@ -1099,7 +1099,7 @@ wheels = [
 
 [[package]]
 name = "tcode-api"
-version = "1.29.1.dev4"
+version = "1.29.2"
 source = { editable = "." }
 dependencies = [
     { name = "fastapi" },
