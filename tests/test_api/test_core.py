@@ -1,17 +1,52 @@
 """Unittests for tcode_api.api.core submodule."""
 
+import tempfile
 import unittest
 from dataclasses import dataclass
 from typing import Literal
 
 # Using the below import style because it's how we expect users to import tcode_api
 import tcode_api.api as tc
+from tcode_api.api.core import _ConfiguredBaseModel
 from tcode_api.error import UnitsError
 from tcode_api.units import Q_
 
 
-class TestValueWithUnits(unittest.TestCase):
+class BaseTestCases:
+    """Namespace to prevent unittest discovery of base test case classes."""
+
+    class TestConfiguredBaseModel(unittest.TestCase):
+        model: type[_ConfiguredBaseModel]
+        """Unittests for any subclass of ConfiguredBaseModel."""
+
+        def _create_valid_model_instance(self) -> _ConfiguredBaseModel:
+            """Create and return a valid instance of the model under test.
+
+            Subclasses must override this method.
+            """
+            raise NotImplementedError(
+                "Subclasses must implement create_valid_model_instance method."
+            )
+
+        def test_file_io(self) -> None:
+            """ConfiguredBaseModel subclasses should be able to serialize to and from file-like objects."""
+            model = self._create_valid_model_instance()
+            with tempfile.TemporaryFile(mode="w+") as text_io:
+                model.write(text_io)
+                text_io.seek(0)
+                model_read = model.read(text_io)
+
+            self.assertEqual(model, model_read)
+
+
+class TestValueWithUnits(BaseTestCases.TestConfiguredBaseModel):
     """Unittests for tcode_api.api.core.ValueWithUnits class."""
+
+    model = tc.ValueWithUnits
+
+    def _create_valid_model_instance(self) -> tc.ValueWithUnits:
+        """Create and return a valid ValueWithUnits instance for testing."""
+        return tc.ValueWithUnits(magnitude=1.0, units="m")
 
     def _are_units_equivalent(self, units_a: str, units_b: str) -> bool:
         """Check if two unit strings are equivalent.

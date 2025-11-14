@@ -1,13 +1,13 @@
 """tcode_api.api.location unittests."""
 
-import unittest
-
 # Using the below import style because it's how we expect users to import tcode_api
 import tcode_api.api as tc
 from tcode_api.utilities import generate_id
 
+from .test_core import BaseTestCases
 
-class TestLocationAsLabwareIndex(unittest.TestCase):
+
+class TestLocationAsLabwareIndex(BaseTestCases.TestConfiguredBaseModel):
     """Regression test for verifying that LocationAsLabwareIndex can be
     loaded using FastAPI.
 
@@ -16,6 +16,16 @@ class TestLocationAsLabwareIndex(unittest.TestCase):
 
     Update: changed typehint in LocationAsLabwareIndex from WellPartType enum to str as temp fix, but this sucks!
     """
+
+    model = tc.LocationAsLabwareIndex
+
+    def _create_valid_model_instance(self) -> tc.LocationAsLabwareIndex:
+        """Create a valid LocationAsLabwareIndex instance for testing."""
+        return tc.LocationAsLabwareIndex(
+            labware_id=generate_id(),
+            location_index=0,
+            well_part=tc.WellPartType.TOP,
+        )
 
     def test_enum_validation_as_enum_entry(self) -> None:
         """Test that model_validate method works for enum entry."""

@@ -2,7 +2,6 @@
 
 import datetime
 import logging
-import tempfile
 import unittest
 from typing import get_args
 
@@ -10,42 +9,37 @@ from typing import get_args
 import tcode_api.api as tc
 from tcode_api.api.commands import _RobotSpecificTCodeBase, _TCodeBase
 
+from .test_core import BaseTestCases
 
-class TestTCodeScript(unittest.TestCase):
+
+class TestTCodeScript(BaseTestCases.TestConfiguredBaseModel):
     """TCodeScript class unittests."""
+
+    model = tc.TCodeScript
+
+    def _create_valid_model_instance(self) -> tc.TCodeScript:
+        """Create a valid TCodeScript instance for testing."""
+        return tc.TCodeScript(
+            metadata=tc.Metadata(
+                name="unittest",
+                timestamp=datetime.datetime.now().isoformat(),
+                tcode_api_version="0.1.0",
+            ),
+        )
 
     def test_instantiate_tcodescript(self) -> None:
         """Ensure that TCodeScript can be instantiated."""
-        script = tc.TCodeScript(
-            metadata=tc.Metadata(
-                name="unittest_instantiate",
-                timestamp=datetime.datetime.now().isoformat(),
-                tcode_api_version="0.1.0",
-            ),
-        )
-        self.assertEqual(len(script.commands), 0)
+        model = self._create_valid_model_instance()
+        self.assertEqual(len(model.commands), 0)
 
     def test_file_io(self) -> None:
-        """Test file serialization and deserialization of TCodeScript."""
-        script = tc.TCodeScript(
-            metadata=tc.Metadata(
-                name="unittest_file_io",
-                timestamp=datetime.datetime.now().isoformat(),
-                tcode_api_version="0.1.0",
-            ),
-        )
-        with tempfile.TemporaryFile(mode="w+") as text_io:
-            script.write(text_io)
-            text_io.seek(0)
-            try:
-                original_level = logging.getLogger("tcode_api.api.commands").level
-                logging.getLogger("tcode_api.api.commands").setLevel(logging.ERROR)
-
-                script_read = tc.TCodeScript.read(text_io)
-            finally:
-                logging.getLogger("tcode_api.api.commands").setLevel(original_level)
-
-        self.assertEqual(script, script_read)
+        """Suppress logging during file I/O test."""
+        try:
+            original_level = logging.getLogger("tcode_api.api.commands").level
+            logging.getLogger("tcode_api.api.commands").setLevel(logging.ERROR)
+            super().test_file_io()
+        finally:
+            logging.getLogger("tcode_api.api.commands").setLevel(original_level)
 
 
 class TestAPI(unittest.TestCase):
