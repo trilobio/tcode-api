@@ -897,21 +897,12 @@ class TCodeScript(_ConfiguredBaseModel):
 
         :returns: The loaded TCode script.
         """
-        data = file_object.read()
-        script = cls.model_validate_json(data)
+        model = super().read(file_object)
         current_version = importlib.metadata.version("tcode_api")
-        if script.metadata.tcode_api_version != current_version:
+        if model.metadata.tcode_api_version != current_version:
             _logger.warning(
                 "Loaded TCode script was created with API version %s, current version is %s",
-                script.metadata.tcode_api_version,
+                model.metadata.tcode_api_version,
                 current_version,
             )
-        return script
-
-    def write(self, file_object: TextIO) -> None:
-        """Write the TCode script to a file-like object.
-
-        :param file_object: A file-like object to which to write the TCode script.
-        """
-        data = self.model_dump_json(indent=2)
-        file_object.write(data)
+        return model
