@@ -1,6 +1,6 @@
 [project]
 name = "tcode-api"
-version = "1.29.2"
+version = "1.29.3"
 description = "Python implementation of Trilobio's TCode API"
 authors = [
     { name = "Trilobio", email = "hello@trilo.bio" }
