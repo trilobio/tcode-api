@@ -1,6 +1,7 @@
 """tcode_api.api.commands unittests."""
 
 import datetime
+import logging
 import tempfile
 import unittest
 from typing import get_args
@@ -36,7 +37,13 @@ class TestTCodeScript(unittest.TestCase):
         with tempfile.TemporaryFile(mode="w+") as text_io:
             script.write(text_io)
             text_io.seek(0)
-            script_read = tc.TCodeScript.read(text_io)
+            try:
+                original_level = logging.getLogger("tcode_api.api.commands").level
+                logging.getLogger("tcode_api.api.commands").setLevel(logging.ERROR)
+
+                script_read = tc.TCodeScript.read(text_io)
+            finally:
+                logging.getLogger("tcode_api.api.commands").setLevel(original_level)
 
         self.assertEqual(script, script_read)
 
