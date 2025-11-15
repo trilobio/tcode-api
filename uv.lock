@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.11"
 
 [[package]]
@@ -1099,7 +1099,7 @@ wheels = [
 
 [[package]]
 name = "tcode-api"
-version = "1.29.3.dev1"
+version = "1.29.3"
 source = { editable = "." }
 dependencies = [
     { name = "fastapi" },
