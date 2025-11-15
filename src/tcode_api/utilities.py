@@ -106,10 +106,10 @@ def load_labware(
     return labware_io.load(identifier)
 
 
-def generate_id(length: int = 22) -> str:
-    """Generate a UUIDv4
+def generate_id() -> str:
+    """Generate a UUIDv4 and pack as a URL-safe base64 encoded string.
 
-    :return: generated string
+    :return: generated string. This string contains 122 bits of entropy, equivalent to UUIDv4
     """
     return base64.urlsafe_b64encode(uuid.uuid4().bytes)[:-2].decode("utf-8")
 
