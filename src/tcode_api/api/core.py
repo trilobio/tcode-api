@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Literal
+from typing import Literal, Self, TextIO
 
 from pint import Unit
 from pint.errors import DimensionalityError
@@ -20,6 +20,25 @@ class _ConfiguredBaseModel(BaseModel):
     """
 
     model_config = ConfigDict(strict=True, extra="ignore")
+
+    @classmethod
+    def read(cls, file_object: TextIO) -> Self:
+        """Load a model from a file-like object.
+
+        :param file_object: A file-like object (typically created via `open('r')`).
+
+        :returns: The loaded model.
+        """
+        data = file_object.read()
+        return cls.model_validate_json(data)
+
+    def write(self, file_object: TextIO) -> None:
+        """Write the model to a file-like object.
+
+        :param file_object: A file-like object (typically created via `open('w')`).
+        """
+        data = self.model_dump_json(indent=2)
+        file_object.write(data)
 
 
 class _BaseModelWithId(_ConfiguredBaseModel):

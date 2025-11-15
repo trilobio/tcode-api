@@ -264,7 +264,7 @@ class CALIBRATE_TOOL_FOR_PROBING(_RobotSpecificTCodeBase):
         * If a bare tool is mounted, the transform is saved to the tool's configuration.
         * If a pipette tip is mounted, the transform is applied to all pipette tips of that brand.
         * If not raised, only the currently in-place transform is applied. Restarting the tcode
-            server will reset the calibration.
+        server will reset the calibration.
 
     :raises ValidatorError: ``ValidatorErrorCode.ID_NOT_FOUND`` if any of the following are true:
         * ``robot_id`` is not registered to a robot
@@ -278,9 +278,9 @@ class CALIBRATE_TOOL_FOR_PROBING(_RobotSpecificTCodeBase):
 
     :raises ValidatorError: ``ValidatorErrorCode.NOT_IMPLEMENTED`` if any of the following are true:
         * ``z_only`` is False, and the targeted robot's currently held tool is an eight-channel
-            pipette
+        pipette
         * ``z_only`` is False, and the targeted robot's currently held tool is a pipette with a
-            pipette tip group mounted
+        pipette tip group mounted
     """
 
     type: Literal["CALIBRATE_TOOL_FOR_PROBING"] = "CALIBRATE_TOOL_FOR_PROBING"
@@ -445,7 +445,7 @@ class MOVE_TO_LOCATION(_RobotSpecificTCodeBase):
     :raises ValidatorError: ``ValidatorErrorCode.ID_NOT_FOUND`` if any of the following are true:
         * ``robot_id`` is not registered to a robot
         * ``location`` is a ``LocationAsLabwareIndex`` and the referenced labware id is not yet
-            registered.
+        registered.
         * ``location`` is a ``LocationAsLabwareIndex`` and the ``location_index`` is out of bounds
 
     :raises ValidatorError: ``ValidatorErrorCode.TRANSFORM_SIZE_LIMIT_EXCEEDED`` if either
@@ -897,21 +897,12 @@ class TCodeScript(_ConfiguredBaseModel):
 
         :returns: The loaded TCode script.
         """
-        data = file_object.read()
-        script = cls.model_validate_json(data)
+        model = super().read(file_object)
         current_version = importlib.metadata.version("tcode_api")
-        if script.metadata.tcode_api_version != current_version:
+        if model.metadata.tcode_api_version != current_version:
             _logger.warning(
                 "Loaded TCode script was created with API version %s, current version is %s",
-                script.metadata.tcode_api_version,
+                model.metadata.tcode_api_version,
                 current_version,
             )
-        return script
-
-    def write(self, file_object: TextIO) -> None:
-        """Write the TCode script to a file-like object.
-
-        :param file_object: A file-like object to which to write the TCode script.
-        """
-        data = self.model_dump_json(indent=2)
-        file_object.write(data)
+        return model
