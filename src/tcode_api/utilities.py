@@ -1,11 +1,11 @@
 """Helpful constructors for common tcode_api objects."""
 
+import base64
 import functools
 import json
 import pathlib
-import random
 import site
-import string
+import uuid
 
 from pydantic import TypeAdapter
 
@@ -107,14 +107,11 @@ def load_labware(
 
 
 def generate_id(length: int = 22) -> str:
-    """Generate random string for use as id.
-
-    :param length: Length of the generated string, default is 22.
+    """Generate a UUIDv4
 
     :return: generated string
     """
-    letters = string.ascii_lowercase
-    return "".join(random.choice(letters) for i in range(length))
+    return base64.urlsafe_b64encode(uuid.uuid4().bytes)[:-2].decode("utf-8")
 
 
 def _cast_to_float(value: UnsanitizedFloat) -> float:
