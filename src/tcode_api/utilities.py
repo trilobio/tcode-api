@@ -4,12 +4,26 @@ import functools
 import json
 import pathlib
 import random
+import site
 import string
 
 from pydantic import TypeAdapter
 
 import tcode_api.api as tc
 from tcode_api.types import Matrix, NamedTags, Tags, UnsanitizedFloat
+
+DEFAULT_LABWARE_DIR = "tcode_labware"
+
+# Compute whether the current file is included in site-packages
+# as this affects where the default labware distribution is
+current_path = pathlib.Path(__file__)
+for p in site.getsitepackages():
+    site_path = pathlib.Path(p)
+    if current_path.is_relative_to(site_path):
+        DEFAULT_LABWARE_PATH = site_path / DEFAULT_LABWARE_DIR
+        break
+else:
+    DEFAULT_LABWARE_PATH = current_path.parent.parent.parent / DEFAULT_LABWARE_DIR
 
 
 class LabwareIO:
@@ -18,10 +32,12 @@ class LabwareIO:
     def __init__(self, labware_dir: pathlib.Path | None = None) -> None:
         """Initialize LabwareIO."""
         if labware_dir is None:
-            self.labware_dir = pathlib.Path(__file__).parent.parent.parent / "labware"
+            self.labware_dir = DEFAULT_LABWARE_PATH
 
         if not self.labware_dir.exists():
-            raise FileNotFoundError(f"Labware directory not found: {self.labware_dir}")
+            raise FileNotFoundError(
+                f"Labware directory not found: {self.labware_dir}. Please check whether tcode is installed correctly."
+            )
 
         self.labware_type_adapter: TypeAdapter = TypeAdapter(tc.LabwareDescription)
 
@@ -86,14 +102,7 @@ def load_labware(
 
     :return: loaded tc.LabwareDescription.
     """
-    try:
-        labware_io = LabwareIO(labware_dir=labware_dir)
-    except FileNotFoundError as err:
-        if labware_dir is None:
-            err.add_note(
-                "When importing tcode_api as a package (rather than running inside the tcode_api repository), the default labware directory is not available. Please use the `labware_dir` parameter to manually specify a labware directory."
-            )
-        raise err
+    labware_io = LabwareIO(labware_dir=labware_dir)
     return labware_io.load(identifier)
 
 

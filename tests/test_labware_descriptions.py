@@ -8,6 +8,7 @@ from typing import get_args
 import plac  # type: ignore[import-untyped]
 
 import tcode_api.api as tc
+from tcode_api.utilities import load_labware
 
 labware_json_dir = pathlib.Path(__file__).parent.parent / "data"
 
@@ -58,6 +59,7 @@ class TestLabware(unittest.TestCase):
             with self.subTest(file=file):
                 self.load_labware_description(file)
                 self.load_labware_descriptor(file)
+        load_labware("3d_printed_trash_can")
 
 
 @plac.annotations(
