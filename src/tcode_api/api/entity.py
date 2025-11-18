@@ -135,7 +135,7 @@ class GripperStateType(int, enum.Enum):
     """
 
     OPEN = 1
-    CLOSED = 2
+    CLOSE = 2
     WIDTH = 3
 
 
