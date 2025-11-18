@@ -128,7 +128,7 @@ class GraspType(str, enum.Enum):
 
 class GripperStateType(int, enum.Enum):
     """Enumeration of robot gripper states.
-    
+
     OPEN: gripper is fully open.
     CLOSED: gripper is fully closed.
     WIDTH: gripper is set to a specific distance between the fingers.
