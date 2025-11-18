@@ -12,6 +12,7 @@ from tcode_api.servicer.servicer_api import (
     ScheduleCommandRequest,
     ScheduleCommandResponse,
 )
+from tcode_api.types import Matrix
 from tcode_api.utilities import generate_id
 
 _logger = logging.getLogger(__name__)
@@ -118,6 +119,28 @@ class TCodeServicerClient:
             timeout=self.timeout,
         )
         rsp.raise_for_status()
+
+    def teach_point(self, robot_id: str) -> Matrix:
+        """Teach a point for the specified robot.
+
+        :param robot_id: The ID of the robot to teach the point for.
+            Use the ADD_ROBOT command to set the robot ID.
+
+        :return: The matrix representing the taught point.
+        """
+        try:
+            rsp = requests.post(
+                f"{self.servicer_url}/enter_teach_mode",
+                params={"robot_id": robot_id},
+            )
+            rsp.raise_for_status()
+        finally:
+            rsp = requests.post(
+                f"{self.servicer_url}/exit_teach_mode",
+                params={"robot_id": robot_id},
+            )
+            rsp.raise_for_status()
+            return rsp.json()
 
     def discover_fleet(self) -> None:
         """Scan the fleet for new robots, and update all robot states. Useful if you swapped tools manually as a developer."""

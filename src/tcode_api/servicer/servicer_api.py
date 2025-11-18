@@ -6,7 +6,7 @@ from pydantic import BaseModel, field_serializer
 
 import tcode_api.api as tc
 from tcode_api.error import TCodeResultReport
-from tcode_api.types import CommandID
+from tcode_api.types import CommandID, Matrix
 
 # Response structures #
 
@@ -68,6 +68,44 @@ class ScheduleCommandResponse(BaseModel):
         str, Any
     ]  # A serialized FleetStateSnapshot, cannot use directly due to pyrsistent implementation
     result: Result
+
+
+class EnterTeachModeRequest(BaseModel):
+    """Request to enter teach mode.
+
+    :param robot_id: target robot ID
+    """
+
+    robot_id: str
+
+
+class EnterTeachModeResponse(BaseModel):
+    """Response from entering teach mode.
+
+    :param result: Response metadata
+    """
+
+    result: Result
+
+
+class ExitTeachModeRequest(BaseModel):
+    """Request to exit teach mode, saving current location.
+
+    :param robot_id: target robot ID
+    """
+
+    robot_id: str
+
+
+class ExitTeachModeResponse(BaseModel):
+    """Response from exiting teach mode.
+
+    :param result: Response metadata
+    :param transform: transformation matrix of tool control point relative to robot base.
+    """
+
+    result: Result
+    transform: Matrix
 
 
 class TCodeCommandSchedulingReport(BaseModel):

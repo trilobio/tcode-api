@@ -429,8 +429,9 @@ class MOVE_GRIPPER(_RobotSpecificTCodeBase):
     :raises RuntimeError: If ``gripper_state_type`` is ``GripperStateType.WIDTH`` and finger_separation
         is not provided or out of bounds for the gripper.
     """
+
     type: Literal["MOVE_GRIPPER"] = "MOVE_GRIPPER"
-    gripper_state_type: int # GripperStateType
+    gripper_state_type: int  # GripperStateType
     finger_separation: ValueWithUnits | None = None
 
 
