@@ -14,6 +14,7 @@ from tcode_api.api.commands import (  # noqa: F401  # isort:skip
     DELETE_LABWARE,
     DISCARD_PIPETTE_TIP_GROUP,
     DISPENSE,
+    MOVE_GRIPPER,
     MOVE_TO_JOINT_POSE,
     MOVE_TO_LOCATION,
     PAUSE,
@@ -39,6 +40,7 @@ from tcode_api.api.core import ValueWithUnits  # noqa: F401
 from tcode_api.api.entity import (  # noqa: F401  # isort:skip
     EightChannelPipetteDescriptor,
     GraspType,
+    GripperStateType,
     GripperDescriptor,
     LabwareHolderDescriptor,
     PathType,
