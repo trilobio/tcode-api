@@ -417,6 +417,23 @@ def _identity_transform() -> Matrix:
     ]
 
 
+class MOVE_GRIPPER(_RobotSpecificTCodeBase):
+    """Manually drive the target robot's gripper to the specified state.
+
+    :param type: see :class: ``_TCodeBase``
+    :param robot_id: see :class: ``_RobotSpecificTCodeBase``
+    :param gripper_state_type: Desired gripper state. See :class: ``GripperStateType`` enum for options.
+    :param finger_separation: If gripper_state_type == GripperStateType.SET_WIDTH, this value
+        specifies the desired finger separation distance; expects length units.
+
+    :raises RuntimeError: If ``gripper_state_type`` is ``GripperStateType.WIDTH`` and finger_separation
+        is not provided or out of bounds for the gripper.
+    """
+    type: Literal["MOVE_GRIPPER"] = "MOVE_GRIPPER"
+    gripper_state_type: int # GripperStateType
+    finger_separation: ValueWithUnits | None = None
+
+
 class MOVE_TO_LOCATION(_RobotSpecificTCodeBase):
     """Move the target robot's control point to the specified location.
 
@@ -836,6 +853,7 @@ TCode = Annotated[
     | DELETE_LABWARE
     | DISCARD_PIPETTE_TIP_GROUP
     | DISPENSE
+    | MOVE_GRIPPER
     | MOVE_TO_LOCATION
     | MOVE_TO_JOINT_POSE
     | PAUSE
