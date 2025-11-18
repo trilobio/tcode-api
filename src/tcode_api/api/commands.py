@@ -7,7 +7,7 @@ import importlib.metadata
 import logging
 from typing import Annotated, Literal, TextIO
 
-from pydantic import BaseModel, Field
+from pydantic import Field
 
 from tcode_api.api.core import ValueWithUnits, _ConfiguredBaseModel
 from tcode_api.api.entity import GraspType, RobotDescriptor, ToolDescriptor
