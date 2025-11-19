@@ -9,12 +9,14 @@ However, if you wish to manually install the package in order to trial the API, 
 scripts locally, you can do so via one of the methods below.
 
 ### Python Requirements
-`tcode-api` runs on modern python, and requires python version 3.11 or higher. For the most
-up-to-date python versioning information, see the `pyproject.toml` file at the repository's root.
+`tcode-api` runs on modern python, and requires python version 3.11 or higher.
+
+To see the python versions supported by any release of `tcode-api`, check the `pyproject.toml`
+file in the root of this repository for that given version tag.
 
 ### Package Installation
 
-#### Using `uv` (recommended)
+#### **Using `uv` (recommended)**
 
 Internally, Trilobio developers use `uv` to manage python environments and tooling.
 
