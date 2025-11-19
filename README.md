@@ -20,8 +20,19 @@ file in the root of this repository for that given version tag.
 
 Internally, Trilobio developers use `uv` to manage python environments and tooling.
 
-To install `uv`, follow the instructions on [docs.astral.sh/uv/](https://docs.astral.sh/uv/getting-started/installation/)
+To install `uv`, follow [uv's installation instructions](https://docs.astral.sh/uv/getting-started/installation/)
 
+Once `uv` is installed, you can create a new project for your work by following
+[uv's project instructions](https://docs.astral.sh/uv/guides/projects/)
+
+Once your project is set up, you can add `tcode-api` as a dependency by running the following command
+from within your project directory:
+
+```uv add git+https://github.com/trilobio/tcode-api.git```
+
+Or, to add a specific version of `tcode-api`, run the following command:
+
+```uv add git+https://github.com/trilobio/tcode-api.git@v1.25.1```
 
 #### using pip (not recommented)
 
