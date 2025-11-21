@@ -19,7 +19,7 @@ Entity Creation
 
 Entity Reference
 ----------------
-``ADD_***`` TCode commands pair an entity with a identifier, so that you can reference that entity in later commands. For example, calling ``ADD_LABWARE(id_a, ...)`` allows you to use ``id_a`` in later commands such as ``PICK_UP_LABWARE(***, id_a)``. For more details, see :doc:`concepts/entity_resolution`.
+``ADD_***`` TCode commands pair an entity with a identifier, so that you can reference that entity in later commands. For example, calling ``ADD_LABWARE(id_a, ...)`` allows you to use ``id_a`` in later commands such as ``PICK_UP_LABWARE(***, id_a)``. For more details, see :doc:`../concepts/entity_resolution`.
 
 **Relevant TCode Commands**
 
