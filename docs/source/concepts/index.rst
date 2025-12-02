@@ -8,4 +8,5 @@ Documentation of concepts underlying TCode scripting, useful for building more c
    :caption: Concepts:
 
    execution_cycle
+   entity
    entity_resolution

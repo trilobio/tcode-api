@@ -40,3 +40,7 @@ exclude_patterns: list[str] = []
 
 html_theme = "furo"
 html_static_path = ["_static"]
+
+
+# -- Autodoc Typehints Configuration --------------------------------------------
+autodoc_typehints = "description"  # Read types of :param: entries from python typehints
