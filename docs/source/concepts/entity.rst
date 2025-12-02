@@ -3,12 +3,12 @@ Entities
 
 Entities are the core objects that can be referenced in TCode commands. This includes tools, robots, labware, and more.
 
-Entities have up to four actions associated with them: Creation, Reference, Resolution, and Deletion.
+Entities have up to three actions associated with them: Creation, Deletion and Resolution.
 
 Entity Creation
 ---------------
 
-``CREATE_***`` TCode commands manipulate the fleet state. For example, suppose you want a biologist to add a specific labware to a robot's deck. Here, you would use ``CREATE_LABWARE``. If you want a biologist to remove a labware from a fleet, you would use ``DELETE_LABWARE``.
+``CREATE_***`` TCode commands manipulate the robot state. For example, suppose you want a biologist to add a specific labware to a robot's deck. Here, you would use ``CREATE_LABWARE``. If you want a biologist to remove a labware from a fleet, you would use ``DELETE_LABWARE``.
 
 .. note::
     Currently, only ``CREATE_LABWARE`` is implemented. Tools and robots are created when your fleet controller starts up, and pipette tips are implicitly created when you call ``CREATE_LABWARE`` with a ``PipetteTipRack`` description, and ``full=True``.
@@ -27,13 +27,6 @@ Entity Reference
   - :py:class:`tcode_api.api.commands.ADD_ROBOT`
   - :py:class:`tcode_api.api.commands.ADD_TOOL`
   - :py:class:`tcode_api.api.commands.ADD_PIPETTE_TIP_GROUP`
-
-Entity Deletion
----------------
-``DELETE_***`` TCode commands remove an entity from the fleet state. For example, calling ``DELETE_LABWARE(id_a)`` removes the labware associated with ``id_a`` from the robot's deck.
-
-.. note::
-   Currently, only ``DELETE_LABWARE`` is implemented. Tools and robots are never removed once detected at the start of the script, and pipette_tips are both implicitly deleted when you call ``DELETE_LABWARE``  on a pipette tip rack and when you call `DISCARD_PIPETTE_TIPS``.
 
 
 Documentation

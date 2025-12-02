@@ -17,7 +17,7 @@ A basic understanding of Python is also assumed.
 Step 1: Connect to Fleet
 ------------------------
 
-.. doctest:: connect_to_fleet
+.. code-block:: python
 
   >>> from tcode_api.servicer import TCodeServicerClient
   >>> client = TCodeServicerClient()

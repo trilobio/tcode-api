@@ -160,6 +160,7 @@ class TCodeServicerClient:
 
         :param script: The TCode script to run.
         """
+        breakpoint()
         self.clear_schedule()
         self.clear_labware()
         self.clear_tcode_resolution()
