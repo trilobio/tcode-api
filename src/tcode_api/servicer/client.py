@@ -8,6 +8,9 @@ import requests
 import tcode_api.api as tc
 from tcode_api.servicer.servicer_api import (
     ClearScheduleResponse,
+    EnterTeachModeRequest,
+    ExitTeachModeRequest,
+    ExitTeachModeResponse,
     GetStatusResponse,
     ScheduleCommandRequest,
     ScheduleCommandResponse,
@@ -131,16 +134,19 @@ class TCodeServicerClient:
         try:
             rsp = requests.post(
                 f"{self.servicer_url}/enter_teach_mode",
-                params={"robot_id": robot_id},
+                json=EnterTeachModeRequest(robot_id=robot_id).model_dump(),
+                timeout=self.timeout,
             )
             rsp.raise_for_status()
+            input("Press <Enter> to exit teach mode")
         finally:
             rsp = requests.post(
                 f"{self.servicer_url}/exit_teach_mode",
-                params={"robot_id": robot_id},
+                json=ExitTeachModeRequest(robot_id=robot_id).model_dump(),
             )
             rsp.raise_for_status()
-            return rsp.json()
+            response = ExitTeachModeResponse.model_validate(rsp.json())
+            return response.transform
 
     def discover_fleet(self) -> None:
         """Scan the fleet for new robots, and update all robot states. Useful if you swapped tools manually as a developer."""
@@ -175,7 +181,7 @@ class TCodeServicerClient:
                 self.clear_labware()
                 return
 
-    def run_script(self, script: tc.TCodeScript) -> None:
+    def run_script(self, script: tc.TCodeScript, clean_environment: bool = True) -> None:
         """Schedule and execute a TCode script on the fleet, starting from an empty state.
 
         This is a convenience method that combines scheduling, starting execution, and monitoring
@@ -183,11 +189,11 @@ class TCodeServicerClient:
 
         :param script: The TCode script to run.
         """
-        breakpoint()
-        self.clear_schedule()
-        self.clear_labware()
-        self.clear_tcode_resolution()
-        self.discover_fleet()
+        if clean_environment:
+            self.clear_schedule()
+            self.clear_labware()
+            self.clear_tcode_resolution()
+            self.discover_fleet()
 
         for command in script.commands:
             rsp = self.schedule_command(generate_id(), command)
