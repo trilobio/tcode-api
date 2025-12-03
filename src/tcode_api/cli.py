@@ -27,12 +27,14 @@ def validate_servicer_url(value: str) -> str:
 
 servicer_url_annotation = plac.Annotation(
     help="Connect to the TCode servicer at this URL",
+    abbrev="s",
+    kind="option",
     type=validate_servicer_url,
 )
 
 output_file_path_annotation = plac.Annotation(
     "If set, write the generated TCode script to this file path",
-    kind="option",
     abbrev="o",
+    kind="option",
     type=pathlib.Path,
 )
