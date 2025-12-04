@@ -137,14 +137,16 @@ class TCodeServicerClient:
                 time.sleep(0.1)
                 status = self.get_status()
 
-                if status.operation_count == 0:
+                if not status.result.success:
+                    _logger.error("Error: %s", status.result.message)
                     self.set_run_state(False)
                     return
 
-                if not status.result.success:
-                    print(status.result.message)
+                if status.operation_count == 0:
+                    _logger.info("Success")
                     self.set_run_state(False)
                     return
+
 
             except KeyboardInterrupt:
                 self.set_run_state(False)
@@ -160,7 +162,6 @@ class TCodeServicerClient:
 
         :param script: The TCode script to run.
         """
-        breakpoint()
         self.clear_schedule()
         self.clear_labware()
         self.clear_tcode_resolution()
