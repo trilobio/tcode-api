@@ -40,7 +40,7 @@ def main(
         tc.ADD_TOOL(robot_id=robot_id, id=gripper_id, descriptor=tc.GripperDescriptor())
     )
     script.commands.append(
-        tc.SWAP_TO_TOOL(robot_id=robot_id, id=gripper_id)
+        tc.RETRIEVE_TOOL(robot_id=robot_id, id=gripper_id)
     )
 
     client = TCodeServicerClient(servicer_url=servicer_url)
@@ -84,7 +84,7 @@ def main(
             gripper_state_type=tc.GripperStateType.OPEN,
         ),
     )
-    script_b.commands.append(tc.SWAP_TO_TOOL(robot_id=robot_id, id=None))
+    script_b.commands.append(tc.RETURN_TOOL(robot_id=robot_id))
     client.run_script(script_b, clean_environment=False)
 
 if __name__ == "__main__":
