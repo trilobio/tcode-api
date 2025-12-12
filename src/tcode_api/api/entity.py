@@ -126,6 +126,19 @@ class GraspType(str, enum.Enum):
     PINCH = "PINCH"
 
 
+class GripperStateType(int, enum.Enum):
+    """Enumeration of robot gripper states.
+
+    OPEN: gripper is fully open.
+    CLOSED: gripper is fully closed.
+    WIDTH: gripper is set to a specific distance between the fingers.
+    """
+
+    OPEN = 1
+    CLOSE = 2
+    WIDTH = 3
+
+
 class TrajectoryType(int, enum.Enum):
     """Enumeration of trajectory types.
 
