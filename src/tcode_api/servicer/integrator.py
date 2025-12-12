@@ -17,7 +17,7 @@ TCODE_SERVER_DEFAULT_PORT = 8002
 
 # This magic string is checked in tcode server to make sure
 # everything is on the same version
-MAGIC_STRING = f"TCode integrator v1"
+MAGIC_STRING = "TCode integrator v1"
 
 
 class WebHookBody(BaseModel):

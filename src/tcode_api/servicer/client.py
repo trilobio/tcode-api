@@ -131,6 +131,7 @@ class TCodeServicerClient:
 
         :return: The matrix representing the taught point.
         """
+        transform: Matrix | None = None
         try:
             rsp = requests.post(
                 f"{self.servicer_url}/enter_teach_mode",
@@ -146,7 +147,12 @@ class TCodeServicerClient:
             )
             rsp.raise_for_status()
             response = ExitTeachModeResponse.model_validate(rsp.json())
-            return response.transform
+            transform = response.transform
+
+        assert (
+            transform is not None
+        ), "teach_point() managed to fail calling teach_node endpoint(s) without raising an error?"
+        return transform
 
     def discover_fleet(self) -> None:
         """Scan the fleet for new robots, and update all robot states. Useful if you swapped tools manually as a developer."""
