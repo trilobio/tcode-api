@@ -5,6 +5,7 @@ import functools
 import json
 import pathlib
 import site
+import subprocess
 import uuid
 
 from pydantic import TypeAdapter
@@ -351,3 +352,135 @@ describe_pipette_tip_1x8.__doc__ = (
     "param named_tags: Dictionary of named tags applied to the pipette tip. Defaults to an empty dictionary.\n\n"
     "return: tc.PipetteTipGroup with 1 row and 8 columns."
 )
+
+
+def remove_add_create_labware_commands(
+    script: tc.TCodeScript, *, inplace: bool = False
+) -> tc.TCodeScript:
+    """Remove labware-instantiation commands from a TCode script.
+
+    This strips the following commands from ``script.commands``:
+    - ``ADD_LABWARE`` (labware resolution / id assignment)
+    - ``CREATE_LABWARE`` (labware creation on deck)
+
+    Useful when chaining multiple scripts against an already-initialized fleet state.
+
+    Args:
+        script: The input script.
+        inplace: If True, mutate and return the same script object. If False (default),
+            return a deep-copied script with filtered commands.
+
+    Returns:
+        A script with ``ADD_LABWARE`` and ``CREATE_LABWARE`` commands removed.
+    """
+
+    target = script if inplace else script.model_copy(deep=True)
+    target.commands = [
+        cmd for cmd in target.commands if not isinstance(cmd, (tc.ADD_LABWARE, tc.CREATE_LABWARE))
+    ]
+    return target
+
+
+def _resolve_path_from_base(base_dir: pathlib.Path, path: pathlib.Path) -> pathlib.Path:
+    """Resolve a path relative to a base directory.
+
+    If ``path`` is absolute, it is returned resolved.
+    If ``path`` is relative, it is interpreted relative to ``base_dir``.
+    """
+
+    path = path.expanduser()
+    if path.is_absolute():
+        return path.resolve()
+    return (base_dir / path).resolve()
+
+
+def generate_tcode_script_from_protocol_designer(
+    protocol: pathlib.Path,
+    protocol_designer_dir: pathlib.Path,
+    *,
+    tcode_out: pathlib.Path | None = None,
+    cli_options_out: pathlib.Path | None = None,
+    create_cli_options: bool = True,
+    set_overrides: list[str] | None = None,
+    symbol_overrides: list[str] | None = None,
+    pnpm: str = "pnpm",
+) -> tc.TCodeScript:
+    """Generate a TCode script from a Protocol Designer ``.tbw`` protocol.
+
+    This is a thin wrapper around the Protocol Designer Node CLI:
+    - (optionally) ``cli/create-cli-options.ts`` to produce an options JSON file
+    - ``cli/generate-tcode.ts`` to produce a ``.tc`` file
+
+    The generated ``.tc`` file is then parsed/validated into a ``tc.TCodeScript`` and returned.
+
+    Args:
+        protocol: Path to the ``.tbw`` protocol file.
+        protocol_designer_dir: Path to the Protocol Designer repo directory.
+        tcode_out: Where to write the generated ``.tc``. Defaults to ``<protocol>.tc``.
+        cli_options_out: Where to write/read the cli-options JSON.
+            Defaults to ``<protocol_designer_dir>/cli/cli-options.json``.
+            Relative paths are interpreted relative to ``protocol_designer_dir``.
+        create_cli_options: If True, generate the cli-options JSON first.
+        set_overrides: Values passed as repeated ``--set <k=v>``.
+        symbol_overrides: Values passed as repeated ``--symbol <k=v>``.
+        pnpm: Command used to invoke pnpm (e.g. "pnpm", "/opt/homebrew/bin/pnpm").
+
+    Returns:
+        A validated ``tc.TCodeScript``.
+    """
+
+    protocol = protocol.expanduser().resolve()
+    protocol_designer_dir = protocol_designer_dir.expanduser().resolve()
+
+    if not protocol.exists():
+        raise FileNotFoundError(f"Protocol not found: {protocol}")
+    if not protocol_designer_dir.exists():
+        raise FileNotFoundError(f"Protocol Designer directory not found: {protocol_designer_dir}")
+
+    if tcode_out is None:
+        tcode_out = protocol.with_suffix(".tc")
+    tcode_out = tcode_out.expanduser().resolve()
+
+    if cli_options_out is None:
+        cli_options_out = pathlib.Path("cli/cli-options.json")
+    cli_options_out = _resolve_path_from_base(protocol_designer_dir, cli_options_out)
+
+    if create_cli_options:
+        cmd_cli_options: list[str] = [
+            pnpm,
+            "vite-node",
+            "cli/create-cli-options.ts",
+            "--out",
+            str(cli_options_out),
+        ]
+        for item in set_overrides or []:
+            cmd_cli_options.extend(["--set", item])
+        for item in symbol_overrides or []:
+            cmd_cli_options.extend(["--symbol", item])
+        try:
+            subprocess.run(cmd_cli_options, cwd=protocol_designer_dir, check=True)
+        except FileNotFoundError as exc:
+            raise RuntimeError(
+                f"Failed to run '{pnpm}'. Is pnpm installed and on PATH? Command: {cmd_cli_options}"
+            ) from exc
+
+    cmd_generate: list[str] = [
+        pnpm,
+        "vite-node",
+        "cli/generate-tcode.ts",
+        "-p",
+        str(protocol),
+        "-t",
+        str(tcode_out),
+        "-o",
+        str(cli_options_out),
+    ]
+    try:
+        subprocess.run(cmd_generate, cwd=protocol_designer_dir, check=True)
+    except FileNotFoundError as exc:
+        raise RuntimeError(
+            f"Failed to run '{pnpm}'. Is pnpm installed and on PATH? Command: {cmd_generate}"
+        ) from exc
+
+    file_text = tcode_out.read_text(encoding="utf-8")
+    return tc.TCodeScript.model_validate_json(file_text)
