@@ -46,12 +46,6 @@ def str_list_from_csv(input: str) -> list[str]:
     return [item.strip() for item in input.split(",") if item.strip()]
 
 
-_create_cli_options_annotation = plac.Annotation(
-    help="If set, generate cli-options JSON before generating TCode",
-    abbrev="c",
-    kind="flag",
-)
-
 _set_annotation = plac.Annotation(
     help=(
         "Override CLI option(s) (comma-separated). Example: --set useMC8P300=false "
@@ -75,6 +69,7 @@ _iterator_symbol_annotation = plac.Annotation(
         "If set, also pass an integer symbol to the protocol indicating the iteration. "
         "Value is 1-based (1..N). Example: --iterator-symbol iteration"
     ),
+    abbrev="i",
     kind="option",
     type=str,
 )
@@ -155,7 +150,6 @@ class SymbolSpec:
     ),
     tcode_out=_tcode_out_annotation,
     cli_options_out=_cli_options_out_annotation,
-    create_cli_options=_create_cli_options_annotation,
     set=_set_annotation,
     symbol=_symbol_annotation,
     iterator_symbol=_iterator_symbol_annotation,
@@ -173,7 +167,6 @@ def main(
     protocol_designer_dir: pathlib.Path,
     tcode_out: pathlib.Path | None = None,
     cli_options_out: pathlib.Path | None = None,
-    create_cli_options: bool = False,
     set: list[str] | None = None,
     symbol: list[str] | None = None,
     iterator_symbol: str | None = None,
@@ -214,7 +207,6 @@ def main(
 
     for iteration in range(num_iterations):
         is_first = iteration == 0
-        effective_create_cli_options = create_cli_options or bool(set) or bool(symbol_specs)
 
         iteration_symbol_overrides = symbol_overrides_for_iteration(iteration)
         script = generate_tcode_script_from_protocol_designer(
@@ -222,7 +214,6 @@ def main(
             protocol_designer_dir,
             tcode_out=tcode_out,
             cli_options_out=cli_options_out,
-            create_cli_options=effective_create_cli_options,
             set_overrides=set,
             symbol_overrides=iteration_symbol_overrides,
             pnpm=pnpm,

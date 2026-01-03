@@ -18,10 +18,7 @@ _tcode_out_annotation = plac.Annotation(
 )
 
 _cli_options_out_annotation = plac.Annotation(
-    help=(
-        "Where to write Protocol Designer CLI options JSON (defaults to "
-        "<protocol_designer_dir>/cli/cli-options.json)"
-    ),
+    help=("Where to write Protocol Designer CLI options JSON (defaults to a temp file)"),
     abbrev="o",
     kind="option",
     type=pathlib.Path,
@@ -96,7 +93,6 @@ def main(
         protocol_designer_dir,
         tcode_out=pathlib.Path("/tmp/output.tc"),
         cli_options_out=cli_options_out,
-        create_cli_options=create_cli_options,
         set_overrides=set,
         symbol_overrides=symbol,
         pnpm=pnpm,

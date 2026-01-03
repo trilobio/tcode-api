@@ -6,6 +6,7 @@ import json
 import pathlib
 import site
 import subprocess
+import tempfile
 import uuid
 
 from pydantic import TypeAdapter
@@ -418,9 +419,10 @@ def generate_tcode_script_from_protocol_designer(
         protocol_designer_dir: Path to the Protocol Designer repo directory.
         tcode_out: Where to write the generated ``.tc``. Defaults to ``<protocol>.tc``.
         cli_options_out: Where to write/read the cli-options JSON.
-            Defaults to ``<protocol_designer_dir>/cli/cli-options.json``.
+            Defaults to a temporary file.
             Relative paths are interpreted relative to ``protocol_designer_dir``.
-        create_cli_options: If True, generate the cli-options JSON first.
+        create_cli_options: If True (default), run ``create-cli-options.ts`` to generate the
+            options JSON. If False, ``cli_options_out`` must be provided and already exist.
         set_overrides: Values passed as repeated ``--set <k=v>``.
         symbol_overrides: Values passed as repeated ``--symbol <k=v>``.
         pnpm: Command used to invoke pnpm (e.g. "pnpm", "/opt/homebrew/bin/pnpm").
@@ -441,46 +443,69 @@ def generate_tcode_script_from_protocol_designer(
         tcode_out = protocol.with_suffix(".tc")
     tcode_out = tcode_out.expanduser().resolve()
 
+    temp_cli_options_path: pathlib.Path | None = None
     if cli_options_out is None:
-        cli_options_out = pathlib.Path("cli/cli-options.json")
-    cli_options_out = _resolve_path_from_base(protocol_designer_dir, cli_options_out)
+        # Avoid clobbering protocol-designer's tracked template file (often cli/cli-options.json).
+        # If callers want a persistent options file, they must pass cli_options_out explicitly.
+        tmp_handle = tempfile.NamedTemporaryFile(
+            prefix="cli-options.", suffix=".json", delete=False
+        )
+        tmp_handle.close()
+        cli_options_path = pathlib.Path(tmp_handle.name)
+        temp_cli_options_path = cli_options_path
+    else:
+        cli_options_path = _resolve_path_from_base(protocol_designer_dir, cli_options_out)
 
-    if create_cli_options:
-        cmd_cli_options: list[str] = [
+    try:
+        if create_cli_options:
+            cmd_cli_options: list[str] = [
+                pnpm,
+                "vite-node",
+                "cli/create-cli-options.ts",
+                "--out",
+                str(cli_options_path),
+            ]
+            for item in set_overrides or []:
+                cmd_cli_options.extend(["--set", item])
+            for item in symbol_overrides or []:
+                cmd_cli_options.extend(["--symbol", item])
+            try:
+                subprocess.run(cmd_cli_options, cwd=protocol_designer_dir, check=True)
+            except FileNotFoundError as exc:
+                raise RuntimeError(
+                    f"Failed to run '{pnpm}'. Is pnpm installed and on PATH? Command: {cmd_cli_options}"
+                ) from exc
+        else:
+            if not cli_options_path.exists():
+                raise FileNotFoundError(
+                    "create_cli_options=False but cli_options_out does not exist: "
+                    f"{cli_options_path}"
+                )
+
+        cmd_generate: list[str] = [
             pnpm,
             "vite-node",
-            "cli/create-cli-options.ts",
-            "--out",
-            str(cli_options_out),
+            "cli/generate-tcode.ts",
+            "-p",
+            str(protocol),
+            "-t",
+            str(tcode_out),
+            "-o",
+            str(cli_options_path),
         ]
-        for item in set_overrides or []:
-            cmd_cli_options.extend(["--set", item])
-        for item in symbol_overrides or []:
-            cmd_cli_options.extend(["--symbol", item])
         try:
-            subprocess.run(cmd_cli_options, cwd=protocol_designer_dir, check=True)
+            subprocess.run(cmd_generate, cwd=protocol_designer_dir, check=True)
         except FileNotFoundError as exc:
             raise RuntimeError(
-                f"Failed to run '{pnpm}'. Is pnpm installed and on PATH? Command: {cmd_cli_options}"
+                f"Failed to run '{pnpm}'. Is pnpm installed and on PATH? Command: {cmd_generate}"
             ) from exc
 
-    cmd_generate: list[str] = [
-        pnpm,
-        "vite-node",
-        "cli/generate-tcode.ts",
-        "-p",
-        str(protocol),
-        "-t",
-        str(tcode_out),
-        "-o",
-        str(cli_options_out),
-    ]
-    try:
-        subprocess.run(cmd_generate, cwd=protocol_designer_dir, check=True)
-    except FileNotFoundError as exc:
-        raise RuntimeError(
-            f"Failed to run '{pnpm}'. Is pnpm installed and on PATH? Command: {cmd_generate}"
-        ) from exc
-
-    file_text = tcode_out.read_text(encoding="utf-8")
-    return tc.TCodeScript.model_validate_json(file_text)
+        file_text = tcode_out.read_text(encoding="utf-8")
+        return tc.TCodeScript.model_validate_json(file_text)
+    finally:
+        if temp_cli_options_path is not None:
+            try:
+                temp_cli_options_path.unlink(missing_ok=True)
+            except OSError:
+                # Best-effort cleanup only.
+                pass

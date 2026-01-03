@@ -54,7 +54,6 @@ class TestGenerateTCodeScriptFromProtocolDesigner(unittest.TestCase):
             pd_dir = tmp_path / "protocol-designer"
             pd_dir.mkdir(parents=True)
 
-            cli_options_out = pathlib.Path("/tmp/cli-options.json")
             tcode_out = tmp_path / "out.tc"
             expected = tc.TCodeScript.new(name="x", description="")
 
@@ -69,7 +68,6 @@ class TestGenerateTCodeScriptFromProtocolDesigner(unittest.TestCase):
                     protocol,
                     pd_dir,
                     tcode_out=tcode_out,
-                    cli_options_out=cli_options_out,
                     create_cli_options=True,
                     set_overrides=["useMC8P300=false"],
                     symbol_overrides=["numSteps=5"],
@@ -86,6 +84,8 @@ class TestGenerateTCodeScriptFromProtocolDesigner(unittest.TestCase):
             self.assertIn("--symbol", first_cmd)
             self.assertIn("numSteps=5", first_cmd)
             self.assertIn("cli/generate-tcode.ts", second_cmd)
+            # Ensure we did NOT default to protocol-designer's tracked template path.
+            self.assertNotIn(str(pd_dir / "cli" / "cli-options.json"), first_cmd)
 
     def test_skips_cli_options_step(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -102,11 +102,15 @@ class TestGenerateTCodeScriptFromProtocolDesigner(unittest.TestCase):
                     tcode_out.write_text(expected.model_dump_json(), encoding="utf-8")
                 return None
 
+            cli_options_out = tmp_path / "existing-options.json"
+            cli_options_out.write_text("{}", encoding="utf-8")
+
             with patch("tcode_api.utilities.subprocess.run", side_effect=fake_run) as run_mock:
                 generate_tcode_script_from_protocol_designer(
                     protocol,
                     pd_dir,
                     tcode_out=tcode_out,
+                    cli_options_out=cli_options_out,
                     create_cli_options=False,
                 )
 
