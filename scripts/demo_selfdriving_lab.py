@@ -4,6 +4,8 @@ from dataclasses import dataclass
 
 import plac  # type: ignore [import-untyped]
 
+import tcode_api.api as tc
+
 from tcode_api.cli import (
     DEFAULT_SERVICER_URL,
     servicer_url_annotation,
@@ -11,7 +13,7 @@ from tcode_api.cli import (
 from tcode_api.servicer import TCodeServicerClient
 from tcode_api.utilities import (
     generate_tcode_script_from_protocol_designer,
-    remove_add_create_labware_commands,
+    generate_new_tip_group_ids,
 )
 
 
@@ -23,10 +25,7 @@ _tcode_out_annotation = plac.Annotation(
 )
 
 _cli_options_out_annotation = plac.Annotation(
-    help=(
-        "Where to write Protocol Designer CLI options JSON (defaults to "
-        "<protocol_designer_dir>/cli/cli-options.json)"
-    ),
+    help=("Where to write Protocol Designer CLI options JSON (defaults to a temporary file)"),
     abbrev="o",
     kind="option",
     type=pathlib.Path,
@@ -224,8 +223,17 @@ def main(
             client.run_script(script, clean_environment=True)
         else:
             print(f"--- Iteration {iteration + 1} of {num_iterations} ---")
-            subsequent_script = remove_add_create_labware_commands(script)
-            client.run_script(subsequent_script, clean_environment=False)
+
+            # Remove any ADD_* and CREATE_LABWARE commands to avoid ID conflicts.
+            script.commands = [
+                cmd
+                for cmd in script.commands
+                if not isinstance(
+                    cmd, (tc.ADD_LABWARE, tc.ADD_TOOL, tc.ADD_ROBOT, tc.CREATE_LABWARE)
+                )
+            ]
+            script = generate_new_tip_group_ids(script)
+            client.run_script(script, clean_environment=False)
 
 
 if __name__ == "__main__":

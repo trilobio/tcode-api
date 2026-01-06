@@ -241,7 +241,6 @@ def describe_well_plate(
     column_count: int = 12,
     row_pitch: float = 0.009,
     column_pitch: float = 0.009,
-    has_lid: bool = False,
 ) -> tc.WellPlateDescriptor:
     """tc.WellPlateDescriptor constructor with nice defaults.
 
@@ -251,7 +250,6 @@ def describe_well_plate(
     :param column_count: Number of columns in the well plate. Defaults to 12.
     :param row_pitch: Pitch between rows in meters. Defaults to 0.009 m.
     :param column_pitch: Pitch between columns in meters. Defaults to 0.009 m.
-    :param has_lid: Whether the well plate has a lid. Defaults to False.
 
     :return: tc.WellPlateDescriptor constructed with the specified parameters.
     """
@@ -268,7 +266,6 @@ def describe_well_plate(
         tags=tags,
         named_tags=named_tags,
         grid=grid_descriptor,
-        has_lid=has_lid,
         lid=lid_descriptor,
     )
 
@@ -355,30 +352,155 @@ describe_pipette_tip_1x8.__doc__ = (
 )
 
 
-def remove_add_create_labware_commands(
-    script: tc.TCodeScript, *, inplace: bool = False
-) -> tc.TCodeScript:
-    """Remove labware-instantiation commands from a TCode script.
+def generate_new_tip_group_ids(script: tc.TCodeScript, *, inplace: bool = False) -> tc.TCodeScript:
+    """Generate new ids for all pipette tip groups referenced in a script.
 
-    This strips the following commands from ``script.commands``:
-    - ``ADD_LABWARE`` (labware resolution / id assignment)
-    - ``CREATE_LABWARE`` (labware creation on deck)
+    The same old id may appear multiple times across commands; this function generates exactly
+    one new id per old id and replaces all occurrences.
 
-    Useful when chaining multiple scripts against an already-initialized fleet state.
+    Currently, pipette tip group ids appear in:
+    - ``ADD_PIPETTE_TIP_GROUP.id``
+    - ``RETRIEVE_PIPETTE_TIP_GROUP.id``
 
     Args:
-        script: The input script.
+        script: The script to rewrite.
         inplace: If True, mutate and return the same script object. If False (default),
-            return a deep-copied script with filtered commands.
+            return a deep-copied script with rewritten ids.
 
     Returns:
-        A script with ``ADD_LABWARE`` and ``CREATE_LABWARE`` commands removed.
+        Script with updated pipette tip group ids.
     """
 
     target = script if inplace else script.model_copy(deep=True)
-    target.commands = [
-        cmd for cmd in target.commands if not isinstance(cmd, (tc.ADD_LABWARE, tc.CREATE_LABWARE))
-    ]
+
+    id_map: dict[str, str] = {}
+    for command in target.commands:
+        if isinstance(command, (tc.ADD_PIPETTE_TIP_GROUP, tc.RETRIEVE_PIPETTE_TIP_GROUP)):
+            if command.id not in id_map:
+                id_map[command.id] = generate_id()
+
+    if not id_map:
+        return target
+
+    rewritten: list[tc.TCode] = []
+    for command in target.commands:
+        if isinstance(command, (tc.ADD_PIPETTE_TIP_GROUP, tc.RETRIEVE_PIPETTE_TIP_GROUP)):
+            new_id = id_map.get(command.id)
+            if new_id is None:
+                rewritten.append(command)
+            else:
+                rewritten.append(command.model_copy(update={"id": new_id}))
+        else:
+            rewritten.append(command)
+
+    target.commands = rewritten
+    return target
+
+
+def remap_ids_for_reresolution(script: tc.TCodeScript, *, inplace: bool = False) -> tc.TCodeScript:
+    """Remap entity ids so a script can be re-scheduled with ``clean_environment=False``.
+
+    Some servicer modes clear (or partially clear) the internal id->entity resolution graph between
+    runs. In those situations, you typically want to *re-run* the "ADD_*" commands to rebuild the
+    mapping, but you must avoid ID collisions with any ids still registered.
+
+    This function generates fresh ids for:
+    - robots (``ADD_ROBOT.id``)
+    - tools (``ADD_TOOL.id``)
+    - labware (``ADD_LABWARE.id`` and any ``lid_id``)
+    - pipette tip groups (``ADD_PIPETTE_TIP_GROUP.id`` and ``RETRIEVE_PIPETTE_TIP_GROUP.id``)
+
+    And rewrites references across subsequent commands, including:
+    - ``robot_id`` on all robot-specific commands
+    - tool ids referenced by ``RETRIEVE_TOOL.id``
+    - labware ids referenced by commands and by ``Location*`` objects (labware_id, robot_id)
+
+    Notes:
+      - This does *not* remove any commands; it only rewrites ids.
+      - If your workflow needs to avoid changing the physical deck state, combine this with
+        ``remove_create_labware_commands`` (or other filtering) before scheduling.
+    """
+
+    target = script if inplace else script.model_copy(deep=True)
+
+    robot_id_map: dict[str, str] = {}
+    tool_id_map: dict[str, str] = {}
+    labware_id_map: dict[str, str] = {}
+    tip_group_id_map: dict[str, str] = {}
+
+    # First pass: collect ids that are explicitly introduced.
+    for command in target.commands:
+        if isinstance(command, tc.ADD_ROBOT):
+            robot_id_map.setdefault(command.id, generate_id())
+        elif isinstance(command, tc.ADD_TOOL):
+            tool_id_map.setdefault(command.id, generate_id())
+            robot_id_map.setdefault(command.robot_id, generate_id())
+        elif isinstance(command, tc.ADD_LABWARE):
+            labware_id_map.setdefault(command.id, generate_id())
+            if command.lid_id is not None:
+                labware_id_map.setdefault(command.lid_id, generate_id())
+        elif isinstance(command, tc.ADD_PIPETTE_TIP_GROUP):
+            tip_group_id_map.setdefault(command.id, generate_id())
+        elif isinstance(command, tc.RETRIEVE_PIPETTE_TIP_GROUP):
+            tip_group_id_map.setdefault(command.id, generate_id())
+
+    def _map_robot_id(robot_id: str) -> str:
+        return robot_id_map.get(robot_id, robot_id)
+
+    def _map_tool_id(tool_id: str) -> str:
+        return tool_id_map.get(tool_id, tool_id)
+
+    def _map_labware_id(labware_id: str) -> str:
+        return labware_id_map.get(labware_id, labware_id)
+
+    def _map_tip_group_id(tip_group_id: str) -> str:
+        return tip_group_id_map.get(tip_group_id, tip_group_id)
+
+    def _rewrite_location(location: tc.Location) -> tc.Location:
+        # Be intentionally conservative: only rewrite fields that exist on the location instance.
+        # (This avoids relying on internal, non-exported base classes.)
+        update: dict[str, object] = {}
+        if hasattr(location, "robot_id"):
+            update["robot_id"] = _map_robot_id(getattr(location, "robot_id"))
+        if hasattr(location, "labware_id"):
+            update["labware_id"] = _map_labware_id(getattr(location, "labware_id"))
+        return location.model_copy(update=update) if update else location
+
+    rewritten: list[tc.TCode] = []
+    for command in target.commands:
+        updated_fields: dict[str, object] = {}
+
+        # Common robot_id field on many commands.
+        if hasattr(command, "robot_id"):
+            updated_fields["robot_id"] = _map_robot_id(getattr(command, "robot_id"))
+
+        # Command-specific id fields.
+        if isinstance(command, tc.ADD_ROBOT):
+            updated_fields["id"] = _map_robot_id(command.id)
+        elif isinstance(command, tc.ADD_TOOL):
+            updated_fields["id"] = _map_tool_id(command.id)
+            updated_fields["robot_id"] = _map_robot_id(command.robot_id)
+        elif isinstance(command, tc.RETRIEVE_TOOL):
+            updated_fields["id"] = _map_tool_id(command.id)
+        elif isinstance(command, tc.ADD_LABWARE):
+            updated_fields["id"] = _map_labware_id(command.id)
+            if command.lid_id is not None:
+                updated_fields["lid_id"] = _map_labware_id(command.lid_id)
+        # Any command that explicitly references labware/lid ids.
+        if hasattr(command, "labware_id"):
+            updated_fields["labware_id"] = _map_labware_id(getattr(command, "labware_id"))
+        if hasattr(command, "lid_id") and getattr(command, "lid_id") is not None:
+            updated_fields["lid_id"] = _map_labware_id(getattr(command, "lid_id"))
+        elif isinstance(command, (tc.ADD_PIPETTE_TIP_GROUP, tc.RETRIEVE_PIPETTE_TIP_GROUP)):
+            updated_fields["id"] = _map_tip_group_id(command.id)
+
+        # Commands with Location payloads.
+        if hasattr(command, "location"):
+            updated_fields["location"] = _rewrite_location(getattr(command, "location"))
+
+        rewritten.append(command.model_copy(update=updated_fields) if updated_fields else command)
+
+    target.commands = rewritten
     return target
 
 

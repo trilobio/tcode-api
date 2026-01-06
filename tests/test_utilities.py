@@ -6,43 +6,8 @@ import pathlib
 import tcode_api.api as tc
 from tcode_api.utilities import (
     generate_tcode_script_from_protocol_designer,
-    load_labware,
-    remove_add_create_labware_commands,
+    generate_new_tip_group_ids,
 )
-
-
-class TestRemoveAddCreateLabwareCommands(unittest.TestCase):
-    def test_removes_add_and_create_labware_only(self) -> None:
-        script = tc.TCodeScript.new(name="test", description="")
-        script.commands.append(tc.ADD_LABWARE(id="plate1", descriptor=tc.WellPlateDescriptor()))
-        script.commands.append(tc.COMMENT(text="keep me"))
-
-        labware_description = load_labware("checkit_50ul")
-        script.commands.append(
-            tc.CREATE_LABWARE(
-                robot_id="robot1",
-                description=labware_description,
-                holder=tc.LabwareHolderName(robot_id="robot1", name="1"),
-            )
-        )
-
-        filtered = remove_add_create_labware_commands(script)
-
-        # Original is unchanged by default
-        self.assertEqual(len(script.commands), 3)
-        # Filtered has only the non-labware commands
-        self.assertEqual(len(filtered.commands), 1)
-        self.assertIsInstance(filtered.commands[0], tc.COMMENT)
-
-    def test_inplace(self) -> None:
-        script = tc.TCodeScript.new(name="test", description="")
-        script.commands.append(tc.ADD_LABWARE(id="trash", descriptor=tc.TrashDescriptor()))
-        script.commands.append(tc.COMMENT(text="keep"))
-
-        same = remove_add_create_labware_commands(script, inplace=True)
-        self.assertIs(same, script)
-        self.assertEqual(len(script.commands), 1)
-        self.assertIsInstance(script.commands[0], tc.COMMENT)
 
 
 class TestGenerateTCodeScriptFromProtocolDesigner(unittest.TestCase):
@@ -115,3 +80,43 @@ class TestGenerateTCodeScriptFromProtocolDesigner(unittest.TestCase):
                 )
 
             self.assertEqual(len(run_mock.call_args_list), 1)
+
+
+class TestGenerateNewTipGroupIds(unittest.TestCase):
+    def test_rewrites_all_occurrences_consistently(self) -> None:
+        script = tc.TCodeScript.new(name="test", description="")
+        script.commands.append(
+            tc.ADD_PIPETTE_TIP_GROUP(
+                id="tipgroupA",
+                descriptor=tc.PipetteTipGroupDescriptor(row_count=1, column_count=8),
+            )
+        )
+        script.commands.append(tc.RETRIEVE_PIPETTE_TIP_GROUP(robot_id="robot1", id="tipgroupA"))
+        script.commands.append(tc.RETRIEVE_PIPETTE_TIP_GROUP(robot_id="robot1", id="tipgroupA"))
+        script.commands.append(
+            tc.ADD_PIPETTE_TIP_GROUP(
+                id="tipgroupB",
+                descriptor=tc.PipetteTipGroupDescriptor(row_count=1, column_count=1),
+            )
+        )
+        script.commands.append(tc.RETRIEVE_PIPETTE_TIP_GROUP(robot_id="robot1", id="tipgroupB"))
+
+        with patch("tcode_api.utilities.generate_id", side_effect=["NEW_A", "NEW_B"]):
+            rewritten = generate_new_tip_group_ids(script)
+
+        # Original unchanged
+        self.assertEqual(
+            [
+                getattr(c, "id", None)
+                for c in script.commands
+                if isinstance(c, (tc.ADD_PIPETTE_TIP_GROUP, tc.RETRIEVE_PIPETTE_TIP_GROUP))
+            ],
+            ["tipgroupA", "tipgroupA", "tipgroupA", "tipgroupB", "tipgroupB"],
+        )
+
+        ids = [
+            c.id
+            for c in rewritten.commands
+            if isinstance(c, (tc.ADD_PIPETTE_TIP_GROUP, tc.RETRIEVE_PIPETTE_TIP_GROUP))
+        ]
+        self.assertEqual(ids, ["NEW_A", "NEW_A", "NEW_A", "NEW_B", "NEW_B"])

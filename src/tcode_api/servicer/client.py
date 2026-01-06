@@ -82,6 +82,9 @@ class TCodeServicerClient:
 
         :returns: A report on the attempted scheduling. See :py:class:`ScheduleCommandResponse` for details.
         """
+        # if hasattr(command, "id"):
+        #     id = command.id  # type: ignore[attr-defined]
+        id = generate_id()
         rsp = requests.post(
             f"{self.servicer_url}/schedule_command",
             json=ScheduleCommandRequest(command_id=id, command=command).model_dump(),
@@ -204,6 +207,6 @@ class TCodeServicerClient:
         for command in script.commands:
             rsp = self.schedule_command(generate_id(), command)
             if not rsp.result.success:
-                raise RuntimeError(rsp)
+                raise RuntimeError(f"Error scheduling command {command}: {rsp.result.message}")
 
         self.execute_run_loop()
