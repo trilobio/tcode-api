@@ -12,6 +12,7 @@ from tcode_api.cli import (
 )
 from tcode_api.servicer import TCodeServicerClient
 from tcode_api.utilities import (
+    generate_id,
     generate_tcode_script_from_protocol_designer,
     generate_new_tip_group_ids,
 )
@@ -191,8 +192,8 @@ def main(
         overrides: list[str] = []
 
         if iterator_symbol is not None:
-            # 1-based iteration counter so protocols can do `if (iteration == 1) ...`.
-            overrides.append(f"{iterator_symbol}={iteration_index + 1}")
+            # 0-based iteration counter so protocols can do `if (iteration == 0) ...`.
+            overrides.append(f"{iterator_symbol}={iteration_index}")
 
         if not symbol_specs:
             return overrides or None
@@ -203,9 +204,14 @@ def main(
         return overrides
 
     client = TCodeServicerClient(servicer_url=servicer_url)
-
+    labware_id = generate_id()
+    labware_deck_slot = ""
+    robot_id = generate_id()
+    gripper_id = generate_id()
     for iteration in range(num_iterations):
         is_first = iteration == 0
+
+        # Do sensor reading in python here!
 
         iteration_symbol_overrides = symbol_overrides_for_iteration(iteration)
         script = generate_tcode_script_from_protocol_designer(
@@ -218,12 +224,26 @@ def main(
             pnpm=pnpm,
         )
 
+        print(f"--- Iteration {iteration + 1} of {num_iterations} ---")
         if is_first:
-            print(f"Generated TCode: {tcode_out}")
+            for cmd in script.commands:
+                if isinstance(cmd, tc.ADD_ROBOT):
+                    robot_id = cmd.id
+                if isinstance(cmd, tc.ADD_LABWARE):
+                    if cmd.descriptor.type == "WellPlate" and cmd.descriptor.grid is not None and cmd.descriptor.grid.row_count == 8 and cmd.descriptor.grid.column_count == 12:
+                        labware_id = cmd.id
+            for cmd in script.commands:
+                if isinstance(cmd, tc.CREATE_LABWARE):
+                    if cmd.description.type == "WellPlate" and cmd.description.grid.row_count == 8 and cmd.description.grid.column_count == 12:
+                        print("Found labware deck slot: ", cmd.holder.name)
+                        labware_deck_slot = cmd.holder.name
+
+            # Make sure gripper is availiable!
+            script.commands.append(
+                tc.ADD_TOOL(robot_id=robot_id, id=gripper_id, descriptor=tc.GripperDescriptor())
+            )
             client.run_script(script, clean_environment=True)
         else:
-            print(f"--- Iteration {iteration + 1} of {num_iterations} ---")
-
             # Remove any ADD_* and CREATE_LABWARE commands to avoid ID conflicts.
             script.commands = [
                 cmd
@@ -234,6 +254,35 @@ def main(
             ]
             script = generate_new_tip_group_ids(script)
             client.run_script(script, clean_environment=False)
+
+        # Read plate
+        plate_read_script = tc.TCodeScript.new(
+            name=__file__,
+            description=__doc__,
+        )
+        plate_read_script.commands.append(tc.RETRIEVE_TOOL(robot_id=robot_id, id=gripper_id))
+        plate_read_script.commands.append(tc.PICK_UP_LABWARE(robot_id=robot_id, labware_id=labware_id))
+        plate_read_script.commands.append(
+            tc.PUT_DOWN_LABWARE(
+                robot_id=robot_id,
+                holder=tc.LabwareHolderName(
+                    robot_id=robot_id,
+                    name="DeckSlot_16",
+                ),
+            )
+        )
+        plate_read_script.commands.append(tc.PICK_UP_LABWARE(robot_id=robot_id, labware_id=labware_id))
+        plate_read_script.commands.append(
+            tc.PUT_DOWN_LABWARE(
+                robot_id=robot_id,
+                holder=tc.LabwareHolderName(
+                    robot_id=robot_id,
+                    name=labware_deck_slot,
+                ),
+            )
+        )
+        plate_read_script.commands.append(tc.RETURN_TOOL(robot_id=robot_id))
+        client.run_script(plate_read_script, clean_environment=False)
 
 
 if __name__ == "__main__":
