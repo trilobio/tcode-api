@@ -230,11 +230,20 @@ def main(
                 if isinstance(cmd, tc.ADD_ROBOT):
                     robot_id = cmd.id
                 if isinstance(cmd, tc.ADD_LABWARE):
-                    if cmd.descriptor.type == "WellPlate" and cmd.descriptor.grid is not None and cmd.descriptor.grid.row_count == 8 and cmd.descriptor.grid.column_count == 12:
+                    if (
+                        cmd.descriptor.type == "WellPlate"
+                        and cmd.descriptor.grid is not None
+                        and cmd.descriptor.grid.row_count == 8
+                        and cmd.descriptor.grid.column_count == 12
+                    ):
                         labware_id = cmd.id
             for cmd in script.commands:
                 if isinstance(cmd, tc.CREATE_LABWARE):
-                    if cmd.description.type == "WellPlate" and cmd.description.grid.row_count == 8 and cmd.description.grid.column_count == 12:
+                    if (
+                        cmd.description.type == "WellPlate"
+                        and cmd.description.grid.row_count == 8
+                        and cmd.description.grid.column_count == 12
+                    ):
                         print("Found labware deck slot: ", cmd.holder.name)
                         labware_deck_slot = cmd.holder.name
 
@@ -261,7 +270,9 @@ def main(
             description=__doc__,
         )
         plate_read_script.commands.append(tc.RETRIEVE_TOOL(robot_id=robot_id, id=gripper_id))
-        plate_read_script.commands.append(tc.PICK_UP_LABWARE(robot_id=robot_id, labware_id=labware_id))
+        plate_read_script.commands.append(
+            tc.PICK_UP_LABWARE(robot_id=robot_id, labware_id=labware_id)
+        )
         plate_read_script.commands.append(
             tc.PUT_DOWN_LABWARE(
                 robot_id=robot_id,
@@ -271,7 +282,9 @@ def main(
                 ),
             )
         )
-        plate_read_script.commands.append(tc.PICK_UP_LABWARE(robot_id=robot_id, labware_id=labware_id))
+        plate_read_script.commands.append(
+            tc.PICK_UP_LABWARE(robot_id=robot_id, labware_id=labware_id)
+        )
         plate_read_script.commands.append(
             tc.PUT_DOWN_LABWARE(
                 robot_id=robot_id,
