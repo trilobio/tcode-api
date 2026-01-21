@@ -6,6 +6,7 @@ import time
 import requests
 
 import tcode_api.api as tc
+from tcode_api.servicer.keyboard_input import get_key
 from tcode_api.servicer.servicer_api import (
     ClearScheduleResponse,
     EnterTeachModeRequest,
@@ -16,7 +17,7 @@ from tcode_api.servicer.servicer_api import (
     ScheduleCommandResponse,
 )
 from tcode_api.types import Matrix
-from tcode_api.utilities import generate_id
+from tcode_api.utilities import generate_id, mm, rad
 
 _logger = logging.getLogger(__name__)
 
@@ -139,7 +140,42 @@ class TCodeServicerClient:
                 timeout=self.timeout,
             )
             rsp.raise_for_status()
-            input("Press <Enter> to exit teach mode")
+            print("w|a|q")
+            key_control_loop_running = True
+            while key_control_loop_running:
+                key = get_key()
+                match key:
+                    case "w":
+                        print("Going up")
+                        self.schedule_command(
+                            id=generate_id(),
+                            command=tc.MOVE_TO_JOINT_POSE(
+                                robot_id=robot_id,
+                                joint_positions=[rad(0), mm(0.5), rad(0), rad(0)],
+                                relative=True,
+                            ),
+                        )
+                        print("Going up 2")
+                        self.set_run_state(True)
+                        print("Going up 3")
+                    case "s":
+                        print("Going down")
+                        self.schedule_command(
+                            id=generate_id(),
+                            command=tc.MOVE_TO_JOINT_POSE(
+                                robot_id=robot_id,
+                                joint_positions=[rad(0), mm(-0.5), rad(0), rad(0)],
+                                relative=True,
+                            ),
+                        )
+                        print("Going down 2")
+                        self.set_run_state(True)
+                        print("Going down 3")
+                    case "esc" | "q":
+                        print("Exiting")
+                        key_control_loop_running = False
+                    case _:
+                        print(f"Unrecognized char {key}")
         finally:
             rsp = requests.post(
                 f"{self.servicer_url}/exit_teach_mode",
