@@ -239,6 +239,7 @@ def describe_well_plate(
     column_count: int = 12,
     row_pitch: float = 0.009,
     column_pitch: float = 0.009,
+    has_lid: bool = False,
 ) -> tc.WellPlateDescriptor:
     """tc.WellPlateDescriptor constructor with nice defaults.
 
@@ -248,6 +249,7 @@ def describe_well_plate(
     :param column_count: Number of columns in the well plate. Defaults to 12.
     :param row_pitch: Pitch between rows in meters. Defaults to 0.009 m.
     :param column_pitch: Pitch between columns in meters. Defaults to 0.009 m.
+    :param has_lid: Whether the well plate has a lid. Defaults to False.
 
     :return: tc.WellPlateDescriptor constructed with the specified parameters.
     """
