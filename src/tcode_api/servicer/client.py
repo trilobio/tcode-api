@@ -140,13 +140,12 @@ class TCodeServicerClient:
                 timeout=self.timeout,
             )
             rsp.raise_for_status()
-            print("w|a|q")
+            print("Manual Jog Controls (w|s = up|down)\nw|s|q")
             key_control_loop_running = True
             while key_control_loop_running:
                 key = get_key()
                 match key:
                     case "w":
-                        print("Going up")
                         self.schedule_command(
                             id=generate_id(),
                             command=tc.MOVE_TO_JOINT_POSE(
@@ -155,11 +154,8 @@ class TCodeServicerClient:
                                 relative=True,
                             ),
                         )
-                        print("Going up 2")
                         self.set_run_state(True)
-                        print("Going up 3")
                     case "s":
-                        print("Going down")
                         self.schedule_command(
                             id=generate_id(),
                             command=tc.MOVE_TO_JOINT_POSE(
@@ -168,9 +164,7 @@ class TCodeServicerClient:
                                 relative=True,
                             ),
                         )
-                        print("Going down 2")
                         self.set_run_state(True)
-                        print("Going down 3")
                     case "esc" | "q":
                         print("Exiting")
                         key_control_loop_running = False
