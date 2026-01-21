@@ -531,6 +531,8 @@ class PICK_UP_LABWARE(_RobotSpecificTCodeBase):
         ``ADD_LABWARE``.
     :param grasp_type: Optional grasp type to use when picking up the labware. See
         :class: ``GraspType`` enum for options. Defaults to ``GraspType.UNSPECIFIED``.
+    :param grasp_offset_transform: Optional offset transform to use when picking up the labware.
+        Modify this parameter if you need to pick up the labware in a non-centered manner.
 
     :raises ValidatorError: ``ValidatorErrorCode.ID_NOT_FOUND`` if any of the following are true:
         * ``robot_id`` is not registered to a robot
@@ -546,6 +548,7 @@ class PICK_UP_LABWARE(_RobotSpecificTCodeBase):
     type: Literal["PICK_UP_LABWARE"] = "PICK_UP_LABWARE"
     labware_id: str
     grasp_type: str = GraspType.UNSPECIFIED.value
+    grasp_offset_transform: Matrix = Field(default_factory=_identity_transform)
 
 
 class PUT_DOWN_LABWARE(_RobotSpecificTCodeBase):
