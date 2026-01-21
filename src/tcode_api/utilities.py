@@ -266,7 +266,6 @@ def describe_well_plate(
         tags=tags,
         named_tags=named_tags,
         grid=grid_descriptor,
-        has_lid=has_lid,
         lid=lid_descriptor,
     )
 

@@ -204,6 +204,6 @@ class TCodeServicerClient:
         for command in script.commands:
             rsp = self.schedule_command(generate_id(), command)
             if not rsp.result.success:
-                raise RuntimeError(rsp)
+                raise RuntimeError(f"Error scheduling command {command}: {rsp.result.message}")
 
         self.execute_run_loop()
