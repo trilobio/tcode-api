@@ -82,9 +82,9 @@ class TCodeServicerClient:
 
         :returns: A report on the attempted scheduling. See :py:class:`ScheduleCommandResponse` for details.
         """
-        # if hasattr(command, "id"):
-        #     id = command.id  # type: ignore[attr-defined]
-        id = generate_id()
+        if hasattr(command, "id"):
+            id = command.id  # type: ignore[attr-defined]
+
         rsp = requests.post(
             f"{self.servicer_url}/schedule_command",
             json=ScheduleCommandRequest(command_id=id, command=command).model_dump(),
