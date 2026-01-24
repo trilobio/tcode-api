@@ -117,20 +117,17 @@ class ADD_TOOL(_TCodeBase):
         to reference this tool.
     :param descriptor: Minimal descriptor of the desired tool; resolved on the fleet.
     :param robot_id: Identifier of the robot on which to search for the tool.
-    :param serial_number: Optional serial number of the tool to select an exact tool.
 
     :raises ValidatorError: ``ValidatorErrorCode.ID_EXISTS`` if ``id`` is already registered to
         a tool.
     :raises ValidatorError: ``ValidatorErrorCode.ID_NOT_FOUND`` if ``robot_id`` is not registered
         to a robot.
-    :raises ValidatorError: ``ValidatorErrorCode.TOOL_NOT_FOUND`` if ``serial_number`` is provided
     """
 
     type: Literal["ADD_TOOL"] = "ADD_TOOL"
     id: str
     descriptor: ToolDescriptor
     robot_id: str
-    serial_number: str | None = None
 
 
 class ASPIRATE(_RobotSpecificTCodeBase):
