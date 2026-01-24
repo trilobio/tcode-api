@@ -234,6 +234,10 @@ class TCodeServicerClient:
         for command in script.commands:
             rsp = self.schedule_command(generate_id(), command)
             if not rsp.result.success:
-                raise RuntimeError(f"Error scheduling command {command}: {rsp.result.message}")
+                msg = f"tcode service schedule_command({command.type}) unsuccessful: {rsp.result.message} (see debug logs for stacktrace)"
+                if rsp.result.details is not None:
+                    for line in rsp.result.details.get("traceback", "").split("\n"):
+                        _logger.debug(line)
+                raise RuntimeError(msg)
 
         self.execute_run_loop()
