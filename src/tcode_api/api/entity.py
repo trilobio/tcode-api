@@ -39,7 +39,7 @@ class PipetteTipGroupDescriptor(_ConfiguredBaseModel):
 class _ToolBaseDescriptor(_ConfiguredBaseModel):
     """Base schema shared by all tools in the TOOL discriminated union."""
 
-    ...
+    serial_number: str | None = None
 
 
 class ProbeDescriptor(_ToolBaseDescriptor):
