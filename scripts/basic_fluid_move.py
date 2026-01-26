@@ -101,8 +101,7 @@ def main(
     script.commands.append(
         tc.ADD_LABWARE(
             id=trough_id,
-            descriptor=tc.WellPlateDescriptor( 
-            ),
+            descriptor=tc.WellPlateDescriptor(),
         )
     )
     script.commands.append(
