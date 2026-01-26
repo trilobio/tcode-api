@@ -98,6 +98,7 @@ class ResolverCode(str, enum.Enum):
     NO_DISCOVERED_ENTITIES = "no_discovered_entities"
     NO_MATCHING_ENTITIES = "no_matching_entities"
     NO_UNRESOLVED_ENTITIES = "no_unresolved_entites"
+    NO_MATCHING_UNRESOLVED_ENTITIES = "no_matching_unresolved_entities"
     NOT_IMPLEMENTED = "not_implemented"
     DECK_SLOT_NOT_EMPTY = "deck_slot_not_empty"
     SUCCESS = "success"
