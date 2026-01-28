@@ -207,7 +207,11 @@ class TCodeServicerClient:
                     return
 
                 if not status.result.success:
-                    print(status.result.message)
+                    msg = f"tcode service hit Runtime error on command(id={status.command_id}): {status.result.message} (see debug logs for stacktrace)"
+                    if status.result.details is not None:
+                        for line in status.result.details.get("traceback", "").split("\n"):
+                            _logger.debug(line)
+                    _logger.fatal(msg)
                     self.set_run_state(False)
                     return
 
