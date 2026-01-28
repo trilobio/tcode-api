@@ -207,7 +207,11 @@ class TCodeServicerClient:
                     return
 
                 if not status.result.success:
-                    print(status.result.message)
+                    msg = f"tcode service hit Runtime error on command(id={status.command_id}): {status.result.message} (see debug logs for stacktrace)"
+                    if status.result.details is not None:
+                        for line in status.result.details.get("traceback", "").split("\n"):
+                            _logger.debug(line)
+                    _logger.fatal(msg)
                     self.set_run_state(False)
                     return
 
@@ -231,9 +235,14 @@ class TCodeServicerClient:
             self.clear_tcode_resolution()
             self.discover_fleet()
 
-        for command in script.commands:
+        for i, command in enumerate(script.commands):
+            _logger.debug("Scheduling C%03d %s", i, command.type)
             rsp = self.schedule_command(generate_id(), command)
             if not rsp.result.success:
-                raise RuntimeError(f"Error scheduling command {command}: {rsp.result.message}")
+                msg = f"tcode service schedule_command({command.type}) unsuccessful: {rsp.result.message} (see debug logs for stacktrace)"
+                if rsp.result.details is not None:
+                    for line in rsp.result.details.get("traceback", "").split("\n"):
+                        _logger.debug(line)
+                raise RuntimeError(msg)
 
         self.execute_run_loop()

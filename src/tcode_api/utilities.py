@@ -7,10 +7,16 @@ import pathlib
 import site
 import uuid
 
+import numpy as np
 from pydantic import TypeAdapter
+from scipy.spatial.transform import Rotation  # type: ignore[import-untyped]
 
 import tcode_api.api as tc
 from tcode_api.types import Matrix, NamedTags, Tags, UnsanitizedFloat
+
+SCIPY_SEQ = "zyx"  # Extrinsic rotation sequence
+SCIPY_DEGREES = False  # Angles are in radians
+
 
 DEFAULT_LABWARE_DIR = "tcode_labware"
 
@@ -172,6 +178,24 @@ def s(seconds: UnsanitizedFloat) -> tc.ValueWithUnits:
     return tc.ValueWithUnits(magnitude=_cast_to_float(seconds), units="s")
 
 
+def matrix_from_euler_angles(z_angle: float, y_angle: float = 0.0, x_angle: float = 0.0) -> Matrix:
+    """Create a rotation object from an euler angle sequence.
+
+    :param z_angle: Rotation around the z-axis in radians.
+    :param y_angle: Rotation around the y-axis in radians.
+    :param x_angle: Rotation around the x-axis in radians.
+
+    :return: A rotation object representing the specified euler angles.
+    """
+    rot = Rotation.from_euler(
+        seq=SCIPY_SEQ, angles=np.array([z_angle, y_angle, x_angle]), degrees=SCIPY_DEGREES
+    )
+    rmat = rot.as_matrix()
+    tf = np.eye(4)
+    tf[:3, :3] = rmat
+    return tf.tolist()
+
+
 def create_transform(
     x: tc.ValueWithUnits | None = None,
     y: tc.ValueWithUnits | None = None,
@@ -191,10 +215,22 @@ def create_transform(
 
     :return: tc.Matrix representing a transformation matrix for the specified transformation.
     """
-    if b is not None or c is not None:
-        raise NotImplementedError(
-            "Rotation about x and y axes not yet implemented in create_transform"
-        )
+    errs: list[Exception] = []
+    for name, value in (
+        ("x", x),
+        ("y", y),
+        ("z", z),
+        ("a", a),
+        ("b", b),
+        ("c", c),
+    ):
+        if value is not None and not isinstance(value, tc.ValueWithUnits):
+            errs.append(
+                TypeError(f"Expected {name} to be of type ValueWithUnits, got {type(value)}")
+            )
+
+    if errs:
+        raise ExceptionGroup(f"{len(errs)} invalid parameter types in create_transform", errs)
 
     if x is None:
         x = tc.ValueWithUnits(magnitude=0.0, units="m")
@@ -204,13 +240,20 @@ def create_transform(
         z = tc.ValueWithUnits(magnitude=0.0, units="m")
     if a is None:
         a = tc.ValueWithUnits(magnitude=0.0, units="radians")
+    if b is None:
+        b = tc.ValueWithUnits(magnitude=0.0, units="radians")
+    if c is None:
+        c = tc.ValueWithUnits(magnitude=0.0, units="radians")
 
-    return [
-        [1.0, 0.0, 0.0, x.to("m").magnitude],
-        [0.0, 1.0, 0.0, y.to("m").magnitude],
-        [0.0, 0.0, 1.0, z.to("m").magnitude],
-        [0.0, 0.0, 0.0, 1.0],
-    ]
+    matrix = matrix_from_euler_angles(
+        z_angle=a.to("rad").magnitude,
+        y_angle=b.to("rad").magnitude,
+        x_angle=c.to("rad").magnitude,
+    )
+    matrix[0][3] = x.to("m").magnitude
+    matrix[1][3] = y.to("m").magnitude
+    matrix[2][3] = z.to("m").magnitude
+    return matrix
 
 
 def location_as_labware_index(

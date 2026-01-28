@@ -37,7 +37,10 @@ class PipetteTipGroupDescriptor(_ConfiguredBaseModel):
 
 
 class _ToolBaseDescriptor(_ConfiguredBaseModel):
-    """Base schema shared by all tools in the TOOL discriminated union."""
+    """Base schema shared by all models in the ToolDescriptor union.
+
+    :param serial_number: Optional serial number - allows unique identification of a tool.
+    """
 
     serial_number: str | None = None
 

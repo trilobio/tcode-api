@@ -531,7 +531,7 @@ class PICK_UP_LABWARE(_RobotSpecificTCodeBase):
         ``ADD_LABWARE``.
     :param grasp_type: Optional grasp type to use when picking up the labware. See
         :class: ``GraspType`` enum for options. Defaults to ``GraspType.UNSPECIFIED``.
-    :param grasp_offset_transform: Optional offset transform to use when picking up the labware.
+    :param offset_transform: Optional offset transform to use when picking up the labware.
         Modify this parameter if you need to pick up the labware in a non-centered manner.
 
     :raises ValidatorError: ``ValidatorErrorCode.ID_NOT_FOUND`` if any of the following are true:
@@ -548,7 +548,7 @@ class PICK_UP_LABWARE(_RobotSpecificTCodeBase):
     type: Literal["PICK_UP_LABWARE"] = "PICK_UP_LABWARE"
     labware_id: str
     grasp_type: str = GraspType.UNSPECIFIED.value
-    grasp_offset_transform: Matrix = Field(default_factory=_identity_transform)
+    offset_transform: Matrix = Field(default_factory=_identity_transform)
 
 
 class PUT_DOWN_LABWARE(_RobotSpecificTCodeBase):
@@ -558,6 +558,8 @@ class PUT_DOWN_LABWARE(_RobotSpecificTCodeBase):
     :param robot_id: see :class: ``_RobotSpecificTCodeBase``
     :param holder: Holder in which to put down the labware.
         :warning: The holder is currently unverified!
+    :param offset_transform: Optional offset transform to use when putting down the labware.
+        Modify this parameter if you need to put down the labware in a non-centered manner.
 
     :raises ValidatorError: ``ValidatorErrorCode.ID_NOT_FOUND`` if any of the following are true:
         * ``robot_id`` is not registered to a robot
@@ -575,6 +577,7 @@ class PUT_DOWN_LABWARE(_RobotSpecificTCodeBase):
 
     type: Literal["PUT_DOWN_LABWARE"] = "PUT_DOWN_LABWARE"
     holder: LabwareHolder
+    offset_transform: Matrix = Field(default_factory=_identity_transform)
 
 
 class REMOVE_LABWARE_LID(_RobotSpecificTCodeBase):

@@ -20,6 +20,7 @@ The core data structures in the ``tcode_api`` package are all exposed in the ``t
    commands
    entity
    labware
+   locations
 
 TCode Servicer API
 ------------------
