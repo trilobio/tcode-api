@@ -235,7 +235,8 @@ class TCodeServicerClient:
             self.clear_tcode_resolution()
             self.discover_fleet()
 
-        for command in script.commands:
+        for i, command in enumerate(script.commands):
+            _logger.debug("Scheduling C%03d %s", i, command.type)
             rsp = self.schedule_command(generate_id(), command)
             if not rsp.result.success:
                 msg = f"tcode service schedule_command({command.type}) unsuccessful: {rsp.result.message} (see debug logs for stacktrace)"
