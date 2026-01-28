@@ -4,12 +4,12 @@ import pathlib
 
 import plac  # type: ignore [import-untyped]
 
-from tcode_api.servicer import TCodeServicerClient
+from tcode_api.api import TCodeScript
 from tcode_api.cli import (
     DEFAULT_SERVICER_URL,
     servicer_url_annotation,
 )
-from tcode_api.api import TCodeScript
+from tcode_api.servicer import TCodeServicerClient
 
 
 @plac.annotations(
