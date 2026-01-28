@@ -60,11 +60,21 @@ class LocationRelativeToWorld(_Location):
     matrix: Matrix  # 4x4 transformation matrix
 
 
+class LocationRelativeToRobot(_Location):
+    """Location specified by a transformation matrix relative to the robot's root node."""
+
+    type: Literal["LocationRelativeToRobot"] = "LocationRelativeToRobot"
+    robot_id: str
+    matrix: Matrix
+
+
 Location = Annotated[
     LocationAsLabwareIndex
     | LocationAsNodeId
     | LocationRelativeToCurrentPosition
     | LocationRelativeToLabware
+    | LocationAsLabwareHolder
+    | LocationRelativeToRobot
     | LocationRelativeToWorld,
     Field(discriminator="type"),
 ]
