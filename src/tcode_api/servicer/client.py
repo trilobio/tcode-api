@@ -2,6 +2,7 @@
 
 import logging
 import time
+from itertools import batched
 
 import requests
 
@@ -67,6 +68,19 @@ class TCodeServicerClient:
     def dump_tf_tree(self) -> None:
         """Write the current internal state tree to a file for debugging purposes."""
         rsp = requests.post(f"{self.servicer_url}/dump_tf_tree", timeout=self.timeout)
+        rsp.raise_for_status()
+
+    def clear_tf_tree_history(self) -> None:
+        """Clear transform-tree mutation history (if the server supports it)."""
+        rsp = requests.post(
+            f"{self.servicer_url}/tf_tree/clear_history",
+            timeout=self.timeout,
+        )
+        if rsp.status_code == 404:
+            _logger.warning(
+                "Servicer does not support /tf_tree/clear_history; skipping history clear."
+            )
+            return
         rsp.raise_for_status()
 
     def get_status(self) -> GetStatusResponse:
@@ -221,7 +235,7 @@ class TCodeServicerClient:
                 self.clear_labware()
                 return
 
-    def run_script(self, script: tc.TCodeScript, clean_environment: bool = True) -> None:
+    def run_script(self, script: tc.TCodeScript, clean_environment: bool = True, batch_process: bool = False) -> None:
         """Schedule and execute a TCode script on the fleet, starting from an empty state.
 
         This is a convenience method that combines scheduling, starting execution, and monitoring
@@ -233,16 +247,41 @@ class TCodeServicerClient:
             self.clear_schedule()
             self.clear_labware()
             self.clear_tcode_resolution()
+            self.clear_tf_tree_history()
             self.discover_fleet()
 
-        for i, command in enumerate(script.commands):
-            _logger.debug("Scheduling C%03d %s", i, command.type)
-            rsp = self.schedule_command(generate_id(), command)
-            if not rsp.result.success:
-                msg = f"tcode service schedule_command({command.type}) unsuccessful: {rsp.result.message} (see debug logs for stacktrace)"
-                if rsp.result.details is not None:
-                    for line in rsp.result.details.get("traceback", "").split("\n"):
-                        _logger.debug(line)
-                raise RuntimeError(msg)
+        total_commands = len(script.commands)
+
+        if not batch_process:
+            for i, command in enumerate(script.commands):
+                _logger.debug("Scheduling C%03d %s", i, command.type)
+                rsp = self.schedule_command(generate_id(), command)
+                if not rsp.result.success:
+                    msg = f"tcode service schedule_command({command.type}) unsuccessful: {rsp.result.message} (see debug logs for stacktrace)"
+                    if rsp.result.details is not None:
+                        for line in rsp.result.details.get("traceback", "").split("\n"):
+                            _logger.debug(line)
+                    raise RuntimeError(msg)
+        else:
+            batch_size = 100
+
+            for batch_index, command_batch in enumerate(batched(script.commands, batch_size)):
+                commands_list = list(command_batch)
+                scheduled_count = batch_index * batch_size + len(commands_list)
+                _logger.info("Scheduled %d/%d commands", scheduled_count, total_commands)
+
+                rsp_list = self.schedule_commands(
+                    [(generate_id(), command) for command in commands_list]
+                )
+                for res in rsp_list:
+                    if not res.result.success:
+                        msg = (
+                            "tcode service schedule_commands unsuccessful: "
+                            f"{res.result.message} (see debug logs for stacktrace)"
+                        )
+                        if res.result.details is not None:
+                            for line in res.result.details.get("traceback", "").split("\n"):
+                                _logger.debug(line)
+                        raise RuntimeError(msg)
 
         self.execute_run_loop()
