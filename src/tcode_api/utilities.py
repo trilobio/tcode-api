@@ -39,6 +39,8 @@ class LabwareIO:
         """Initialize LabwareIO."""
         if labware_dir is None:
             self.labware_dir = DEFAULT_LABWARE_PATH
+        else:
+            self.labware_dir = pathlib.Path(labware_dir)
 
         if not self.labware_dir.exists():
             raise FileNotFoundError(
