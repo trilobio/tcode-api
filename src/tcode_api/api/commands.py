@@ -19,6 +19,7 @@ from tcode_api.api.labware import (
 from tcode_api.api.labware_holder import LabwareHolder
 from tcode_api.api.location import (
     Location,
+    LocationAsLabwareHolder,
     LocationAsLabwareIndex,
     LocationRelativeToLabware,
 )
@@ -197,6 +198,45 @@ class CALIBRATE_LABWARE_HEIGHT(_RobotSpecificTCodeBase):
     persistent: bool
 
 
+class CALIBRATE_LABWARE_HOLDER(_RobotSpecificTCodeBase):
+    """Calibrate the position of a target labware holder (deck slot) on the target robot by probing
+    or by teaching. 
+    
+    - If a probe is held by the robot, the calibration will be performed by probing.
+    - If a pipette is held by the robot, the calibration will be performed by teaching.
+        - Only X, Y, and rotation around Z will be calibrated.
+        - A tip box must be registered in the target holder
+    
+    The pipette teach procedure is as follows:
+    - Single Channel Pipette:
+        - Move the pipette manifold to the center of the A1 tip location
+        - Confirm via the UI that the pipette is in position
+        - Move the pipette manifold to the center of the H12 tip location
+        - Confirm via the UI that the pipette is in position
+    - 8-Channel Pipette:
+        - Move the pipette manifold to the center of the A1 tip location
+        - Confirm via the UI that the pipette is in position
+        - Move the pipette manifold to the center of the A12 tip location
+        - Confirm via the UI that the pipette is in position
+    
+    NOTE: The UI confirmation steps are done via a websocket connection to the Tcode server
+        
+    :param type: see :class: ``_TCodeBase``
+    :param robot_id: see :class: ``_RobotSpecificTCodeBase``
+    :param location: The location attribute specifies the labware holder to calibrate (deck slot)
+
+    :raises ValidatorError: ``ValidatorErrorCode.ID_NOT_FOUND`` if any of the following are true:
+        * ``robot_id`` is not registered to a robot
+        * The labware holder id referenced in ``location`` is not registered on the target robot
+    
+    :raises ValidatorError: ``ValidatorErrorCode.UNEXPECTED_TOOL`` if the targeted robot has a tool
+        mounted that is not compatible with probing or teaching.
+    """
+    
+    type: Literal["CALIBRATE_LABWARE_HOLDER"] = "CALIBRATE_LABWARE_HOLDER"
+    location: LocationAsLabwareHolder
+
+
 class CALIBRATE_LABWARE_WELL_DEPTH(_RobotSpecificTCodeBase):
     """Use the target robot's held tool to tune the depth of a target labware's well by probing.
 
@@ -249,8 +289,8 @@ class CALIBRATE_LABWARE_WELL_DEPTH(_RobotSpecificTCodeBase):
     modify_all_wells: bool = True
 
 
-class CALIBRATE_TOOL_FOR_PROBING(_RobotSpecificTCodeBase):
-    """Calibrate the target robot's currently held tool for probing.
+class CALIBRATE_TOOL(_RobotSpecificTCodeBase):
+    """Calibrate the target robot's currently held tool.
 
     :note: If a bare tool is held, the tool's transform will be calibrated.
     :note: If a pipette tip is held, the pipette tip's relationship to the tool will be calibrated.
@@ -283,7 +323,7 @@ class CALIBRATE_TOOL_FOR_PROBING(_RobotSpecificTCodeBase):
         pipette tip group mounted
     """
 
-    type: Literal["CALIBRATE_TOOL_FOR_PROBING"] = "CALIBRATE_TOOL_FOR_PROBING"
+    type: Literal["CALIBRATE_TOOL"] = "CALIBRATE_TOOL"
     z_only: bool
     persistent: bool = False
 
@@ -854,7 +894,8 @@ TCode = Annotated[
     | ADD_TOOL
     | CALIBRATE_LABWARE_WELL_DEPTH
     | CALIBRATE_LABWARE_HEIGHT
-    | CALIBRATE_TOOL_FOR_PROBING
+    | CALIBRATE_LABWARE_HOLDER
+    | CALIBRATE_TOOL
     | COMMENT
     | CREATE_LABWARE
     | DELETE_LABWARE
