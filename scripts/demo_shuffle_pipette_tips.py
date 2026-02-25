@@ -89,7 +89,7 @@ def main(
     # Make custom description for empty tip box
     empty_pipette_tip_box_description = load_labware("biotix_utip_300ul")
     assert isinstance(empty_pipette_tip_box_description, tc.PipetteTipBoxDescription)
-    empty_pipette_tip_box_description.full = False
+    empty_pipette_tip_box_description.pipette_tip_layout = tc.PipetteTipLayout.empty()
 
     for i, deck_slot_number in enumerate(deck_slots_with_empty_boxes):
         empty_labware_ids.append(generate_id())
