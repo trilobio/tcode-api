@@ -1,8 +1,10 @@
 """Client for scheduling, executing, and clearing TCode from a fleet."""
 
 import logging
+import os
 import time
 from itertools import batched
+from typing import Any
 
 import requests
 
@@ -37,6 +39,67 @@ class TCodeServicerClient:
         self.timeout = (
             5  # Reference: https://docs.python-requests.org/en/latest/user/advanced/#timeouts
         )
+
+        # Socket.IO user-input support (optional; used for teach-mode confirmations).
+        self.socketio_path = os.getenv("TCODE_SOCKETIO_PATH", "socket.io")
+
+    def _prompt_yes_no(self, prompt: str) -> bool:
+        while True:
+            ans = input(f"{prompt} (y/n): ").lower().strip()
+            if ans in ("y", "yes"):
+                return True
+            if ans in ("n", "no"):
+                return False
+            print("Invalid input. Please enter 'y' or 'n'.")
+
+    def _connect_socketio_user_input(self):
+        """Connect a Socket.IO client to handle user_input_request events.
+
+        The server uses Socket.IO (not a raw WebSocket) and emits `user_input_request`.
+        Clients should respond by emitting `user_input_response`.
+
+        Returns a connected socketio.Client-like instance, or None if socketio is unavailable.
+        """
+        try:
+            import socketio  # type: ignore[import-untyped]
+        except Exception as e:  # pragma: no cover
+            raise RuntimeError(
+                "Socket.IO client support requires python-socketio to be installed. "
+                "Install `python-socketio[client]` to enable teach-mode prompts."
+            ) from e
+
+        sio = socketio.Client(logger=False, engineio_logger=False)
+
+        @sio.on("user_input_request")
+        def _on_user_input_request(data: Any):
+            if not isinstance(data, dict):
+                _logger.warning("Ignoring invalid user_input_request payload: %r", data)
+                return
+
+            request_type = data.get("type")
+            request_id = data.get("request_id")
+            if request_id is None:
+                _logger.warning("Ignoring user_input_request without request_id: %r", data)
+                return
+
+            if request_type == "boolean":
+                message = str(data.get("message", "Confirm?"))
+                value = self._prompt_yes_no(message)
+                sio.emit(
+                    "user_input_response",
+                    {"type": "boolean", "request_id": str(request_id), "value": bool(value)},
+                )
+            else:
+                _logger.warning(
+                    "Unhandled user_input_request type=%r payload=%r", request_type, data
+                )
+
+        sio.connect(
+            self.servicer_url,
+            socketio_path=self.socketio_path,
+            transports=["websocket"],
+        )
+        return sio
 
     def clear_schedule(self) -> ClearScheduleResponse:
         """Clear all of the currently scheduled (but as yet unexecuted) TCode commands on the fleet.
@@ -235,7 +298,13 @@ class TCodeServicerClient:
                 self.clear_labware()
                 return
 
-    def run_script(self, script: tc.TCodeScript, clean_environment: bool = True, batch_process: bool = False) -> None:
+    def run_script(
+        self,
+        script: tc.TCodeScript,
+        clean_environment: bool = True,
+        batch_process: bool = False,
+        enable_socketio_user_input: bool = True,
+    ) -> None:
         """Schedule and execute a TCode script on the fleet, starting from an empty state.
 
         This is a convenience method that combines scheduling, starting execution, and monitoring
@@ -243,6 +312,16 @@ class TCodeServicerClient:
 
         :param script: The TCode script to run.
         """
+        sio = None
+        if enable_socketio_user_input:
+            # Some commands (ex. CALIBRATE_LABWARE_HOLDER with a pipette) block awaiting
+            # confirmation over Socket.IO. Attach a lightweight client so CLI runs can proceed.
+            try:
+                sio = self._connect_socketio_user_input()
+            except Exception as e:
+                _logger.warning("Socket.IO user input disabled (%s)", e)
+                sio = None
+
         if clean_environment:
             self.clear_schedule()
             self.clear_labware()
@@ -284,4 +363,11 @@ class TCodeServicerClient:
                                 _logger.debug(line)
                         raise RuntimeError(msg)
 
-        self.execute_run_loop()
+        try:
+            self.execute_run_loop()
+        finally:
+            try:
+                if sio is not None:
+                    sio.disconnect()
+            except Exception:
+                pass
