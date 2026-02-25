@@ -2,7 +2,7 @@
 
 import unittest
 from collections import namedtuple
-from typing import Callable
+from typing import Any, Callable
 
 import tcode_api.api as tc
 from tcode_api.utilities import (
@@ -11,6 +11,7 @@ from tcode_api.utilities import (
     describe_pipette_tip_box,
     describe_pipette_tip_group,
     describe_well_plate,
+    well_address_to_index,
 )
 
 
@@ -54,3 +55,45 @@ class TestDescribeEntityFunctions(unittest.TestCase):
                 function=test.function.__name__, description=test.description.__name__
             ):
                 self._test_describe_entity_function(test.function, test.description)
+
+
+class TestWellAddressToIndex(unittest.TestCase):
+    """Test the well_address_to_index utility function."""
+
+    def test_standard_plate(self) -> None:
+        """Test that well_address_to_index works for a 96-well plate by default."""
+
+        # Test a few sample addresses
+        passing_tests = {
+            "A1": 0,
+            "A2": 1,
+            "B1": 12,
+            "B2": 13,
+            "H1": 84,
+            "H12": 95,
+        }
+        for address, expected_index in passing_tests.items():
+            with self.subTest(address=address):
+                index = well_address_to_index(address)
+                self.assertEqual(
+                    index,
+                    expected_index,
+                    f"Expected {address} to map to index {expected_index}, got {index}",
+                )
+
+        # Test some invalid addresses
+        failing_tests: list[tuple[Any, type[Exception]]] = [
+            ("A0", ValueError),
+            ("H13", ValueError),
+            ("I1", ValueError),
+            ("H0", ValueError),
+            ("1A", ValueError),
+            ("A", ValueError),
+            ("1", ValueError),
+            (1, TypeError),
+            (b"A1", TypeError),
+        ]
+        for address, expected_exception in failing_tests:
+            with self.subTest(address=address):
+                with self.assertRaises(expected_exception):
+                    well_address_to_index(address)

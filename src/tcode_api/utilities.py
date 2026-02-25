@@ -122,6 +122,29 @@ def generate_id() -> str:
     return base64.urlsafe_b64encode(uuid.uuid4().bytes)[:-2].decode("utf-8")
 
 
+def well_address_to_index(well_address: str, row_count: int = 8, column_count: int = 12) -> int:
+    """Convert a well address (e.g. "A1") to a zero-based index.
+
+    :param well_address: Well address in the format 'A1'
+    :param row_count: Number of rows in the plate. Defaults to 8.
+    :param column_count: Number of columns in the plate. Defaults to 12.
+
+    :return: Zero-based index corresponding to the well address. Defaults provide values from 0-95.
+    """
+    try:
+        row_letter = well_address[0].upper()
+    except AttributeError as err:
+        raise TypeError(f"Expected well_address to be a string, got {type(well_address)}") from err
+    column_number = int(well_address[1:])
+    row_index = ord(row_letter) - ord("A")
+    column_index = column_number - 1
+    if row_index < 0 or row_index >= row_count:
+        raise ValueError(f"Invalid row letter {row_letter} for row count {row_count}")
+    if column_index < 0 or column_index >= column_count:
+        raise ValueError(f"Invalid column number {column_number} for column count {column_count}")
+    return row_index * column_count + column_index
+
+
 def _cast_to_float(value: UnsanitizedFloat) -> float:
     """Cast int to float or try to parse string as float."""
     if isinstance(value, (float, int)):
