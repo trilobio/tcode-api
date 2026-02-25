@@ -305,7 +305,7 @@ class PipetteTipLayout(_ConfiguredBaseModel):
 
         :return: A PipetteTipLayout with all slots empty (0).
         """
-        return cls(layout=[[1 for _ in range(column_count)] for _ in range(row_count)])
+        return cls(layout=[[0 for _ in range(column_count)] for _ in range(row_count)])
 
     @classmethod
     def full(cls, row_count: int = 8, column_count: int = 12) -> Self:
@@ -316,7 +316,7 @@ class PipetteTipLayout(_ConfiguredBaseModel):
 
         :return: A PipetteTipLayout with all slots filled (1).
         """
-        return cls(layout=[[0 for _ in range(column_count)] for _ in range(row_count)])
+        return cls(layout=[[1 for _ in range(column_count)] for _ in range(row_count)])
 
 
 class PipetteTipBoxDescription(_LabwareBaseDescription):
