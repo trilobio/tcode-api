@@ -246,7 +246,7 @@ def main(
             tc.RETRIEVE_PIPETTE_TIP_GROUP(robot_id=robot_id, id=pipette_tip_group_id)
         )
     script.commands.append(
-        tc.CALIBRATE_TOOL_FOR_PROBING(robot_id=robot_id, z_only=z_only, persistent=True),
+        tc.CALIBRATE_TOOL(robot_id=robot_id, z_only=z_only, persistent=True),
     )
     if calibrate_pipette_tip:
         script.commands.append(tc.RETURN_PIPETTE_TIP_GROUP(robot_id=robot_id))
