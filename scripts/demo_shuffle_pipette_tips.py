@@ -83,7 +83,7 @@ def main(
             )
         )
         script.commands.append(
-            tc.ADD_LABWARE(id=full_labware_ids[-1], descriptor=describe_pipette_tip_box(full=True))
+            tc.ADD_LABWARE(id=full_labware_ids[-1], descriptor=describe_pipette_tip_box())
         )
 
     # Make custom description for empty tip box
@@ -103,7 +103,7 @@ def main(
         script.commands.append(
             tc.ADD_LABWARE(
                 id=empty_labware_ids[-1],
-                descriptor=describe_pipette_tip_box(full=False),
+                descriptor=describe_pipette_tip_box(pipette_tip_layout=tc.PipetteTipLayout.empty()),
             )
         )
 

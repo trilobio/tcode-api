@@ -94,9 +94,7 @@ def main(
 
     # Resolve labware
     script.commands.append(tc.ADD_LABWARE(id=plate_id, descriptor=describe_well_plate()))
-    script.commands.append(
-        tc.ADD_LABWARE(id=tip_box_id, descriptor=describe_pipette_tip_box(full=True))
-    )
+    script.commands.append(tc.ADD_LABWARE(id=tip_box_id, descriptor=describe_pipette_tip_box()))
     script.commands.append(tc.ADD_LABWARE(id=trash_can_id, descriptor=tc.TrashDescriptor()))
     script.commands.append(
         tc.ADD_LABWARE(

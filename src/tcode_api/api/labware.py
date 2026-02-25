@@ -333,8 +333,8 @@ class PipetteTipBoxDescriptor(_LabwareBaseDescriptor):
 
     type: Literal["PipetteTipBox"] = "PipetteTipBox"
     grid: GridDescriptor | None = None
-    full: bool | None = None
     pipette_tip: PipetteTipDescriptor | None = None
+    pipette_tip_layout: PipetteTipLayout | None = None
 
 
 class TubeHolderDescription(_LabwareBaseDescription):

@@ -322,7 +322,7 @@ def describe_pipette_tip_box(
     column_count: int = 12,
     row_pitch: float = 0.009,
     column_pitch: float = 0.009,
-    full: bool = True,
+    pipette_tip_layout: tc.PipetteTipLayout | None = None,
 ) -> tc.PipetteTipBoxDescriptor:
     """tc.PipetteTipBoxDescriptor constructor with nice defaults.
 
@@ -332,12 +332,13 @@ def describe_pipette_tip_box(
     :param column_count: Number of columns in the pipette tip box. Defaults to 12.
     :param row_pitch: Pitch between rows in meters. Defaults to 0.009 m.
     :param column_pitch: Pitch between columns in meters. Defaults to 0.009 m.
-    :param full: Whether the pipette tip box is full of tips. Defaults to True.
+    :param pipette_tip_layout: Layout of pipette tips in the box. Defaults to a full box (i.e. all positions filled with tips).
 
     :return: tc.PipetteTipBoxDescriptor constructed with the specified parameters.
     """
     tags = [] if tags is None else tags
     named_tags = {} if named_tags is None else named_tags
+    pipette_tip_layout = pipette_tip_layout or tc.PipetteTipLayout.full()
     grid_descriptor = tc.GridDescriptor(
         row_count=row_count,
         column_count=column_count,
@@ -348,7 +349,7 @@ def describe_pipette_tip_box(
         tags=tags,
         named_tags=named_tags,
         grid=grid_descriptor,
-        full=full,
+        pipette_tip_layout=pipette_tip_layout,
     )
 
 
@@ -378,6 +379,7 @@ def describe_pipette_tip_group(
 describe_pipette_tip_1x1 = functools.partial(
     describe_pipette_tip_group, row_count=1, column_count=1
 )
+describe_pipette_tip_1x1.__name__ = "describe_pipette_tip_1x1"  # type: ignore [attr-defined]
 describe_pipette_tip_1x1.__doc__ = (
     "tc.PipetteTipGroup constructor for a single pipette tip.\n\n"
     "param id: Unique identifier for the pipette tip group. Defaults to generate_id().\n"
@@ -388,6 +390,7 @@ describe_pipette_tip_1x1.__doc__ = (
 describe_pipette_tip_1x8 = functools.partial(
     describe_pipette_tip_group, row_count=1, column_count=8
 )
+describe_pipette_tip_1x8.__name__ = "describe_pipette_tip_1x8"  # type: ignore [attr-defined]
 describe_pipette_tip_1x8.__doc__ = (
     "tc.PipetteTipGroup constructor for an 8-channel pipette tip group.\n\n"
     "param id: Unique identifier for the pipette tip group. Defaults to generate_id().\n"

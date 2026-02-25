@@ -226,9 +226,7 @@ def main(
                 holder=tc.LabwareHolderName(robot_id=robot_id, name="DeckSlot_8"),
             )
         )
-        script.commands.append(
-            tc.ADD_LABWARE(id=tip_box_id, descriptor=describe_pipette_tip_box(full=True))
-        )
+        script.commands.append(tc.ADD_LABWARE(id=tip_box_id, descriptor=describe_pipette_tip_box()))
         script.commands.append(
             tc.ADD_PIPETTE_TIP_GROUP(
                 id=pipette_tip_group_id,
