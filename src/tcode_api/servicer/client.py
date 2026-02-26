@@ -235,7 +235,9 @@ class TCodeServicerClient:
                 self.clear_labware()
                 return
 
-    def run_script(self, script: tc.TCodeScript, clean_environment: bool = True, batch_process: bool = False) -> None:
+    def run_script(
+        self, script: tc.TCodeScript, clean_environment: bool = True, batch_process: bool = False
+    ) -> None:
         """Schedule and execute a TCode script on the fleet, starting from an empty state.
 
         This is a convenience method that combines scheduling, starting execution, and monitoring

@@ -64,9 +64,7 @@ def main(
             ),
         ),
     )
-    script.commands.append(
-        tc.ADD_LABWARE(id=tip_box_id, descriptor=describe_pipette_tip_box(full=True))
-    )
+    script.commands.append(tc.ADD_LABWARE(id=tip_box_id, descriptor=describe_pipette_tip_box()))
 
     # One tip group per well (8x12)
     tip_group_ids: list[str] = []

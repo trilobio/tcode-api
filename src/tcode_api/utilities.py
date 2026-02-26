@@ -122,6 +122,29 @@ def generate_id() -> str:
     return base64.urlsafe_b64encode(uuid.uuid4().bytes)[:-2].decode("utf-8")
 
 
+def well_address_to_index(well_address: str, row_count: int = 8, column_count: int = 12) -> int:
+    """Convert a well address (e.g. "A1") to a zero-based index.
+
+    :param well_address: Well address in the format 'A1'
+    :param row_count: Number of rows in the plate. Defaults to 8.
+    :param column_count: Number of columns in the plate. Defaults to 12.
+
+    :return: Zero-based index corresponding to the well address. Defaults provide values from 0-95.
+    """
+    try:
+        row_letter = well_address[0].upper()
+    except AttributeError as err:
+        raise TypeError(f"Expected well_address to be a string, got {type(well_address)}") from err
+    column_number = int(well_address[1:])
+    row_index = ord(row_letter) - ord("A")
+    column_index = column_number - 1
+    if row_index < 0 or row_index >= row_count:
+        raise ValueError(f"Invalid row letter {row_letter} for row count {row_count}")
+    if column_index < 0 or column_index >= column_count:
+        raise ValueError(f"Invalid column number {column_number} for column count {column_count}")
+    return row_index * column_count + column_index
+
+
 def _cast_to_float(value: UnsanitizedFloat) -> float:
     """Cast int to float or try to parse string as float."""
     if isinstance(value, (float, int)):
@@ -322,7 +345,7 @@ def describe_pipette_tip_box(
     column_count: int = 12,
     row_pitch: float = 0.009,
     column_pitch: float = 0.009,
-    full: bool = True,
+    pipette_tip_layout: tc.PipetteTipLayout | None = None,
 ) -> tc.PipetteTipBoxDescriptor:
     """tc.PipetteTipBoxDescriptor constructor with nice defaults.
 
@@ -332,12 +355,13 @@ def describe_pipette_tip_box(
     :param column_count: Number of columns in the pipette tip box. Defaults to 12.
     :param row_pitch: Pitch between rows in meters. Defaults to 0.009 m.
     :param column_pitch: Pitch between columns in meters. Defaults to 0.009 m.
-    :param full: Whether the pipette tip box is full of tips. Defaults to True.
+    :param pipette_tip_layout: Layout of pipette tips in the box. Defaults to a full box (i.e. all positions filled with tips).
 
     :return: tc.PipetteTipBoxDescriptor constructed with the specified parameters.
     """
     tags = [] if tags is None else tags
     named_tags = {} if named_tags is None else named_tags
+    pipette_tip_layout = pipette_tip_layout or tc.PipetteTipLayout.full()
     grid_descriptor = tc.GridDescriptor(
         row_count=row_count,
         column_count=column_count,
@@ -348,7 +372,7 @@ def describe_pipette_tip_box(
         tags=tags,
         named_tags=named_tags,
         grid=grid_descriptor,
-        full=full,
+        pipette_tip_layout=pipette_tip_layout,
     )
 
 
@@ -378,6 +402,7 @@ def describe_pipette_tip_group(
 describe_pipette_tip_1x1 = functools.partial(
     describe_pipette_tip_group, row_count=1, column_count=1
 )
+describe_pipette_tip_1x1.__name__ = "describe_pipette_tip_1x1"  # type: ignore [attr-defined]
 describe_pipette_tip_1x1.__doc__ = (
     "tc.PipetteTipGroup constructor for a single pipette tip.\n\n"
     "param id: Unique identifier for the pipette tip group. Defaults to generate_id().\n"
@@ -388,6 +413,7 @@ describe_pipette_tip_1x1.__doc__ = (
 describe_pipette_tip_1x8 = functools.partial(
     describe_pipette_tip_group, row_count=1, column_count=8
 )
+describe_pipette_tip_1x8.__name__ = "describe_pipette_tip_1x8"  # type: ignore [attr-defined]
 describe_pipette_tip_1x8.__doc__ = (
     "tc.PipetteTipGroup constructor for an 8-channel pipette tip group.\n\n"
     "param id: Unique identifier for the pipette tip group. Defaults to generate_id().\n"
