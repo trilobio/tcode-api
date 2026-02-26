@@ -291,10 +291,14 @@ class PipetteTipLayout(_ConfiguredBaseModel):
         pipette tip boxes to the deck with the :class:``ADD_LABWARE`` command.
     """
 
-    # a matrix of integers representing the state of pipette tips in the box.
-    # 1 represents a slot with a pipette tip, 0 represents an empty slot.
-    # :todo: None to represent ambivalence of tip presence in a slot.
-    layout: list[list[int]]
+    layout: list[list[int]] = Field(
+        description=(
+            "A 2D list representing the layout of pipette tips in the box. "
+            "The list contains either 0 or 1, "
+            "where 1 represents a slot holding a pipette tip "
+            "and 0 represents an empty slot."
+        ),
+    )
 
     @classmethod
     def empty(cls, row_count: int = 8, column_count: int = 12) -> Self:
