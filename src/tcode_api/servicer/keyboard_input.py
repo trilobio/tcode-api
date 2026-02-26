@@ -3,7 +3,6 @@
 source: https://stackoverflow.com/a/67939368
 """
 
-import enum
 import os
 import sys
 import termios

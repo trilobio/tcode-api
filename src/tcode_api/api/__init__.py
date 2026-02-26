@@ -180,7 +180,7 @@ __all__ = [
     "TrashDescription",
     "TrashDescriptor",
     "TubeDescription",
-    "TubeDerscriptor",
+    "TubeDescriptor",
     "TubeHolderDescription",
     "TubeHolderDescriptor",
     "VBottomDescription",
