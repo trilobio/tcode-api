@@ -288,7 +288,7 @@ class PipetteTipLayout(_ConfiguredBaseModel):
     """Data structure representing the layout of pipette tips in a box.
 
     :note: This class is designed to allow non-standard use cases, like adding partially filled
-    pipette tip boxes to the deck with the :class:``ADD_LABWARE`` command.
+        pipette tip boxes to the deck with the :class:``ADD_LABWARE`` command.
     """
 
     # a matrix of integers representing the state of pipette tips in the box.
