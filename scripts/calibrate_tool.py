@@ -146,16 +146,24 @@ def yes_no_prompt(question: str) -> bool:
 @plac.annotations(
     servicer_url=servicer_url_annotation,
     output_file_path=output_file_path_annotation,
+    robot_sn=plac.Annotation(
+        "Robot serial number to target (optional).",
+        kind="option",
+        abbrev="r",
+    ),
     z_only=plac.Annotation("If set, only calibrate the Z axis (no XY)", kind="flag", abbrev="z"),
 )
 def main(
     servicer_url: str = DEFAULT_SERVICER_URL,
     output_file_path: pathlib.Path | None = None,
+    robot_sn: str | None = None,
     z_only: bool = False,
 ) -> None:
     """Generate TCode script to calibrate a tool in z or xy+z. Can calibrate probes, pipette manifolds, or pipette tips."""
     tool_kind = prompt_probeable_tool_kind()
     calibrate_pipette_tip = False
+    channel_count: int | None = None
+    pipette_tip_volume: tc.ValueWithUnits | None = None
     if tool_kind == "probe":
         name = "Calibrate Probe"
         descriptor: tc.ToolDescriptor = tc.ProbeDescriptor()
@@ -198,11 +206,17 @@ def main(
         tip_box_id,
         pipette_tip_group_id,
     ) = [generate_id() for _ in range(4)]
-    script.commands.append(tc.ADD_ROBOT(id=robot_id, descriptor=tc.RobotDescriptor()))
+
+    robot_descriptor = (
+        tc.RobotDescriptor(serial_number=robot_sn) if robot_sn else tc.RobotDescriptor()
+    )
+    script.commands.append(tc.ADD_ROBOT(id=robot_id, descriptor=robot_descriptor))
     script.commands.append(tc.ADD_TOOL(robot_id=robot_id, id=pipette_id, descriptor=descriptor))
 
     # LABWARE
     if calibrate_pipette_tip:
+        assert pipette_tip_volume is not None
+        assert channel_count is not None
         pipette_tip_volume_ul = pipette_tip_volume.to("ul").magnitude
         if pipette_tip_volume_ul <= 20:
             tip_box_name = "biotix_utip_p20_box"
