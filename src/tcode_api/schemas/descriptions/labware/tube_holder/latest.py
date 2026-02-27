@@ -1,0 +1,4 @@
+from .v1 import TubeHolderDescriptionV1, TubeHolderDescriptorV1
+
+TubeHolderDescription = TubeHolderDescriptionV1
+TubeHolderDescriptor = TubeHolderDescriptorV1

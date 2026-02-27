@@ -4,10 +4,10 @@
 import tcode_api.api as tc
 from tcode_api.utilities import generate_id
 
-from .test_core import BaseTestCases
+from .test_base import BaseTestCases
 
 
-class TestLocationAsLabwareIndex(BaseTestCases.TestConfiguredBaseModel):
+class TestLocationAsLabwareIndex(BaseTestCases.TestBaseSchemaVersionedModel):
     """Regression test for verifying that LocationAsLabwareIndex can be
     loaded using FastAPI.
 
