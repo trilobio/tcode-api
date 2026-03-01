@@ -1,4 +1,4 @@
-from .v1 import PipetteTipBoxDescriptionV1, PipetteTipBoxDescriptorV1
+from .v2 import PipetteTipBoxDescriptionV2, PipetteTipBoxDescriptorV2
 
-PipetteTipBoxDescription = PipetteTipBoxDescriptionV1
-PipetteTipBoxDescriptor = PipetteTipBoxDescriptorV1
+PipetteTipBoxDescription = PipetteTipBoxDescriptionV2
+PipetteTipBoxDescriptor = PipetteTipBoxDescriptorV2

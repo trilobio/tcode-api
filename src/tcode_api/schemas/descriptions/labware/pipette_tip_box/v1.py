@@ -1,8 +1,7 @@
-from typing import Literal
+from typing import Annotated, Literal
 
 from pydantic import Field
 
-from ....pipette_tip_layout.v1 import PipetteTipLayoutV1
 from ...grid.v1 import GridDescriptionV1, GridDescriptorV1
 from ...pipette_tip.v1 import PipetteTipDescriptionV1, PipetteTipDescriptorV1
 from ..base import BaseLabwareDescription, BaseLabwareDescriptor
@@ -18,6 +17,14 @@ pipette_tip_layout_description = (
     "If not provided, it is assumed that all slots in the grid are filled with pipette tips."
 )
 
+FullField = Annotated[
+    bool,
+    Field(
+        default=True,
+        description="Whether or not the tip box is fully filled with tips.",
+    ),
+]
+
 
 class PipetteTipBoxDescriptionV1(BaseLabwareDescription):
     """Description of a pipette tip box."""
@@ -31,10 +38,7 @@ class PipetteTipBoxDescriptionV1(BaseLabwareDescription):
     pipette_tip: PipetteTipDescriptionV1 = Field(
         description=pipette_tip_description,
     )
-    pipette_tip_layout: PipetteTipLayoutV1 = Field(
-        default_factory=PipetteTipLayoutV1.full,
-        description=pipette_tip_layout_description,
-    )
+    full: FullField
 
 
 class PipetteTipBoxDescriptorV1(BaseLabwareDescriptor):
@@ -51,7 +55,4 @@ class PipetteTipBoxDescriptorV1(BaseLabwareDescriptor):
         default=None,
         description=pipette_tip_description,
     )
-    pipette_tip_layout: PipetteTipLayoutV1 | None = Field(
-        default=None,
-        description=pipette_tip_layout_description,
-    )
+    full: FullField | None = None
