@@ -1,0 +1,3 @@
+from .v1 import PipetteTipGroupDescriptorV1
+
+PipetteTipGroupDescriptor = PipetteTipGroupDescriptorV1

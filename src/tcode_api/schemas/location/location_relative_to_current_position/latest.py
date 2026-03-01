@@ -1,0 +1,3 @@
+from .v1 import LocationRelativeToCurrentPositionV1
+
+LocationRelativeToCurrentPosition = LocationRelativeToCurrentPositionV1

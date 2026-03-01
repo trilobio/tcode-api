@@ -1,0 +1,4 @@
+from .v1 import ConicalBottomDescriptionV1, ConicalBottomDescriptorV1
+
+ConicalBottomDescription = ConicalBottomDescriptionV1
+ConicalBottomDescriptor = ConicalBottomDescriptorV1

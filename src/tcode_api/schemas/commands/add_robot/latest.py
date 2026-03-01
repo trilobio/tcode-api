@@ -1,0 +1,3 @@
+from .v1 import ADD_ROBOT_V1
+
+ADD_ROBOT = ADD_ROBOT_V1
