@@ -64,7 +64,7 @@ def prompt_channel_count(choices: Iterable[int]) -> int:
         for option in choices:
             print(f"{option}. {option}-channel pipette")
         print("q. Quit")
-        ans = input("Select channel count").lower().strip()
+        ans = input("Select channel count: ").lower().strip()
         if ans in ("q", "quit", "exit"):
             print("Exiting...")
             exit(0)
