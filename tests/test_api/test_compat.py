@@ -2,7 +2,12 @@
 
 import unittest
 
-from tcode_api.api.compat import APIHistoryLog, resolve_api_profile, resolve_canonical_name, TargetSchemaNotFoundError, TargetSchemaExistsError
+from tcode_api.api.compat import (
+    APIHistoryLog,
+    TargetSchemaExistsError,
+    TargetSchemaNotFoundError,
+    resolve_api_profile,
+)
 
 TeaPartyAPIHistoryLog = APIHistoryLog(
     name="tea-party-api",
@@ -23,7 +28,7 @@ TeaPartyAPIHistoryLog = APIHistoryLog(
         },
         "v0.4.0": {
             "SMASH_CUP": None,
-        }
+        },
     },
     renames={
         "v0.3.0": {
@@ -45,20 +50,24 @@ class TestResolveAPIProfile(unittest.TestCase):
         """Helper method to assert that two dicts are equal, ignoring order."""
         missing_keys = set(dict1.keys()) - set(dict2.keys())
         extra_keys = set(dict2.keys()) - set(dict1.keys())
-        bad_values = {key: (dict1[key], dict2[key]) for key in dict1 if key in dict2 and dict1[key] != dict2[key]}
+        bad_values = {
+            key: (dict1[key], dict2[key])
+            for key in dict1
+            if key in dict2 and dict1[key] != dict2[key]
+        }
         if len(missing_keys) > 0 or len(extra_keys) > 0 or len(bad_values) > 0:
             error_message = (
-                "Dicts are not equal:\n"
-                "  Dict1: {dict1}\n"
-                "  Dict2: {dict2}\n"
-                ).format(dict1=dict1, dict2=dict2)
+                "Dicts are not equal:\n" "  Dict1: {dict1}\n" "  Dict2: {dict2}\n"
+            ).format(dict1=dict1, dict2=dict2)
             if len(missing_keys) > 0:
                 error_message += f"  dict2 missing keys: {missing_keys}\n"
             if len(extra_keys) > 0:
                 error_message += f"  dict2 has extra keys: {extra_keys}\n"
             if len(bad_values) > 0:
                 for key, (value1, value2) in bad_values.items():
-                    error_message += f"  Key '{key}' has different values: dict1={value1}, dict2={value2}\n"
+                    error_message += (
+                        f"  Key '{key}' has different values: dict1={value1}, dict2={value2}\n"
+                    )
             self.fail(error_message)
 
     def test_replacement_without_increments(self) -> None:
@@ -74,10 +83,7 @@ class TestResolveAPIProfile(unittest.TestCase):
             },
         )
 
-        self._assert_dicts_equal(
-            {"A": 2, "C": 2},
-            resolve_api_profile("v0.2.0", api_history_log)
-        )
+        self._assert_dicts_equal({"A": 2, "C": 2}, resolve_api_profile("v0.2.0", api_history_log))
 
     def test_rename_without_increment(self) -> None:
         """A version with a rename and no increment should resolve correctly."""
@@ -93,8 +99,7 @@ class TestResolveAPIProfile(unittest.TestCase):
         )
 
         self._assert_dicts_equal(
-            {"A": 2, "C": 2, "D": 1},
-            resolve_api_profile("v0.2.0", api_history_log)
+            {"A": 2, "C": 2, "D": 1}, resolve_api_profile("v0.2.0", api_history_log)
         )
 
     def test_increment_after_rename(self) -> None:
@@ -112,8 +117,7 @@ class TestResolveAPIProfile(unittest.TestCase):
         )
 
         self._assert_dicts_equal(
-            {"A": 2, "C": 2, "D": 2},
-            resolve_api_profile("v0.3.0", api_history_log)
+            {"A": 2, "C": 2, "D": 2}, resolve_api_profile("v0.3.0", api_history_log)
         )
 
     def test_increment_and_rename(self) -> None:
@@ -130,8 +134,7 @@ class TestResolveAPIProfile(unittest.TestCase):
         )
 
         self._assert_dicts_equal(
-            {"A": 2, "D": 2, "C": 2},
-            resolve_api_profile("v0.2.0", api_history_log)
+            {"A": 2, "D": 2, "C": 2}, resolve_api_profile("v0.2.0", api_history_log)
         )
 
     def test_rename_nonexistent(self) -> None:

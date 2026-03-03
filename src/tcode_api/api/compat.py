@@ -37,10 +37,10 @@ class APIHistoryLog:
     name: str
     """API name (e.g. "tcode-api"), used for logging purposes."""
 
-    increments: dict[APIVersion, dict[SchemaName, SchemaVersion]] = dataclasses.field(
+    increments: dict[APIVersion, dict[SchemaName, SchemaVersion | None]] = dataclasses.field(
         default_factory=dict
     )
-    """Mapping of API versions to version increments of schemas in that version.
+    """Mapping of API versions to version increments and removals of schemas in that version.
 
     Example:
         {
@@ -61,6 +61,7 @@ class APIHistoryLog:
                 "CoffeeCup": 1,  # indicates that the ``CoffeeCup`` schema was newly added in v0.2.0
                 "POUR_COFFEE": 1,# indicates that the ``POUR_COFFEE`` command was newly added in v0.2.0
                 "TeaCup": 3,     # indicates that the ``TeaCup`` schema was incremented to V3 in v0.2.0
+                "SMASH_CUP": None,# indicates that the ``SMASH_CUP`` command (thankfully) was removed in v0.2.0
         }
     """
     renames: dict[APIVersion, dict[SchemaName, SchemaName]] = dataclasses.field(
@@ -89,17 +90,6 @@ class APIHistoryLog:
         }
     """
 
-    removals: dict[APIVersion, list[SchemaName]] = dataclasses.field(default_factory=dict)
-    """Mapping of API versions to lists of removed schema names.
-
-    Example:
-        {
-            "v0.4.0": [
-                "SMASH_CUP",  # indicates that, thankfully, the ``SMASH_CUP`` command was removed in v0.4.0
-            ]
-        }
-    """
-
 
 class TargetSchemaNotFoundError(Exception):
     """Exception raised when a targeted schema is not found within in APIHistoryLog."""
@@ -107,6 +97,7 @@ class TargetSchemaNotFoundError(Exception):
 
 class TargetSchemaExistsError(Exception):
     """Exception raised when a targeted schema already exists within in APIHistoryLog."""
+
     schema_name: SchemaName
 
 
@@ -117,7 +108,9 @@ class InvalidSchemaError(Exception):
         * Missing 'type' key
         * 'schema_version' field doesn't match expected fields.
     """
+
     bad_schema: dict
+
 
 TCodeAPIHistory = APIHistoryLog(
     name="tcode-api",
@@ -187,7 +180,6 @@ TCodeAPIHistory = APIHistoryLog(
     },
     renames={},
     replacements={},
-    removals={},
 )
 
 
@@ -226,15 +218,6 @@ def resolve_canonical_name(
             resolved_name = api_history_log.replacements[v][resolved_name]
             # TODO (connor): emit deprecation warning
 
-    # 3. Removals
-    for v in sorted(api_history_log.removals, key=Version):
-        if Version(v) > requested:
-            break
-
-        if resolved_name in api_history_log.removals[v]:
-            raise ValueError(
-                f"{resolved_name} was removed in API version {v}, but was requested in version {api_version}."
-            )
     return resolved_name
 
 
@@ -257,11 +240,11 @@ def resolve_api_profile(
 
     # Create sorted list of version strings that modified the API
     versions_of_note = sorted(
-        set(api_history_log.increments.keys()).union(
-            set(api_history_log.renames.keys())).union(
-            set(api_history_log.replacements.keys())).union(
-            set(api_history_log.removals.keys())),
-        key=Version)
+        set(api_history_log.increments.keys())
+        .union(set(api_history_log.renames.keys()))
+        .union(set(api_history_log.replacements.keys())),
+        key=Version,
+    )
     for version_str in versions_of_note:
 
         # Check if we've got a modern enough version to return
@@ -281,12 +264,14 @@ def resolve_api_profile(
             for old_schema_name, new_schema_name in api_history_log.renames[version_str].items():
                 if new_schema_name in profile:
                     raise TargetSchemaExistsError(
-                        f"Cannot rename '{old_schema_name}' to '{new_schema_name}' in profile '{profile}' because '{new_schema_name}' already exists in the profile.")
+                        f"Cannot rename '{old_schema_name}' to '{new_schema_name}' in profile '{profile}' because '{new_schema_name}' already exists in the profile."
+                    )
                 try:
                     profile[new_schema_name] = profile[old_schema_name]
                 except KeyError:
                     raise TargetSchemaNotFoundError(
-                        f"'{old_schema_name}' not found in profile '{profile}'")
+                        f"'{old_schema_name}' not found in profile '{profile}'"
+                    )
                 profile.pop(old_schema_name)
 
         # Handle replacements
@@ -294,29 +279,28 @@ def resolve_api_profile(
             for old_schema_name in api_history_log.replacements[version_str]:
                 profile.pop(old_schema_name)
 
-
     return profile
 
 
-def load_command(raw: dict, api_version: str) -> object:
-    try:
-        incoming_name = raw["type"]
-    except KeyError as err:
-        raise InvalidSchemaError(
-            msg="Unable to find expected key 'type' in command schema",
-            bad_schema=raw,
-        ) from err
-
-    canonical_name = resolve_canonical_name(api_version, incoming_name)
-    profile = resolve_api_profile(api_version)
-
-    try:
-        schema_version = profile[canonical_name]
-    except KeyError:
-        raise UnsupportedModelError(canonical_name, api_version)
-
-    return load_model(
-        model_name=canonical_name,
-        schema_version=schema_version,
-        raw=raw,
-    )
+# def load_command(raw: dict, api_version: str) -> object:
+#     try:
+#         incoming_name = raw["type"]
+#     except KeyError as err:
+#         raise InvalidSchemaError(
+#             msg="Unable to find expected key 'type' in command schema",
+#             bad_schema=raw,
+#         ) from err
+#
+#     canonical_name = resolve_canonical_name(api_version, incoming_name)
+#     profile = resolve_api_profile(api_version)
+#
+#     try:
+#         schema_version = profile[canonical_name]
+#     except KeyError:
+#         raise UnsupportedModelError(canonical_name, api_version)
+#
+#     return load_model(
+#         model_name=canonical_name,
+#         schema_version=schema_version,
+#         raw=raw,
+#     )

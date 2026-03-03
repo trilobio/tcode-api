@@ -15,7 +15,9 @@ from ..schemas.commands.calibrate_tool_for_probing.latest import (
 from ..schemas.commands.comment.latest import COMMENT
 from ..schemas.commands.create_labware.latest import CREATE_LABWARE
 from ..schemas.commands.delete_labware.latest import DELETE_LABWARE
-from ..schemas.commands.discard_pipette_tip_group.latest import DISCARD_PIPETTE_TIP_GROUP
+from ..schemas.commands.discard_pipette_tip_group.latest import (
+    DISCARD_PIPETTE_TIP_GROUP,
+)
 from ..schemas.commands.dispense.latest import DISPENSE
 from ..schemas.commands.move_gripper.latest import MOVE_GRIPPER
 from ..schemas.commands.move_to_joint_pose.latest import MOVE_TO_JOINT_POSE
@@ -57,7 +59,10 @@ from ..schemas.descriptions.labware.pipette_tip_box.latest import (
     PipetteTipBoxDescription,
     PipetteTipBoxDescriptor,
 )
-from ..schemas.descriptions.labware.trash.latest import TrashDescription, TrashDescriptor
+from ..schemas.descriptions.labware.trash.latest import (
+    TrashDescription,
+    TrashDescriptor,
+)
 from ..schemas.descriptions.labware.tube_holder.latest import (
     TubeHolderDescription,
     TubeHolderDescriptor,
