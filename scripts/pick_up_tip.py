@@ -1,10 +1,15 @@
-"""Pick up pipette tips (via tip-group) from a tip box in a specified deck slot.
+"""Pick up pipette tips (via tip-group) from a tip box in a given deck slot.
 
 This script creates a Biotix tip box in the requested deck slot, mounts a pipette, and
 retrieves+returns a resolved pipette tip group.
 
-- Single-channel (c1): select a well like A1 (or comma-separated list like A1,B2,H12)
-- 8-channel (c8): select a column number (1-12) (or comma-separated list like 1,3,12)
+Required arguments:
+  pipette     Pipette type: 'c1' (single-channel) or 'c8' (8-channel)
+  deck_slot   Deck slot holding the tip box (e.g. -d 8 or -d DeckSlot_8)
+
+Tip selection:
+  - Single-channel (c1): use -w with a well or comma-separated wells (e.g. -w A1 or -w A1,B2,H12)
+  - 8-channel (c8): use -c with a column or comma-separated columns (e.g. -c 1 or -c 1,3,12)
 """
 
 import logging
@@ -116,12 +121,10 @@ def manifold_match_tag_for_volume_ul(volume_ul: int) -> str:
         type=int,
     ),
     deck_slot=plac.Annotation(
-        "Deck slot holding the tip box (ex. '8' or 'DeckSlot_8')",
-        kind="option",
-        abbrev="d",
+        "Deck slot holding the tip box (e.g. '8' or 'DeckSlot_8')",
     ),
     well=plac.Annotation(
-        "Single-channel only: target well like A1",
+        "Single-channel only: well or comma-separated wells (e.g. A1 or A1,B2,H12)",
         kind="option",
         abbrev="w",
     ),
