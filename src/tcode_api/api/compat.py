@@ -22,8 +22,22 @@ How to perform:
 """
 
 import dataclasses
+import logging
 
 from packaging.version import Version
+from pydantic import ValidationError
+
+from ..schemas.registry import (
+    BuilderNotFoundError,
+    MigrationRegistry,
+    Migrator,
+    RawData,
+    SchemaRegistry,
+    migration_registry,
+    schema_registry,
+)
+
+_logger = logging.getLogger(__name__)
 
 APIVersion = str
 SchemaVersion = int
@@ -64,172 +78,229 @@ class APIHistoryLog:
                 "SMASH_CUP": None,# indicates that the ``SMASH_CUP`` command (thankfully) was removed in v0.2.0
         }
     """
-    renames: dict[APIVersion, dict[SchemaName, SchemaName]] = dataclasses.field(
+    migrations: dict[APIVersion, dict[SchemaName, SchemaName]] = dataclasses.field(
         default_factory=dict
     )
     """Mapping of API versions to mappings of old schema names to new schema names.
 
+    This functionality covers both renames (schema is the same but name changes) and replacements(schema is removed in favor of an existent schema).
+
     Example:
         {
             "v0.3.0": {
-                "POUR_TEA": "POUR",  # indicates that the ``POUR_TEA`` command was renamed to ``POUR`` in v0.2.0
+                "POUR_TEA": "POUR",  # indicates that the ``POUR_TEA`` command was replaced by ``POUR`` in v0.2.0
             }
         }
     """
 
-    replacements: dict[APIVersion, dict[SchemaName, SchemaName]] = dataclasses.field(
-        default_factory=dict
-    )
-    """Mapping of API versions to mappings of deprecated schema names to their replacements.
 
-    Example:
-        {
-            "v0.3.0": {
-                "POUR_COFFEE": "POUR",  # indicates that the ``POUR_COFFEE`` command was replaced
-            },                          # by the ``POUR`` command in v0.3.0
-        }
+@dataclasses.dataclass
+class CompatContext:
+    """Data structure unifying the state objects relevant for compatibility management.
+
+    This gathers the various objects that must be swapped to unittest compatibility logic into a
+        single place, and shouldn't need to be interacted with outside of test suites.
     """
+
+    api_history_log: APIHistoryLog
+    """The API history log to use for compatibility management."""
+
+    migration_registry: MigrationRegistry
+    """Registry of migrations between versions represented in ``api_history_log``."""
+
+    schema_registry: SchemaRegistry
+    """Registry of builders for schemas represented in the most modern version of the ``api_history_log``."""
 
 
 class TargetSchemaNotFoundError(Exception):
     """Exception raised when a targeted schema is not found within in APIHistoryLog."""
 
+    def __init__(
+        self,
+        schema_name: SchemaName,
+        profile: dict[SchemaName, SchemaVersion],
+        msg: str | None = None,
+    ):
+        if msg is None:
+            msg = f"'{schema_name}' not in '{profile}'."
+        super().__init__(msg)
+        self.schema_name = schema_name
+        self.profile = profile
+
 
 class TargetSchemaExistsError(Exception):
     """Exception raised when a targeted schema already exists within in APIHistoryLog."""
 
-    schema_name: SchemaName
+    def __init__(
+        self,
+        schema_name: SchemaName,
+        profile: dict[SchemaName, SchemaVersion],
+        msg: str | None = None,
+    ):
+        if msg is None:
+            msg = f"'{schema_name}' exists in '{profile}'."
+        super().__init__(msg)
+        self.schema_name = schema_name
+        self.profile = profile
 
 
-class InvalidSchemaError(Exception):
-    """Exception raised on detection of an invalid schema.
+class InvalidDataError(ValueError):
+    """Exception raised when data doesn't match schema expectations.
 
     Example cases include:
         * Missing 'type' key
-        * 'schema_version' field doesn't match expected fields.
+        * 'schema_version' field doesn't match expected schema_version.
     """
 
-    bad_schema: dict
+    def __init__(self, data: RawData, msg: str | None = None):
+        if msg is None:
+            msg = f"Invalid data `{data}`"
+        super().__init__(msg)
+        self.data = data
 
 
-TCodeAPIHistory = APIHistoryLog(
-    name="tcode-api",
-    increments={
-        "v1.35.0": {
-            "ADD_LABWARE": 1,
-            "ADD_PIPETTE_TIP_GROUP": 1,
-            "ADD_ROBOT": 1,
-            "ADD_TOOL": 1,
-            "ASPIRATE": 1,
-            "CALIBRATE_LABWARE_HEIGHT": 1,
-            "CALIBRATE_LABWARE_WELL_DEPTH": 1,
-            "CALIBRATE_TOOL_FOR_PROBING": 1,
-            "COMMENT": 1,
-            "CREATE_LABWARE": 1,
-            "DELETE_LABWARE": 1,
-            "DISCARD_PIPETTE_TIP_GROUP": 1,
-            "DISPENSE": 1,
-            "MOVE_GRIPPER": 1,
-            "MOVE_TO_JOINT_POSE": 1,
-            "MOVE_TO_LOCATION": 1,
-            "PAUSE": 1,
-            "PICK_UP_LABWARE": 1,
-            "PICK_UP_PIPETTE_TIP": 1,
-            "PUT_DOWN_LABWARE": 1,
-            "PUT_DOWN_PIPETTE_TIP": 1,
-            "REMOVE_LABWARE_LID": 1,
-            "REPLACE_LABWARE_LID": 1,
-            "RETRIEVE_PIPETTE_TIP_GROUP": 1,
-            "RETRIEVE_TOOL": 1,
-            "RETURN_PIPETTE_TIP_GROUP": 1,
-            "RETURN_TOOL": 1,
-            "SEND_WEBHOOK": 1,
-            "SWAP_TO_TOOL": 1,
-            "WAIT": 1,
-            "Metadata": 1,
-            "TCode": 1,
-            "TCodeScript": 1,
-            "ValueWithUnits": 1,
-            "EightChannelPipetteDescriptor": 1,
-            "GripperDescriptor": 1,
-            "LabwareHolderDescriptor": 1,
-            "PipetteDescriptor": 1,
-            "ProbeDescriptor": 1,
-            "RobotDescriptor": 1,
-            "SingleChannelPipetteDescriptor": 1,
-            "ToolDescriptor": 1,
-            "ToolHolderDescriptor": 1,
-            "AxisAlignedRectangleDescription": 1,
-            "AxisAlignedRectangleDescriptor": 1,
-            "CircleDescription": 1,
-            "CircleDescriptor": 1,
-            "ConicalBottomDescription": 1,
-            "ConicalBottomDescriptor": 1,
-            "FlatBottomDescription": 1,
-            "FlatBottomDescriptor": 1,
-            "GridDescription": 1,
-            "GridDescriptor": 1,
-            "LidDescription": 1,
-            "LidDescriptor": 1,
-            "PipetteTipBoxDescription": 1,
-            "PipetteTipBoxDescriptor": 1,
+class SchemaVersionMismatchError(Exception):
+    """Exception raised on mismatching `schema_version` field in data and expected version from API."""
+
+    def __init__(
+        self,
+        data: RawData,
+        expected_schema_version: SchemaVersion,
+        msg: str | None = None,
+    ):
+        if msg is None:
+            msg = f"Expected schema version '{expected_schema_version}' but got '{data.get('schema_version')}' in data '{data}'."
+        super().__init__(msg)
+        self.data = data
+        self.expected_schema_version = expected_schema_version
+
+
+tcode_api_compat_context = CompatContext(
+    api_history_log=APIHistoryLog(
+        name="tcode-api",
+        increments={
+            "v1.35.0": {
+                "ADD_LABWARE": 1,
+                "ADD_PIPETTE_TIP_GROUP": 1,
+                "ADD_ROBOT": 1,
+                "ADD_TOOL": 1,
+                "ASPIRATE": 1,
+                "CALIBRATE_LABWARE_HEIGHT": 1,
+                "CALIBRATE_LABWARE_WELL_DEPTH": 1,
+                "CALIBRATE_TOOL_FOR_PROBING": 1,
+                "COMMENT": 1,
+                "CREATE_LABWARE": 1,
+                "DELETE_LABWARE": 1,
+                "DISCARD_PIPETTE_TIP_GROUP": 1,
+                "DISPENSE": 1,
+                "MOVE_GRIPPER": 1,
+                "MOVE_TO_JOINT_POSE": 1,
+                "MOVE_TO_LOCATION": 1,
+                "PAUSE": 1,
+                "PICK_UP_LABWARE": 1,
+                "PICK_UP_PIPETTE_TIP": 1,
+                "PUT_DOWN_LABWARE": 1,
+                "PUT_DOWN_PIPETTE_TIP": 1,
+                "REMOVE_LABWARE_LID": 1,
+                "REPLACE_LABWARE_LID": 1,
+                "RETRIEVE_PIPETTE_TIP_GROUP": 1,
+                "RETRIEVE_TOOL": 1,
+                "RETURN_PIPETTE_TIP_GROUP": 1,
+                "RETURN_TOOL": 1,
+                "SEND_WEBHOOK": 1,
+                "SWAP_TO_TOOL": 1,
+                "WAIT": 1,
+                "Metadata": 1,
+                "TCode": 1,
+                "TCodeScript": 1,
+                "ValueWithUnits": 1,
+                "EightChannelPipetteDescriptor": 1,
+                "GripperDescriptor": 1,
+                "LabwareHolderDescriptor": 1,
+                "PipetteDescriptor": 1,
+                "ProbeDescriptor": 1,
+                "RobotDescriptor": 1,
+                "SingleChannelPipetteDescriptor": 1,
+                "ToolDescriptor": 1,
+                "ToolHolderDescriptor": 1,
+                "AxisAlignedRectangleDescription": 1,
+                "AxisAlignedRectangleDescriptor": 1,
+                "CircleDescription": 1,
+                "CircleDescriptor": 1,
+                "ConicalBottomDescription": 1,
+                "ConicalBottomDescriptor": 1,
+                "FlatBottomDescription": 1,
+                "FlatBottomDescriptor": 1,
+                "GridDescription": 1,
+                "GridDescriptor": 1,
+                "LidDescription": 1,
+                "LidDescriptor": 1,
+                "PipetteTipBoxDescription": 1,
+                "PipetteTipBoxDescriptor": 1,
+            },
+            "v1.36.0": {
+                "PICK_UP_LABWARE": 2,
+            },
         },
-        "v1.36.0": {
-            "PICK_UP_LABWARE": 2,
-        },
-    },
-    renames={},
-    replacements={},
+        migrations={},
+    ),
+    migration_registry=migration_registry,
+    schema_registry=schema_registry,
 )
 
 
-def resolve_canonical_name(
-    api_version: APIVersion,
-    incoming_name: SchemaName,
-    api_history_log: APIHistoryLog = TCodeAPIHistory,
-) -> SchemaName:
-    """Resolve the canonical name given an incoming name an an API version - accounts for command
-    renames, deprecations, and removals.
+def migrate_data_to_latest(
+    data: RawData,
+    schema_name: str | None = None,
+    schema_version: int | None = None,
+    context: CompatContext = tcode_api_compat_context,
+) -> RawData:
+    """Migrate a given json blob to the latest version of it's schema.
 
-    :param api_version: The API version to resolve the name for.
-    :param incoming_name: The name to resolve.
-    :param api_history_log: The API history log to use for resolution. Defaults to the TCodeAPIHistory.
-        This parameter is primarily exposed for unittesting purposes.
+    :param data: The json blob to migrate.
+    :param schema_name: The name of the schema to migrate. If not provided, will attempt to infer
+        from the 'type' key in the data.
+    :param schema_version: The version of the schema to migrate. If not provided, will attempt to
+        infer from the 'schema_version' key in the data.
+    :param context: The targeted compatibility context. Defaults to the tcode-api context.
 
-    :returns: the resolved name corresponding to ``api_version``.
+    :returns: The migrated json blob, updated to match the latest version of the schema.
+
+    :raises InvalidDataError: If the schema name or version cannot be inferred from the data and
+        not provided as an argument.
     """
-    requested = Version(api_version)
-    resolved_name = incoming_name
+    try:
+        schema_name = schema_name or data["type"]
+    except KeyError as err:
+        raise InvalidDataError(
+            msg="`schema_name` argument not supplied and no key 'type' in provided data",
+            data=data,
+        ) from err
 
-    # 1. Renames
-    for v in sorted(api_history_log.renames, key=Version):
-        if Version(v) > requested:
-            break
+    try:
+        schema_version = schema_version or data["schema_version"]
+    except KeyError as err:
+        raise InvalidDataError(
+            msg="`schema_version` argument not supplied and no key 'schema_version' in provided data",
+            data=data,
+        ) from err
 
-        if resolved_name in api_history_log.renames[v]:
-            resolved_name = api_history_log.renames[v][resolved_name]
+    migrators = context.migration_registry.get_migrators_for_schema(schema_name)
+    for version in sorted(migrators.keys(), key=Version):  # type: ignore [arg-type]
+        if version > schema_version:
+            data = migrators[version](data)
 
-    # 2. Deprecations
-    for v in sorted(api_history_log.replacements, key=Version):
-        if Version(v) > requested:
-            break
-
-        if resolved_name in api_history_log.replacements[v]:
-            resolved_name = api_history_log.replacements[v][resolved_name]
-            # TODO (connor): emit deprecation warning
-
-    return resolved_name
+    return data
 
 
 def resolve_api_profile(
     api_version: APIVersion,
-    api_history_log: APIHistoryLog = TCodeAPIHistory,
+    context: CompatContext = tcode_api_compat_context,
 ) -> dict[SchemaName, SchemaVersion]:
     """Resolve a schema-version profile for the given API version.
 
     :param api_version: The API version to resolve the profile for.
-    :param api_history_log: The API history log to use for resolution. Defaults to the TCodeAPIHistory.
-        This parameter is primarily exposed for unittesting purposes.
+    :param context: The targeted compatibility context. Defaults to the tcode-api context.
 
     :returns: a mapping of schema names to their respective versions for the given API version,
         taking into account all changes up to that version.
@@ -240,9 +311,9 @@ def resolve_api_profile(
 
     # Create sorted list of version strings that modified the API
     versions_of_note = sorted(
-        set(api_history_log.increments.keys())
-        .union(set(api_history_log.renames.keys()))
-        .union(set(api_history_log.replacements.keys())),
+        set(context.api_history_log.increments.keys()).union(
+            set(context.api_history_log.migrations.keys())
+        ),
         key=Version,
     )
     for version_str in versions_of_note:
@@ -252,55 +323,182 @@ def resolve_api_profile(
             break
 
         # Handle increments, removals
-        if version_str in api_history_log.increments:
-            for schema_name, schema_version in api_history_log.increments[version_str].items():
+        if version_str in context.api_history_log.increments:
+            for schema_name, schema_version in context.api_history_log.increments[
+                version_str
+            ].items():
                 if schema_version is None:
                     profile.pop(schema_name)
                 else:
                     profile[schema_name] = schema_version
 
-        # Handle renames
-        if version_str in api_history_log.renames:
-            for old_schema_name, new_schema_name in api_history_log.renames[version_str].items():
-                if new_schema_name in profile:
-                    raise TargetSchemaExistsError(
-                        f"Cannot rename '{old_schema_name}' to '{new_schema_name}' in profile '{profile}' because '{new_schema_name}' already exists in the profile."
-                    )
-                try:
-                    profile[new_schema_name] = profile[old_schema_name]
-                except KeyError:
-                    raise TargetSchemaNotFoundError(
-                        f"'{old_schema_name}' not found in profile '{profile}'"
-                    )
-                profile.pop(old_schema_name)
-
-        # Handle replacements
-        if version_str in api_history_log.replacements:
-            for old_schema_name in api_history_log.replacements[version_str]:
+        # Handle migrations
+        if version_str in context.api_history_log.migrations:
+            for old_schema_name, new_schema_name in context.api_history_log.migrations[
+                version_str
+            ].items():
+                if new_schema_name not in profile:
+                    try:
+                        profile[new_schema_name] = profile[old_schema_name]
+                    except KeyError:
+                        raise TargetSchemaNotFoundError(
+                            schema_name=old_schema_name,
+                            profile=profile,
+                        )
                 profile.pop(old_schema_name)
 
     return profile
 
 
-# def load_command(raw: dict, api_version: str) -> object:
-#     try:
-#         incoming_name = raw["type"]
-#     except KeyError as err:
-#         raise InvalidSchemaError(
-#             msg="Unable to find expected key 'type' in command schema",
-#             bad_schema=raw,
-#         ) from err
-#
-#     canonical_name = resolve_canonical_name(api_version, incoming_name)
-#     profile = resolve_api_profile(api_version)
-#
-#     try:
-#         schema_version = profile[canonical_name]
-#     except KeyError:
-#         raise UnsupportedModelError(canonical_name, api_version)
-#
-#     return load_model(
-#         model_name=canonical_name,
-#         schema_version=schema_version,
-#         raw=raw,
-#     )
+def load_api_object(
+    data: RawData,
+    api_version: str | None = None,
+    context: CompatContext = tcode_api_compat_context,
+) -> object:
+    """Given a data blob and the tcode-api version it corresponds to, return an instance of the most modern
+        schema that the data can be migrated to.
+
+    :param data: The mapping of data to load.
+    :param api_version: The API version to resolve the schema profile against for loading.
+        If not given, uses `type` and `schema_version` fields in the data to resolve the schema.
+    :param context: The targeted compatibility context. Defaults to the tcode-api context.
+
+    :returns: An instance of the most recent schema.
+
+    :raises SchemaVersionMismatchError: If the schema_version targeted by the api_version doesn't match the
+        schema_version of the provided data.
+    """
+    try:
+        incoming_name = data["type"]
+        _logger.debug("data contains type='%s'", incoming_name)
+    except KeyError as err:
+        raise InvalidDataError(
+            msg="Unable to find expected key 'type' in command schema",
+            data=data,
+        ) from err
+    try:
+        schema_version = data["schema_version"]
+    except KeyError:
+        schema_version = None
+        if api_version is None:
+            raise InvalidDataError(
+                msg="No `schema_version` in data and no `api_version` provided to look up expected schema version.",
+                data=data,
+            )
+        _logger.warning("No `schema_version` in data, looking up using `api_version`.")
+
+    # If we didn't get a schema_version from the data, look it up with the API version.
+    if api_version is not None:
+        profile = resolve_api_profile(api_version, context=context)
+        if incoming_name not in profile:
+            raise TargetSchemaNotFoundError(
+                schema_name=incoming_name,
+                profile=profile,
+            )
+
+        if schema_version is None:
+            try:
+                schema_version = profile[incoming_name]
+            except KeyError:
+                raise InvalidDataError(
+                    msg=f"Data has no `schema_version`, and '{incoming_name}' is not valid for API version '{api_version}'.",
+                    data=data,
+                )
+
+        if schema_version != profile[incoming_name]:
+            raise SchemaVersionMismatchError(
+                data=data,
+                expected_schema_version=profile[incoming_name],
+            )
+
+    # Migrate data to the most recent accepted schema version for the incoming command
+    try:
+        new_name, migrators = _build_migrator_chain(
+            incoming_name=incoming_name,
+            incoming_schema_version=schema_version,
+            target_schema_version=profile[incoming_name] if api_version is not None else None,
+            context=context,
+        )
+    except ValueError as err:
+        raise InvalidDataError(
+            msg=f"Invalid migration path for data with type '{incoming_name}' and schema_version '{schema_version}'.",
+            data=data,
+        ) from err
+    for migrator in migrators:
+        data = migrator(data)
+
+    try:
+        return context.schema_registry.build_instance(data=data, key=new_name)
+    except ValidationError as err:
+        raise InvalidDataError(
+            msg=f"Data failed validation against schema '{new_name}' version '{schema_version}'.",
+            data=data,
+        ) from err
+
+
+def _build_migrator_chain(
+    incoming_name: SchemaName,
+    incoming_schema_version: SchemaVersion,
+    target_schema_version: SchemaVersion | None = None,
+    context: CompatContext = tcode_api_compat_context,
+) -> tuple[SchemaName, list[Migrator]]:
+    """Helper function to fetch all migrators necessary to migrate data from one schema_version to another, handling renames.
+
+    :param incoming_name: The original name of the schema to migrate.
+        if 'Teacup' was renamed to 'Cup' in a later version, provide 'Teacup'.
+    :param incoming_schema_version: The version of the schema to migrate from.
+    :param target_schema_version: The version of the schema to migrate to. If not provided, migrates
+        to the latest version.
+    :param context: The targeted compatibility context. Defaults to the tcode-api context.
+
+    :returns: The most recent name of the target schema and a list of migrator functions to apply in order.
+    """
+    migrators_to_apply: list[Migrator] = []
+
+    current_name = incoming_name
+    current_version = incoming_schema_version
+
+    continue_traversing: bool = True
+    while continue_traversing:
+        # Fetch and sequentially store all migrators for current_name starting at current_version.
+        try:
+            migrators = context.migration_registry.get_migrators_for_schema(current_name)
+        except BuilderNotFoundError:
+            migrators = {}
+
+        for version in sorted(migrators.keys()):
+            if version - current_version > 1:
+                raise ValueError(
+                    f"Cannot migrate from version '{current_version}' to version '{version}' for schema '{current_name}' because there is a gap in the migration path. Missing migrator for version '{current_version + 1}'."
+                )
+
+            # Only check for version on the input name. For all other names, we need to walk the entire version tree
+            if current_name == incoming_name and version <= current_version:
+                continue
+            _logger.debug(
+                "Adding migrator for '%s' from v%d to v%d to migrator chain",
+                current_name,
+                current_version,
+                version,
+            )
+            migrators_to_apply.append(migrators[version])
+            current_version = version
+
+        # Check for renames in the API history log and update the current_name accordingly
+        continue_traversing = False  # Set back to true if we find a rename
+        for api_version_str in sorted(context.api_history_log.migrations, key=Version):
+            for schema_name in context.api_history_log.migrations[api_version_str]:
+                if schema_name == current_name:
+                    current_name = context.api_history_log.migrations[api_version_str][schema_name]
+                    _logger.debug(
+                        "Found rename of '%s' to '%s' in API version '%s'",
+                        schema_name,
+                        current_name,
+                        api_version_str,
+                    )
+                    continue_traversing = True
+                    break
+            if continue_traversing:
+                break
+
+    return current_name, migrators_to_apply
