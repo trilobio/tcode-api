@@ -51,10 +51,10 @@ class APIHistoryLog:
     name: str
     """API name (e.g. "tcode-api"), used for logging purposes."""
 
-    increments: dict[APIVersion, dict[SchemaName, SchemaVersion | None]] = dataclasses.field(
+    increments: dict[APIVersion, dict[SchemaName, SchemaVersion]] = dataclasses.field(
         default_factory=dict
     )
-    """Mapping of API versions to version increments and removals of schemas in that version.
+    """Mapping of API versions to version increments of schemas in that version.
 
     Example:
         {
@@ -75,10 +75,9 @@ class APIHistoryLog:
                 "CoffeeCup": 1,  # indicates that the ``CoffeeCup`` schema was newly added in v0.2.0
                 "POUR_COFFEE": 1,# indicates that the ``POUR_COFFEE`` command was newly added in v0.2.0
                 "TeaCup": 3,     # indicates that the ``TeaCup`` schema was incremented to V3 in v0.2.0
-                "SMASH_CUP": None,# indicates that the ``SMASH_CUP`` command (thankfully) was removed in v0.2.0
         }
     """
-    migrations: dict[APIVersion, dict[SchemaName, SchemaName]] = dataclasses.field(
+    migrations: dict[APIVersion, dict[SchemaName, SchemaName | None]] = dataclasses.field(
         default_factory=dict
     )
     """Mapping of API versions to mappings of old schema names to new schema names.
@@ -89,6 +88,7 @@ class APIHistoryLog:
         {
             "v0.3.0": {
                 "POUR_TEA": "POUR",  # indicates that the ``POUR_TEA`` command was replaced by ``POUR`` in v0.2.0
+                "SMASH_CUP": None,   # indicates that the ``SMASH_CUP`` command was removed without replacement in v0.2.0
             }
         }
     """
@@ -122,7 +122,7 @@ class TargetSchemaNotFoundError(Exception):
         msg: str | None = None,
     ):
         if msg is None:
-            msg = f"'{schema_name}' not in '{profile}'."
+            msg = f"schema '{schema_name}' not valid within profile '{profile}'."
         super().__init__(msg)
         self.schema_name = schema_name
         self.profile = profile
@@ -173,6 +173,16 @@ class SchemaVersionMismatchError(Exception):
         super().__init__(msg)
         self.data = data
         self.expected_schema_version = expected_schema_version
+
+
+class DeprecatedSchemaError(Exception):
+    """Exception raised when a schema is deprecated and cannot be migrated to the latest version."""
+
+    def __init__(self, type: SchemaName, msg: str | None = None):
+        if msg is None:
+            msg = f"Schema '{type}' is deprecated in the latest tcode-api version and cannot be migrated."
+        super().__init__(msg)
+        self.type = type
 
 
 tcode_api_compat_context = CompatContext(
@@ -322,22 +332,19 @@ def resolve_api_profile(
         if Version(version_str) > requested:
             break
 
-        # Handle increments, removals
+        # Handle increments
         if version_str in context.api_history_log.increments:
             for schema_name, schema_version in context.api_history_log.increments[
                 version_str
             ].items():
-                if schema_version is None:
-                    profile.pop(schema_name)
-                else:
-                    profile[schema_name] = schema_version
+                profile[schema_name] = schema_version
 
         # Handle migrations
         if version_str in context.api_history_log.migrations:
             for old_schema_name, new_schema_name in context.api_history_log.migrations[
                 version_str
             ].items():
-                if new_schema_name not in profile:
+                if new_schema_name not in profile and new_schema_name is not None:
                     try:
                         profile[new_schema_name] = profile[old_schema_name]
                     except KeyError:
@@ -367,6 +374,12 @@ def load_api_object(
 
     :raises SchemaVersionMismatchError: If the schema_version targeted by the api_version doesn't match the
         schema_version of the provided data.
+    :raises TargetSchemaNotFoundError: If the incoming data references a schema that doesn't exist in the
+        API profile for the given api_version.
+    :raises InvalidDataError: If the data is missing necessary keys to resolve the schema or
+        doesn't match expected schema structure.
+    :raises DeprecatedSchemaError: If the data references a schema that has been deprecated; only raised if
+        no api_version argument provided.
     """
     try:
         incoming_name = data["type"]
@@ -392,6 +405,7 @@ def load_api_object(
         profile = resolve_api_profile(api_version, context=context)
         if incoming_name not in profile:
             raise TargetSchemaNotFoundError(
+                msg=f"Schema '{incoming_name}' not valid for API version '{api_version}'.",
                 schema_name=incoming_name,
                 profile=profile,
             )
@@ -452,6 +466,10 @@ def _build_migrator_chain(
     :param context: The targeted compatibility context. Defaults to the tcode-api context.
 
     :returns: The most recent name of the target schema and a list of migrator functions to apply in order.
+
+    :raises ValueError: If there is a gap in the migration path (e.g. no migrator from v1 to v2, but
+        there is a migrator from v2 to v3).
+    :raises DeprecatedSchemaError: If the target schema is deprecated and cannot be migrated to the latest version.
     """
     migrators_to_apply: list[Migrator] = []
 
@@ -489,7 +507,11 @@ def _build_migrator_chain(
         for api_version_str in sorted(context.api_history_log.migrations, key=Version):
             for schema_name in context.api_history_log.migrations[api_version_str]:
                 if schema_name == current_name:
-                    current_name = context.api_history_log.migrations[api_version_str][schema_name]
+                    new_name = context.api_history_log.migrations[api_version_str][schema_name]
+                    if new_name is None:
+                        raise DeprecatedSchemaError(type=schema_name)
+
+                    current_name = new_name
                     _logger.debug(
                         "Found rename of '%s' to '%s' in API version '%s'",
                         schema_name,

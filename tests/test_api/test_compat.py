@@ -8,9 +8,9 @@ from typing import Iterator, Literal, cast
 from tcode_api.api.compat import (
     APIHistoryLog,
     CompatContext,
+    DeprecatedSchemaError,
     InvalidDataError,
     SchemaVersionMismatchError,
-    TargetSchemaExistsError,
     TargetSchemaNotFoundError,
     load_api_object,
     resolve_api_profile,
@@ -218,6 +218,27 @@ class TestResolveAPIProfile(unittest.TestCase):
                     ),
                 )
 
+    def test_deprecated_version(self) -> None:
+        """Test that a version that is deprecated does not show in the final profile."""
+        context = CompatContext(
+            migration_registry=MigrationRegistry(),
+            schema_registry=SchemaRegistry(),
+            api_history_log=APIHistoryLog(
+                name="test_deprecated_version",
+                increments={
+                    "v0.1.0": {"A": 1, "B": 1, "C": 1},
+                },
+                migrations={
+                    "v0.2.0": {"A": None},
+                },
+            ),
+        )
+        resolve_api_profile("v0.2.0", context)
+        self._assert_dicts_equal(
+            {"B": 1, "C": 1},
+            resolve_api_profile("v0.2.0", context),
+        )
+
 
 class TeacupV1(BaseSchemaVersionedModel):
     """A test schema for testing the load_api_object function."""
@@ -258,13 +279,6 @@ def migrate_teacup_v2_to_cup_v1(data: RawData) -> RawData:
         "schema_version": 3,
         "was_migrated": data.get("was_migrated", False),
     }
-
-
-class SaucerV1(BaseSchemaVersionedModel):
-    """A test schema for testing the load_api_object function."""
-
-    type: Literal["Saucer"] = "Saucer"
-    schema_version: Literal[1] = 1
 
 
 class TestLoadAPIObject(unittest.TestCase):
@@ -550,6 +564,37 @@ class TestLoadAPIObject(unittest.TestCase):
             )
             self.assertIsInstance(inst, VesselV1)
             self.assertTrue(inst.was_migrated)  # type: ignore [attr-defined]
+
+    def test_migrate_to_a_deprecation(self) -> None:
+        """Test that a data packet whose schema is deprecated raises an error when loaded."""
+        context = CompatContext(
+            migration_registry=MigrationRegistry(),
+            schema_registry=SchemaRegistry(
+                _builders_to_preload={
+                    "Teacup": TeacupV1,
+                },
+            ),
+            api_history_log=APIHistoryLog(
+                name="test_migrate_to_a_deprecation",
+                increments={
+                    "v0.1.0": {"Teacup": 1},
+                },
+                migrations={
+                    "v0.2.0": {"Teacup": None},
+                },
+            ),
+        )
+
+        for api_version in [None, "v0.2.0"]:
+            with (
+                self.subTest(api_version=api_version),
+                self.assertRaises((TargetSchemaNotFoundError, DeprecatedSchemaError)),
+            ):
+                load_api_object(
+                    data={"type": "Teacup", "schema_version": 1},
+                    context=context,
+                    api_version=api_version,
+                )
 
 
 if __name__ == "__main__":
