@@ -1,0 +1,4 @@
+from .v2 import PipetteTipBoxDescriptionV2, PipetteTipBoxDescriptorV2
+
+PipetteTipBoxDescription = PipetteTipBoxDescriptionV2
+PipetteTipBoxDescriptor = PipetteTipBoxDescriptorV2

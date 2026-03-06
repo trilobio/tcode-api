@@ -1,0 +1,3 @@
+from .v1 import ADD_LABWARE_V1
+
+ADD_LABWARE = ADD_LABWARE_V1
