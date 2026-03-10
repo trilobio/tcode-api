@@ -20,7 +20,6 @@ pipette_tip_layout_description = (
 FullField = Annotated[
     bool,
     Field(
-        default=True,
         description="Whether or not the tip box is fully filled with tips.",
     ),
 ]

@@ -45,7 +45,7 @@ class WellPlateDescriptionV1(BaseLabwareDescription):
     # Lid parameters
     lid_offset: LidOffsetField | None = None
     lid: LidDescriptionV1 | None = Field(
-        None,
+        default=None,
         description=lid_description,
     )
 
@@ -57,15 +57,15 @@ class WellPlateDescriptorV1(BaseLabwareDescriptor):
     schema_version: Literal[1] = 1
 
     grid: GridDescriptorV1 | None = Field(
-        None,
+        default=None,
         description=grid_description,
     )
     well: WellDescriptorV1 | None = Field(
-        None,
+        default=None,
         description=well_description,
     )
     lid_offset: LidOffsetField | None = None
     lid: LidDescriptorV1 | None = Field(
-        None,
+        default=None,
         description=lid_description,
     )

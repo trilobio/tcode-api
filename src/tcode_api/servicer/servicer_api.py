@@ -1,14 +1,37 @@
 """TCode servicer API request-response structures."""
 
-from typing import Any, MutableMapping, Self
+from typing import Annotated, Any, MutableMapping, Self
 
-from pydantic import BaseModel, field_serializer
+from pydantic import BaseModel, Field, field_serializer
 
 import tcode_api.api as tc
 from tcode_api.error import TCodeResultReport
-from tcode_api.types import CommandID, Matrix
+from tcode_api.types import CommandID, Matrix, identity_transform
+from tcode_api.utilities import generate_id
 
-# Response structures #
+RawCommandData = Annotated[
+    dict,
+    Field(
+        description="Raw tcode-api schema; will be migrated (if necessary) on load. See ``tcode_api.TCode`` for full structure example.",
+        example=tc.MOVE_TO_LOCATION(
+            type="MOVE_TO_LOCATION",
+            schema_version=1,
+            robot_id=generate_id(),
+            location=tc.LocationAsLabwareIndex(
+                type="LocationAsLabwareIndex",
+                schema_version=1,
+                labware_id=generate_id(),
+                location_index=0,
+                well_part=tc.WellPartType.BOTTOM,
+            ),
+            location_offset=identity_transform(),
+            flange=None,
+            flange_offset=identity_transform(),
+            path_type=None,
+            trajectory_type=None,
+        ).model_dump(),
+    ),
+]
 
 
 class Result(BaseModel):
@@ -58,7 +81,7 @@ class ScheduleCommandRequest(BaseModel):
     """Request object for the schedule_command endpoint."""
 
     command_id: CommandID
-    command: tc.TCode
+    command: RawCommandData
 
 
 class ScheduleCommandResponse(BaseModel):
@@ -68,6 +91,12 @@ class ScheduleCommandResponse(BaseModel):
         str, Any
     ]  # A serialized FleetStateSnapshot, cannot use directly due to pyrsistent implementation
     result: Result
+
+
+class ScheduleCommandsRequest(BaseModel):
+    """Request object for the schedule_commands endpoint."""
+
+    commands: list[tuple[CommandID, RawCommandData]]
 
 
 class EnterTeachModeRequest(BaseModel):

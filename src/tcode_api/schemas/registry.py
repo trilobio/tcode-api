@@ -20,6 +20,11 @@ class BuilderNotFoundError(Exception):
     def __init__(
         self, factory_key: RegistryKey, builder_keys: list[RegistryKey], message: str | None = None
     ) -> None:
+        if message is None:
+            message = (
+                f"{self.__class__.__name__} has no builder registered with {factory_key}; "
+                f"available builders: {', '.join(builder_keys)}"
+            )
         self.factory_key = factory_key
         self.builder_keys = builder_keys
         super().__init__(message)
@@ -65,7 +70,6 @@ class MigrationRegistry:
             return self._migrators[key]
         except KeyError as err:
             raise BuilderNotFoundError(
-                message=f"{self.__class__.__name__} has no migrations registered for {key}",
                 factory_key=key,
                 builder_keys=list(self._migrators.keys()),
             ) from err
@@ -179,7 +183,6 @@ class SchemaRegistry:
             return self._builders[key]
         except KeyError as err:
             raise BuilderNotFoundError(
-                message=f"{self.__class__.__name__} has no builder registered with {key}",
                 factory_key=key,
                 builder_keys=list(self._builders.keys()),
             ) from err
