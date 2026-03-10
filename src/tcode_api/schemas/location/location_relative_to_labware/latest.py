@@ -1,0 +1,3 @@
+from .v1 import LocationRelativeToLabwareV1
+
+LocationRelativeToLabware = LocationRelativeToLabwareV1

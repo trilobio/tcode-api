@@ -1,0 +1,12 @@
+from ...registry import migration_registry, schema_registry
+from .latest import ADD_PIPETTE_TIP_GROUP
+from .migrate import MIGRATORS
+
+for schema_version, migrator in MIGRATORS.items():
+    migration_registry.register_migrator(
+        "ADD_PIPETTE_TIP_GROUP",
+        schema_version,
+        migrator,
+    )
+
+schema_registry.register("ADD_PIPETTE_TIP_GROUP", ADD_PIPETTE_TIP_GROUP)

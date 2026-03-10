@@ -1,0 +1,3 @@
+from .v1 import SWAP_TO_TOOL_V1
+
+SWAP_TO_TOOL = SWAP_TO_TOOL_V1

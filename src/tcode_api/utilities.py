@@ -12,7 +12,7 @@ from pydantic import TypeAdapter
 from scipy.spatial.transform import Rotation  # type: ignore[import-untyped]
 
 import tcode_api.api as tc
-from tcode_api.types import Matrix, NamedTags, Tags, UnsanitizedFloat
+from tcode_api.types import Matrix, UnsanitizedFloat
 
 SCIPY_SEQ = "zyx"  # Extrinsic rotation sequence
 SCIPY_DEGREES = False  # Angles are in radians
@@ -301,8 +301,8 @@ def location_as_labware_index(
 
 
 def describe_well_plate(
-    tags: Tags | None = None,
-    named_tags: NamedTags | None = None,
+    tags: tc.Tags | None = None,
+    named_tags: tc.NamedTags | None = None,
     row_count: int = 8,
     column_count: int = 12,
     row_pitch: float = 0.009,
@@ -339,8 +339,8 @@ def describe_well_plate(
 
 
 def describe_pipette_tip_box(
-    tags: Tags | None = None,
-    named_tags: NamedTags | None = None,
+    tags: tc.Tags | None = None,
+    named_tags: tc.NamedTags | None = None,
     row_count: int = 8,
     column_count: int = 12,
     row_pitch: float = 0.009,
@@ -379,8 +379,8 @@ def describe_pipette_tip_box(
 def describe_pipette_tip_group(
     row_count: int = 1,
     column_count: int = 1,
-    tags: Tags | None = None,
-    named_tags: NamedTags | None = None,
+    tags: tc.Tags | None = None,
+    named_tags: tc.NamedTags | None = None,
 ) -> tc.PipetteTipGroupDescriptor:
     """tc.PipetteTipGroup constructor with nice defaults.
 

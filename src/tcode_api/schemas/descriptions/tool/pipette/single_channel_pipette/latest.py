@@ -1,0 +1,3 @@
+from .v1 import SingleChannelPipetteDescriptorV1
+
+SingleChannelPipetteDescriptor = SingleChannelPipetteDescriptorV1

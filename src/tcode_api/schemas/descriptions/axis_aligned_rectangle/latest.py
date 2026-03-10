@@ -1,0 +1,4 @@
+from .v1 import AxisAlignedRectangleDescriptionV1, AxisAlignedRectangleDescriptorV1
+
+AxisAlignedRectangleDescription = AxisAlignedRectangleDescriptionV1
+AxisAlignedRectangleDescriptor = AxisAlignedRectangleDescriptorV1

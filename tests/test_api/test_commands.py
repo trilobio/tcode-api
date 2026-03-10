@@ -7,12 +7,15 @@ from typing import get_args
 
 # Using the below import style because it's how we expect users to import tcode_api
 import tcode_api.api as tc
-from tcode_api.api.commands import _RobotSpecificTCodeBase, _TCodeBase
+from tcode_api.schemas.commands.base import (
+    BaseRobotSpecificTCodeCommand,
+    BaseTCodeCommand,
+)
 
-from .test_core import BaseTestCases
+from .test_base import BaseTestCases
 
 
-class TestTCodeScript(BaseTestCases.TestConfiguredBaseModel):
+class TestTCodeScript(BaseTestCases.TestBaseSchemaVersionedModel):
     """TCodeScript class unittests."""
 
     model = tc.TCodeScript
@@ -63,12 +66,14 @@ class TestTCodeEndpoints(unittest.TestCase):
 
     def test_endpoints(self) -> None:
         """Test that all endpoints are included in the type."""
-        ENDPOINTS_TO_SKIP = [_RobotSpecificTCodeBase]
+        ENDPOINTS_TO_SKIP = [BaseRobotSpecificTCodeCommand]
         endpoints = [
             obj
             for obj in tc.__dict__.values()
             if hasattr(obj, "__bases__")
-            and (_TCodeBase in obj.__bases__ or _RobotSpecificTCodeBase in obj.__bases__)
+            and (
+                BaseTCodeCommand in obj.__bases__ or BaseRobotSpecificTCodeCommand in obj.__bases__
+            )
         ]
         # https://stackoverflow.com/a/64643971
         type_options = get_args(get_args(tc.TCode)[0])

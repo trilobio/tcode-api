@@ -1,0 +1,3 @@
+from .v1 import EightChannelPipetteDescriptorV1
+
+EightChannelPipetteDescriptor = EightChannelPipetteDescriptorV1
