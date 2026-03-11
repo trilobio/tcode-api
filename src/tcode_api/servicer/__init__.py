@@ -9,6 +9,7 @@ from tcode_api.servicer.servicer_api import (
     ExitTeachModeResponse,
     GetStatusResponse,
     Result,
+    RobotStatusDetail,
     ScheduleCommandRequest,
     ScheduleCommandResponse,
     ScheduleCommandsRequest,
