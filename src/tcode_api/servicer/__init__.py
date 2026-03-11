@@ -9,6 +9,7 @@ from tcode_api.servicer.servicer_api import (  # noqa: F401
     ExitTeachModeResponse,
     GetStatusResponse,
     Result,
+    RobotStatusDetail,
     ScheduleCommandRequest,
     ScheduleCommandResponse,
     TCodeCommandSchedulingReport,

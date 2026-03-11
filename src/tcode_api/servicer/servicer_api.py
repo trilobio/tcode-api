@@ -45,6 +45,16 @@ class ClearScheduleResponse(BaseModel):
     cleared_commands: list[tc.TCode]
 
 
+class RobotStatusDetail(BaseModel):
+    """Per-robot status information."""
+
+    robot_id: str
+    command_id: CommandID | None
+    queue_depth: int
+    run_state: bool
+    result: Result
+
+
 class GetStatusResponse(BaseModel):
     """Response object for get_status endpoint."""
 
@@ -52,6 +62,7 @@ class GetStatusResponse(BaseModel):
     operation_count: int
     run_state: bool
     result: Result
+    robots: list[RobotStatusDetail] = []
 
 
 class ScheduleCommandRequest(BaseModel):

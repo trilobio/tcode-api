@@ -550,13 +550,15 @@ class MOVE_TO_JOINT_POSE(_RobotSpecificTCodeBase):
     relative: bool
 
 
-class PAUSE(_TCodeBase):
-    """Pause execution until resumed by the user.
+class PAUSE(_RobotSpecificTCodeBase):
+    """Pause execution of the target robot until resumed by the user.
 
-    While ``WAIT`` delays a target robot for a set duration, ``PAUSE`` halts the entire fleet
-    until the user manually resumes execution.
+    While ``WAIT`` delays a target robot for a set duration, ``PAUSE`` halts the target robot
+    until the user manually resumes execution. To pause the entire fleet, schedule a ``PAUSE``
+    for each robot using a ``sync_group`` so they pause together.
 
     :param type: see :class: ``_TCodeBase``
+    :param robot_id: see :class: ``_RobotSpecificTCodeBase``
     """
 
     type: Literal["PAUSE"] = "PAUSE"
