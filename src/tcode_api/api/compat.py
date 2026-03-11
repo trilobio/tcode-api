@@ -398,7 +398,7 @@ def load_api_object(
                 msg="No `schema_version` in data and no `api_version` provided to look up expected schema version.",
                 data=data,
             )
-        _logger.warning("No `schema_version` in data, looking up using `api_version`.")
+        _logger.debug("No `schema_version` in data, looking up using `api_version`.")
 
     # If we didn't get a schema_version from the data, look it up with the API version.
     if api_version is not None:

@@ -1,4 +1,4 @@
-from .v1 import TrashDescriptionV1, TrashDescriptorV1
+from .v3 import TrashDescriptionV3, TrashDescriptorV3
 
-TrashDescription = TrashDescriptionV1
-TrashDescriptor = TrashDescriptorV1
+TrashDescription = TrashDescriptionV3
+TrashDescriptor = TrashDescriptorV3
