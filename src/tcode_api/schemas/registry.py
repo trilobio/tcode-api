@@ -6,8 +6,8 @@ from .base import BaseSchemaVersionedModel
 
 RegistryKey = str
 
-Migrator = Callable[[Mapping[str, Any]], Mapping[str, Any]]
 RawData = Mapping[str, Any]
+Migrator = Callable[[RawData], RawData]
 
 
 class BuilderNotFoundError(Exception):
@@ -187,9 +187,7 @@ class SchemaRegistry:
                 builder_keys=list(self._builders.keys()),
             ) from err
 
-    def build_instance(
-        self, data: Mapping[str, Any], key: str | None = None
-    ) -> BaseSchemaVersionedModel:
+    def build_instance(self, data: RawData, key: str | None = None) -> BaseSchemaVersionedModel:
         """Construct a relevant schema instance from the provided data.
 
         :param data: schema-compliant data from some version of the schema.

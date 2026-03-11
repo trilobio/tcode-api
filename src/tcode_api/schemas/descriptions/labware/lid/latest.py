@@ -1,4 +1,4 @@
-from .v1 import LidDescriptionV1, LidDescriptorV1
+from .v3 import LidDescriptionV3, LidDescriptorV3
 
-LidDescription = LidDescriptionV1
-LidDescriptor = LidDescriptorV1
+LidDescription = LidDescriptionV3
+LidDescriptor = LidDescriptorV3

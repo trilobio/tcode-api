@@ -1,4 +1,4 @@
-from .v1 import WellPlateDescriptionV1, WellPlateDescriptorV1
+from .v3 import WellPlateDescriptionV3, WellPlateDescriptorV3
 
-WellPlateDescription = WellPlateDescriptionV1
-WellPlateDescriptor = WellPlateDescriptorV1
+WellPlateDescription = WellPlateDescriptionV3
+WellPlateDescriptor = WellPlateDescriptorV3
