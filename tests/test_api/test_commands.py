@@ -81,3 +81,50 @@ class TestTCodeEndpoints(unittest.TestCase):
                     type_options,
                     f"\n\nACTION ITEM: Add {endpoint} to tcode_api.api.TCode type",
                 )
+
+
+class TestSyncFields(unittest.TestCase):
+    """Tests for depends_on and sync_group on _TCodeBase."""
+
+    def test_defaults_omitted_from_json(self) -> None:
+        """Default sync fields should not bloat serialized output."""
+        cmd = tc.COMMENT(type="COMMENT", text="hello")
+        data = cmd.model_dump(exclude_defaults=True)
+        self.assertNotIn("depends_on", data)
+        self.assertNotIn("sync_group", data)
+
+    def test_sync_fields_round_trip(self) -> None:
+        """Populated sync fields survive serialize → deserialize."""
+        cmd = tc.COMMENT(
+            type="COMMENT",
+            text="hello",
+            depends_on=["cmd-0"],
+            sync_group=["cmd-2", "cmd-3"],
+        )
+        data = cmd.model_dump()
+        restored = tc.COMMENT.model_validate(data)
+        self.assertEqual(restored.depends_on, ["cmd-0"])
+        self.assertEqual(restored.sync_group, ["cmd-2", "cmd-3"])
+
+    def test_sync_fields_on_robot_specific_command(self) -> None:
+        """Robot-specific commands inherit sync fields from _TCodeBase."""
+        cmd = tc.RETURN_TOOL(
+            type="RETURN_TOOL",
+            robot_id="r1",
+            depends_on=["prev"],
+        )
+        self.assertEqual(cmd.depends_on, ["prev"])
+        self.assertEqual(cmd.sync_group, [])
+
+    def test_sync_fields_json_round_trip(self) -> None:
+        """Sync fields survive JSON serialization."""
+        cmd = tc.RETURN_TOOL(
+            type="RETURN_TOOL",
+            robot_id="r1",
+            depends_on=["a", "b"],
+            sync_group=["c"],
+        )
+        json_str = cmd.model_dump_json()
+        restored = tc.RETURN_TOOL.model_validate_json(json_str)
+        self.assertEqual(restored.depends_on, ["a", "b"])
+        self.assertEqual(restored.sync_group, ["c"])
