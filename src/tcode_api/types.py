@@ -1,10 +1,10 @@
 """Shared types used across TCode API schemas."""
 
-from typing import Annotated
+from typing import Annotated, TypeAlias
 
 from pydantic import Field
 
-UnsanitizedFloat = Annotated[
+UnsanitizedFloat: TypeAlias = Annotated[
     float | int | str,
     Field(
         description=(
@@ -14,7 +14,7 @@ UnsanitizedFloat = Annotated[
     ),
 ]
 
-Matrix = Annotated[
+Matrix: TypeAlias = Annotated[
     list[list[float]],
     Field(
         description=(
@@ -35,4 +35,4 @@ def identity_transform() -> Matrix:
     ]
 
 
-CommandID = str  # Identifier specifically for TCode command
+CommandID: TypeAlias = str  # Identifier specifically for TCode command

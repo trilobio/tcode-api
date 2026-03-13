@@ -162,7 +162,7 @@ class TCodeServicerClient:
         """
         rsp = requests.post(
             f"{self.servicer_url}/schedule_command",
-            json=ScheduleCommandRequest(command_id=id, command=command).model_dump(),
+            json=ScheduleCommandRequest(command_id=id, command=command.model_dump()).model_dump(),
             timeout=self.timeout,
         )
         if requests.codes.ok != rsp.status_code:

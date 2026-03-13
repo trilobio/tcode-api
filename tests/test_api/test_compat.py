@@ -1,5 +1,6 @@
 """Unittests for the API migration and compatibility logic."""
 
+import inspect
 import logging
 import unittest
 from contextlib import contextmanager
@@ -595,6 +596,59 @@ class TestLoadAPIObject(unittest.TestCase):
                     context=context,
                     api_version=api_version,
                 )
+
+
+class TestTCodeAPI(unittest.TestCase):
+    """Test that all entities in the tcode_api.api package are correctly represented in the API history log."""
+
+    def _get_most_recent_api_profile(self, compat_context: CompatContext) -> dict[str, int]:
+        """Helper method to get the most recent API profile from the compat context."""
+        api_version_str = compat_context.api_history_log.get_most_recent_version()
+        return resolve_api_profile(api_version_str, compat_context)
+
+    def _validate_compat_context(self, compat_context: CompatContext) -> None:
+        """Validate that the compat structure is well-formed, e.g. that all of the internal
+        structures match up.
+
+        Current checks:
+          * All builders in the schema_registry are represented in the API history log.
+          * All of the most modern entries in the api_history_log are registered with the schema_registry.
+        """
+        profile = self._get_most_recent_api_profile(compat_context)
+        schemas_without_builders: list[str] = [
+            name for name in profile if name not in compat_context.schema_registry.keys
+        ]
+        if len(schemas_without_builders) > 0:
+            self.fail(
+                f"The following schemas are in the API history log but don't have builders registered in the schema registry: {schemas_without_builders}"
+            )
+        builders_without_schemas: list[str] = [
+            name for name in compat_context.schema_registry.keys if name not in profile
+        ]
+        if len(builders_without_schemas) > 0:
+            self.fail(
+                f"The following schemas have builders registered in the schema registry but aren't in the API history log: {builders_without_schemas}"
+            )
+
+    def test_tcode_api_matches_compat_context(self) -> None:
+        """Test that all entities in the tcode_api.api package are correctly represented in the API history log."""
+        import tcode_api.api as tc
+        from tcode_api.api.compat import tcode_api_compat_context
+
+        # Some exposed entities in tcode_api are unversioned and are expected to not be in the API profile.
+        # We exclude those here.
+        api_versioned_entity_names = [
+            t[0]
+            for t in inspect.getmembers(tc, inspect.isclass)
+            if issubclass(t[1], BaseSchemaVersionedModel)
+        ]
+
+        profile = self._get_most_recent_api_profile(tcode_api_compat_context)
+        missing_from_profile = [name for name in api_versioned_entity_names if name not in profile]
+        if len(missing_from_profile) > 0:
+            self.fail(
+                f"The following entities are `schema_version`ed entities exposed in tcode_api.api but not represented in the API history log for the most recent version: {missing_from_profile}"
+            )
 
 
 if __name__ == "__main__":

@@ -210,6 +210,11 @@ class SchemaRegistry:
         builder = self.get_builder(data["type"])
         return builder(data)
 
+    @property
+    def keys(self) -> list[RegistryKey]:
+        """Get a list of all keys currently registered in the registry."""
+        return list(self._builders.keys())
+
 
 migration_registry = MigrationRegistry()
 
