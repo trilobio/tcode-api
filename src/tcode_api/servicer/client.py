@@ -1,5 +1,6 @@
 """Client for scheduling, executing, and clearing TCode from a fleet."""
 
+import importlib
 import logging
 import os
 import time
@@ -36,6 +37,7 @@ class TCodeServicerClient:
 
     def __init__(self, servicer_url: str | None = None) -> None:
         self.servicer_url = servicer_url or _default_servicer_url
+        self.tcode_api_version = importlib.metadata.version("tcode_api")
         self.timeout = (
             5  # Reference: https://docs.python-requests.org/en/latest/user/advanced/#timeouts
         )
@@ -106,7 +108,9 @@ class TCodeServicerClient:
 
         :returns: A summary of what was cleared.
         """
-        rsp = requests.delete(f"{self.servicer_url}/schedule", timeout=self.timeout)
+        rsp = requests.delete(
+            f"{self.servicer_url}/{self.tcode_api_version}/schedule", timeout=self.timeout
+        )
         rsp.raise_for_status()
         return ClearScheduleResponse.model_validate_json(rsp.text)
 
@@ -117,7 +121,9 @@ class TCodeServicerClient:
         :note: This command does not clear the physical labware from the deck, merely their ids.
         """
 
-        rsp = requests.delete(f"{self.servicer_url}/tcode_resolution", timeout=self.timeout)
+        rsp = requests.delete(
+            f"{self.servicer_url}/{self.tcode_api_version}/tcode_resolution", timeout=self.timeout
+        )
         rsp.raise_for_status()
 
     def clear_labware(self) -> None:
@@ -125,18 +131,22 @@ class TCodeServicerClient:
 
         :note: "current labware on the fleet" includes all plates and tips, both on the deck and mounted on robots/pipettes.
         """
-        rsp = requests.delete(f"{self.servicer_url}/deck", timeout=self.timeout)
+        rsp = requests.delete(
+            f"{self.servicer_url}/{self.tcode_api_version}/deck", timeout=self.timeout
+        )
         rsp.raise_for_status()
 
     def dump_tf_tree(self) -> None:
         """Write the current internal state tree to a file for debugging purposes."""
-        rsp = requests.post(f"{self.servicer_url}/dump_tf_tree", timeout=self.timeout)
+        rsp = requests.post(
+            f"{self.servicer_url}/{self.tcode_api_version}/dump_tf_tree", timeout=self.timeout
+        )
         rsp.raise_for_status()
 
     def clear_tf_tree_history(self) -> None:
         """Clear transform-tree mutation history (if the server supports it)."""
         rsp = requests.post(
-            f"{self.servicer_url}/tf_tree/clear_history",
+            f"{self.servicer_url}/{self.tcode_api_version}/tf_tree/clear_history",
             timeout=self.timeout,
         )
         if rsp.status_code == 404:
@@ -148,20 +158,27 @@ class TCodeServicerClient:
 
     def get_status(self) -> GetStatusResponse:
         """Return the current status of the servicer and fleet."""
-        rsp = requests.get(f"{self.servicer_url}/status", timeout=self.timeout)
+        rsp = requests.get(
+            f"{self.servicer_url}/{self.tcode_api_version}/status", timeout=self.timeout
+        )
         rsp.raise_for_status()
         return GetStatusResponse.model_validate_json(rsp.text)
 
-    def schedule_command(self, id: str, command: tc.TCode) -> ScheduleCommandResponse:
+    def schedule_command(
+        self, id: str, command: tc.TCode, tcode_api_version: str | None = None
+    ) -> ScheduleCommandResponse:
         """Append a single TCode command to the end of the current schedule and register it with the provided id.
 
         :param id: A unique identifier for the command. References to this command in future calls will use this id.
         :param command: The TCode command to schedule.
+        :param tcode_api_version: The version of the TCode API that the command was generated with.
+            If not provided, the client's version will be used.
 
         :returns: A report on the attempted scheduling. See :py:class:`ScheduleCommandResponse` for details.
         """
+        tcode_api_version = tcode_api_version or self.tcode_api_version
         rsp = requests.post(
-            f"{self.servicer_url}/schedule_command",
+            f"{self.servicer_url}/{tcode_api_version}/schedule_command",
             json=ScheduleCommandRequest(command_id=id, command=command.model_dump()).model_dump(),
             timeout=self.timeout,
         )
@@ -172,17 +189,20 @@ class TCodeServicerClient:
         return ScheduleCommandResponse.model_validate_json(rsp.text)
 
     def schedule_commands(
-        self, commands: list[tuple[str, tc.TCode]]
+        self, commands: list[tuple[str, tc.TCode]], tcode_api_version: str | None = None
     ) -> list[ScheduleCommandResponse]:
         """Calls schedule_command() endpoint for a list of commands sequentially.
 
         :param commands: A list of tuples of (id, command) to schedule.
+        :param tcode_api_version: The version of the TCode API that the commands were generated with.
+            If not provided, the client's version will be used.
 
         :returns: A list of reports on the attempted scheduling, in the same order as the commands were given. See :py:class:`ScheduleCommandResponse` for details.
         """
+        tcode_api_version = tcode_api_version or self.tcode_api_version
         data = [(id, command.model_dump()) for id, command in commands]
         rsp = requests.put(
-            f"{self.servicer_url}/schedule_commands",
+            f"{self.servicer_url}/{tcode_api_version}/schedule_commands",
             json=data,
             timeout=self.timeout,
         )
@@ -195,7 +215,7 @@ class TCodeServicerClient:
         :param state: True to start/resume execution, False to pause.
         """
         rsp = requests.put(
-            f"{self.servicer_url}/run_state",
+            f"{self.servicer_url}/{self.tcode_api_version}/run_state",
             params={"state": state},
             timeout=self.timeout,
         )
@@ -212,7 +232,7 @@ class TCodeServicerClient:
         transform: Matrix | None = None
         try:
             rsp = requests.post(
-                f"{self.servicer_url}/enter_teach_mode",
+                f"{self.servicer_url}/{self.tcode_api_version}/enter_teach_mode",
                 json=EnterTeachModeRequest(robot_id=robot_id).model_dump(),
                 timeout=self.timeout,
             )
@@ -249,7 +269,7 @@ class TCodeServicerClient:
                         print(f"Unrecognized char {key}")
         finally:
             rsp = requests.post(
-                f"{self.servicer_url}/exit_teach_mode",
+                f"{self.servicer_url}/{self.tcode_api_version}/exit_teach_mode",
                 json=ExitTeachModeRequest(robot_id=robot_id).model_dump(),
             )
             rsp.raise_for_status()
@@ -263,7 +283,9 @@ class TCodeServicerClient:
 
     def discover_fleet(self) -> None:
         """Scan the fleet for new robots, and update all robot states. Useful if you swapped tools manually as a developer."""
-        rsp = requests.get(f"{self.servicer_url}/discover_fleet", timeout=20)
+        rsp = requests.get(
+            f"{self.servicer_url}/{self.tcode_api_version}/discover_fleet", timeout=20
+        )
         rsp.raise_for_status()
 
     def execute_run_loop(self) -> None:
