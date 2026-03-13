@@ -1,6 +1,6 @@
 """TCode servicer API request-response structures."""
 
-from typing import Annotated, Any, MutableMapping, Self
+from typing import Annotated, Any, Mapping, MutableMapping, Self, TypeAlias
 
 from pydantic import BaseModel, Field, field_serializer
 
@@ -9,8 +9,8 @@ from tcode_api.error import TCodeResultReport
 from tcode_api.types import CommandID, Matrix, identity_transform
 from tcode_api.utilities import generate_id
 
-RawCommandData = Annotated[
-    dict,
+RawCommandData: TypeAlias = Annotated[
+    Mapping[str, Any],
     Field(
         description="Raw tcode-api schema; will be migrated (if necessary) on load. See ``tcode_api.TCode`` for full structure example.",
         example=tc.MOVE_TO_LOCATION(

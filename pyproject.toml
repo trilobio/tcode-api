@@ -1,6 +1,6 @@
 [project]
 name = "tcode-api"
-version = "1.36.2"
+version = "1.37.0"
 description = "Python implementation of Trilobio's TCode API"
 authors = [{ name = "Trilobio", email = "hello@trilo.bio" }]
 readme = "README.md"
@@ -11,6 +11,7 @@ dependencies = [
     "pint>=0.25",
     "plac>=1.4.5",
     "pydantic>=2.10.6",
+    "python-socketio[client]>=5.13.0",
     "requests>=2.32.5",
     "scipy>=1.17.0",
     "uvicorn>=0.38.0",
@@ -59,6 +60,20 @@ show_error_codes = true
 warn_unused_ignores = true
 warn_redundant_casts = true
 plugins = ['pydantic.mypy']
+
+[tool.pydantic-mypy]
+# Disallows ScheduleCommandRequest(command_id="", command={}, unexpected_field=123)
+init_forbid_extra = true
+
+# Enforce the generated __init__ method to use field types, rather than Any.
+# Solves the following problem:
+#    ScheduleCommandRequest(command_id="", command=tc.WAIT()) is invalid because the command attribute
+#    needs to be a raw dict, not a command object. without this option, mypy doesn't complain.
+init_typed = true
+
+# Warn about using `validation_alias` or `alias_generator` in ways that mypy cannot analyze.
+# Dunno what this is, but Claude recommended it, so here we are.
+warn_required_dynamic_aliases = true
 
 [tool.ruff]
 line-length = 100
