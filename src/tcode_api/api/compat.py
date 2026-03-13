@@ -251,8 +251,16 @@ tcode_api_compat_context = CompatContext(
             "v1.36.0": {
                 "PICK_UP_LABWARE": 2,
             },
+            "v1.37.0": {
+                "CALIBRATE_LABWARE_HEIGHT": 1,
+                "CALIBRATE_TOOL": 1,
+            },
         },
-        migrations={},
+        migrations={
+            "v1.37.0": {
+                "CALIBRATE_TOOL_FOR_PROBING": "CALIBRATE_TOOL",
+            }
+        },
     ),
     migration_registry=migration_registry,
     schema_registry=schema_registry,

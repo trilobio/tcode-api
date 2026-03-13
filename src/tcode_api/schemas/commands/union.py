@@ -16,8 +16,8 @@ from .calibrate_labware_holder.latest import (
 from .calibrate_labware_well_depth.latest import (
     CALIBRATE_LABWARE_WELL_DEPTH,
 )
-from .calibrate_tool_for_probing.latest import (
-    CALIBRATE_TOOL_FOR_PROBING,
+from .calibrate_tool.latest import (
+    CALIBRATE_TOOL,
 )
 from .comment.latest import COMMENT
 from .create_labware.latest import CREATE_LABWARE
@@ -57,7 +57,7 @@ TCode = Annotated[
     | CALIBRATE_LABWARE_WELL_DEPTH
     | CALIBRATE_LABWARE_HEIGHT
     | CALIBRATE_LABWARE_HOLDER
-    | CALIBRATE_TOOL_FOR_PROBING
+    | CALIBRATE_TOOL
     | COMMENT
     | CREATE_LABWARE
     | DELETE_LABWARE

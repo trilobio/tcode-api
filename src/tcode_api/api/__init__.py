@@ -10,8 +10,8 @@ from ..schemas.commands.calibrate_labware_holder.latest import CALIBRATE_LABWARE
 from ..schemas.commands.calibrate_labware_well_depth.latest import (
     CALIBRATE_LABWARE_WELL_DEPTH,
 )
-from ..schemas.commands.calibrate_tool_for_probing.latest import (
-    CALIBRATE_TOOL_FOR_PROBING,
+from ..schemas.commands.calibrate_tool.latest import (
+    CALIBRATE_TOOL,
 )
 from ..schemas.commands.comment.latest import COMMENT
 from ..schemas.commands.create_labware.latest import CREATE_LABWARE
@@ -141,7 +141,7 @@ __all__ = [
     "CALIBRATE_LABWARE_HOLDER",
     "CALIBRATE_LABWARE_HEIGHT",
     "CALIBRATE_LABWARE_WELL_DEPTH",
-    "CALIBRATE_TOOL_FOR_PROBING",
+    "CALIBRATE_TOOL",
     "COMMENT",
     "CREATE_LABWARE",
     "DELETE_LABWARE",
