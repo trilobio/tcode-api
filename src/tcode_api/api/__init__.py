@@ -117,6 +117,7 @@ from ..schemas.descriptions.well_bottom.v_bottom.latest import (
 from ..schemas.labware_holder.labware_holder_name.latest import LabwareHolderName
 from ..schemas.labware_holder.labware_id.latest import LabwareId
 from ..schemas.labware_holder.union import LabwareHolder
+from ..schemas.location.location_as_labware_holder.latest import LocationAsLabwareHolder
 from ..schemas.location.location_as_labware_index.latest import LocationAsLabwareIndex
 from ..schemas.location.location_as_node_id.latest import LocationAsNodeId
 from ..schemas.location.location_relative_to_current_position.latest import (
@@ -226,6 +227,7 @@ __all__ = [
     "LabwareHolderName",
     "LabwareId",
     "Location",
+    "LocationAsLabwareHolder",
     "LocationAsLabwareIndex",
     "LocationAsNodeId",
     "LocationRelativeToCurrentPosition",
