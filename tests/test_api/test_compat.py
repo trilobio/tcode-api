@@ -1,11 +1,13 @@
 """Unittests for the API migration and compatibility logic."""
 
+import dataclasses
 import inspect
 import logging
 import unittest
 from contextlib import contextmanager
 from typing import Iterator, Literal, cast
 
+import tcode_api.api as tc  # This import allows us to test what a "customer" who imports TCode would see
 from tcode_api.api.compat import (
     APIHistoryLog,
     CompatContext,
@@ -15,6 +17,7 @@ from tcode_api.api.compat import (
     TargetSchemaNotFoundError,
     load_api_object,
     resolve_api_profile,
+    tcode_api_compat_context,
 )
 from tcode_api.schemas.base import BaseSchemaVersionedModel
 from tcode_api.schemas.registry import MigrationRegistry, RawData, SchemaRegistry
@@ -606,6 +609,7 @@ class TestTCodeAPI(unittest.TestCase):
         api_version_str = compat_context.api_history_log.get_most_recent_version()
         return resolve_api_profile(api_version_str, compat_context)
 
+    # @connor not running this method yet, mostly a concept that I might get working later.
     def _validate_compat_context(self, compat_context: CompatContext) -> None:
         """Validate that the compat structure is well-formed, e.g. that all of the internal
         structures match up.
@@ -630,18 +634,82 @@ class TestTCodeAPI(unittest.TestCase):
                 f"The following schemas have builders registered in the schema registry but aren't in the API history log: {builders_without_schemas}"
             )
 
-    def test_tcode_api_matches_compat_context(self) -> None:
-        """Test that all entities in the tcode_api.api package are correctly represented in the API history log."""
-        import tcode_api.api as tc
+    def _get_tcode_api_versioned_models(self) -> list[tuple[str, type[BaseSchemaVersionedModel]]]:
+        """Dynamically find all of the schema_versioned models in the tcode_api.api package.
+
+        :note: Some exposed entities in tcode_api are unversioned and are expected to not be in the
+            API profile. We exclude those here. (ex. TrajectoryType (enum), LabwareDescription (union))
+        """
+        tc_classes = inspect.getmembers(tc, inspect.isclass)
+        retval = []
+        for name, cls in tc_classes:
+            if not issubclass(cls, BaseSchemaVersionedModel):
+                continue
+            retval.append((name, cls))
+        return retval
+
+    def test_schema_registry_matches_history_log(
+        self, compat_context: CompatContext = tcode_api_compat_context
+    ) -> None:
+        """Test that all entities in the tcode_api.api package have their current schema_version represented in the API history log."""
+        api_versioned_entities = self._get_tcode_api_versioned_models()
+        profile = self._get_most_recent_api_profile(compat_context)
+
+        @dataclasses.dataclass
+        class SchemaVersionMismatchReport:
+            """Stores metadata about a schema whose schema_version doesn't match that of tcode-api.api."""
+
+            compat_context_name: str
+            """Name of the CompatContext containing the mismatch."""
+
+            schema_name: str
+            """Name of the schema with the mismatch."""
+
+            cls_schema_version: int
+            """The schema_version of the entity as defined in a file in tcode_api.schemas and
+            registered with compat_context.schema_registry."""
+
+            api_schema_version: int
+            """The schema_version of the entity in the most modern semver available in compat_context.api_history_log."""
+
+        entities_missing_from_profile: list[str] = []
+        entites_with_schema_version_mismatch_w_profile: list[SchemaVersionMismatchReport] = []
+        for name, cls in api_versioned_entities:
+            cls_schema_version = cls.model_fields["schema_version"].default
+            try:
+                api_schema_version = profile[name]
+                if cls_schema_version != api_schema_version:
+                    entites_with_schema_version_mismatch_w_profile.append(
+                        SchemaVersionMismatchReport(
+                            compat_context_name=compat_context.api_history_log.name,
+                            schema_name=name,
+                            cls_schema_version=cls_schema_version,
+                            api_schema_version=api_schema_version,
+                        )
+                    )
+            except KeyError:
+                entities_missing_from_profile.append(name)
+
+        if (
+            len(entities_missing_from_profile) > 0
+            or len(entites_with_schema_version_mismatch_w_profile) > 0
+        ):
+            error_message = "The following entities have mismatches between their schema_version and the API history log:\n"
+            if len(entities_missing_from_profile) > 0:
+                error_message += f"Entities missing from API history log profile: {entities_missing_from_profile}\n"
+            if len(entites_with_schema_version_mismatch_w_profile) > 0:
+                for report in entites_with_schema_version_mismatch_w_profile:
+                    error_message += (
+                        f"Entity '{report.schema_name}' has schema_version {report.cls_schema_version} in the code but "
+                        f"{report.api_schema_version} in the API history log for compat context '{report.compat_context_name}'.\n"
+                    )
+            self.fail(error_message)
+
+    def test_tcode_api_entities_match_compat_context(self) -> None:
+        """Test that all entities in the tcode_api.api package are represented in the API history log."""
         from tcode_api.api.compat import tcode_api_compat_context
 
-        # Some exposed entities in tcode_api are unversioned and are expected to not be in the API profile.
-        # We exclude those here.
-        api_versioned_entity_names = [
-            t[0]
-            for t in inspect.getmembers(tc, inspect.isclass)
-            if issubclass(t[1], BaseSchemaVersionedModel)
-        ]
+        api_versioned_entity_names = [name for name, cls in self._get_tcode_api_versioned_models()]
 
         profile = self._get_most_recent_api_profile(tcode_api_compat_context)
         missing_from_profile = [name for name in api_versioned_entity_names if name not in profile]
