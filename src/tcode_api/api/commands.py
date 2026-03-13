@@ -86,6 +86,8 @@ class ADD_PIPETTE_TIP_GROUP(_TCodeBase):
     :param id: Identifier to assign to the resolved pipette tip group. This id is used in subsequent
         commands to reference this pipette tip group.
     :param descriptor: Minimal descriptor of the desired pipette tip group; resolved on the fleet.
+    :param robot_id: Optional robot id to scope tip search to a specific robot's deck.
+        When provided, only tip racks physically on this robot's deck are considered.
 
     :raises ValidatorError: ``ValidatorErrorCode.ID_EXISTS`` if ``id`` is already registered to
         a pipette tip group.
@@ -94,6 +96,7 @@ class ADD_PIPETTE_TIP_GROUP(_TCodeBase):
     type: Literal["ADD_PIPETTE_TIP_GROUP"] = "ADD_PIPETTE_TIP_GROUP"
     id: str
     descriptor: PipetteTipGroupDescriptor
+    robot_id: str | None = None
 
 
 class ADD_ROBOT(_TCodeBase):
@@ -206,13 +209,13 @@ class CALIBRATE_LABWARE_HEIGHT(_RobotSpecificTCodeBase):
 
 class CALIBRATE_LABWARE_HOLDER(_RobotSpecificTCodeBase):
     """Calibrate the position of a target labware holder (deck slot) on the target robot by probing
-    or by teaching. 
-    
+    or by teaching.
+
     - If a probe is held by the robot, the calibration will be performed by probing.
     - If a pipette is held by the robot, the calibration will be performed by teaching.
         - Only X, Y, and rotation around Z will be calibrated.
         - A tip box must be registered in the target holder
-    
+
     The pipette teach procedure is as follows:
     - Single Channel Pipette:
         - Move the pipette manifold to the center of the A1 tip location
@@ -224,9 +227,9 @@ class CALIBRATE_LABWARE_HOLDER(_RobotSpecificTCodeBase):
         - Confirm via the UI that the pipette is in position
         - Move the pipette manifold to the center of the A12 tip location
         - Confirm via the UI that the pipette is in position
-    
+
     NOTE: The UI confirmation steps are done via a websocket connection to the Tcode server
-        
+
     :param type: see :class: ``_TCodeBase``
     :param robot_id: see :class: ``_RobotSpecificTCodeBase``
     :param location: The location attribute specifies the labware holder to calibrate (deck slot)
@@ -234,11 +237,11 @@ class CALIBRATE_LABWARE_HOLDER(_RobotSpecificTCodeBase):
     :raises ValidatorError: ``ValidatorErrorCode.ID_NOT_FOUND`` if any of the following are true:
         * ``robot_id`` is not registered to a robot
         * The labware holder id referenced in ``location`` is not registered on the target robot
-    
+
     :raises ValidatorError: ``ValidatorErrorCode.UNEXPECTED_TOOL`` if the targeted robot has a tool
         mounted that is not compatible with probing or teaching.
     """
-    
+
     type: Literal["CALIBRATE_LABWARE_HOLDER"] = "CALIBRATE_LABWARE_HOLDER"
     location: LocationAsLabwareHolder
 
