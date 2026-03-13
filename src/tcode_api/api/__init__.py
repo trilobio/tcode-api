@@ -6,6 +6,7 @@ from ..schemas.commands.add_robot.latest import ADD_ROBOT
 from ..schemas.commands.add_tool.latest import ADD_TOOL
 from ..schemas.commands.aspirate.latest import ASPIRATE
 from ..schemas.commands.calibrate_labware_height.latest import CALIBRATE_LABWARE_HEIGHT
+from ..schemas.commands.calibrate_labware_holder.latest import CALIBRATE_LABWARE_HOLDER
 from ..schemas.commands.calibrate_labware_well_depth.latest import (
     CALIBRATE_LABWARE_WELL_DEPTH,
 )
@@ -137,6 +138,7 @@ __all__ = [
     "ADD_ROBOT",
     "ADD_TOOL",
     "ASPIRATE",
+    "CALIBRATE_LABWARE_HOLDER",
     "CALIBRATE_LABWARE_HEIGHT",
     "CALIBRATE_LABWARE_WELL_DEPTH",
     "CALIBRATE_TOOL_FOR_PROBING",

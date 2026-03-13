@@ -10,6 +10,9 @@ from .aspirate.latest import ASPIRATE
 from .calibrate_labware_height.latest import (
     CALIBRATE_LABWARE_HEIGHT,
 )
+from .calibrate_labware_holder.latest import (
+    CALIBRATE_LABWARE_HOLDER,
+)
 from .calibrate_labware_well_depth.latest import (
     CALIBRATE_LABWARE_WELL_DEPTH,
 )
@@ -53,6 +56,7 @@ TCode = Annotated[
     | ADD_TOOL
     | CALIBRATE_LABWARE_WELL_DEPTH
     | CALIBRATE_LABWARE_HEIGHT
+    | CALIBRATE_LABWARE_HOLDER
     | CALIBRATE_TOOL_FOR_PROBING
     | COMMENT
     | CREATE_LABWARE
