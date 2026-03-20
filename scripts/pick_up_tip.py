@@ -193,7 +193,7 @@ def main(
         script_name = (
             f"Pick up tips {deck_slot_name} (Cols{','.join(str(c) for c in column_values)}) (C8)"
         )
-        tip_group_rows, tip_group_cols = 8, 1
+        tip_group_rows, tip_group_cols = 1, 8
         tip_group_count = 12
 
     else:
