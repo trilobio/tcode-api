@@ -2,7 +2,7 @@ Set Up Your IDE
 ===============
 
 Development is better with an IDE. For python, most of our team uses VSCode. Here's how to install
-VSCode and set it up to work well with TCode.
+VSCode and set it up to work well with T-code.
 
 Prerequisites
 -------------

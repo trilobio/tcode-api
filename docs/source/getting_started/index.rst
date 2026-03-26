@@ -2,7 +2,7 @@ Getting Started
 ===============
 
 The following documentation contains the Trilobio development team's resources and best practices
-for workign with TCode via the `tcode-api` Python package. If you want support for other languages,
+for workign with T-code via the `tcode-api` Python package. If you want support for other languages,
 please reach out to the Trilobio team.
 
 .. toctree::

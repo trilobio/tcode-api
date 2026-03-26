@@ -3,7 +3,7 @@ Labware
 
 While ``Labware`` is an entity, just like tools, robots, etc., it is broken out here due to it's internal complexity.
 
-Related TCode Commands:
+Related T-code Commands:
 - ``CREATE_LABWARE``
 - ``ADD_LABWARE``
 - ``PICK_UP_LABWARE``

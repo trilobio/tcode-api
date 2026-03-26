@@ -1,9 +1,9 @@
 tcode-api
 =======================
 
-TCode is the language of Trilobots. Whether you're manually programming a single robot or driving a fleet, your scripts will be written in TCode.
+T-code is the language of Trilobots. Whether you're manually programming a single robot or driving a fleet, your scripts will be written in T-code.
 
-The ``tcode-api`` package provides Python interfaces for the core TCode components, allowing you to drive your Trilobot fleet using the flexibility of Python.
+The ``tcode-api`` package provides Python interfaces for the core T-code components, allowing you to drive your Trilobot fleet using the flexibility of Python.
 
 Getting Started
 ^^^^^^^^^^^^^^^
@@ -27,7 +27,7 @@ Step-by-step guides and script walkthroughs to help you perform various tasks wi
 
 Concepts
 ^^^^^^^^
-References for fundamental TCode concents such as the execution cycle, robot motion, entity resolution, error handling, and external system integration.
+References for fundamental T-code concents such as the execution cycle, robot motion, entity resolution, error handling, and external system integration.
 
 .. toctree::
    :maxdepth: 2

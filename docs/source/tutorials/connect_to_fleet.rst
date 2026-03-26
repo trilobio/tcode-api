@@ -6,7 +6,7 @@ Tutorial: Connecting to a Trilobio Fleet
 Background
 ----------
 
-In this tutorial, you will send jog commands to a robot in a Trilobot fleet using the python wrapper for the TCode API.
+In this tutorial, you will send jog commands to a robot in a Trilobot fleet using the python wrapper for the T-code API.
 
 This tutorial assumes that:
    - A trilobot fleet is booted up
@@ -19,24 +19,24 @@ Step 1: Connect to Fleet
 
 .. code-block:: python
 
-  >>> from tcode_api.servicer import TCodeServicerClient
-  >>> client = TCodeServicerClient()
+  >>> from tcode_api.servicer import T-codeServicerClient
+  >>> client = T-codeServicerClient()
   >>> status = client.get_status()
   >>> print(status)
   GetStatusResponse(command_id=None, operation_count=0, run_state=False, result=Result(success=True, code='success', message=None, details=None))
 
-The program that reads TCode and turns it into robot commands is called the "TCode Servicer". It runs on the fleet control computer. We will use the `TCodeServicerClient` class to connect to this program and talk to it.
+The program that reads T-code and turns it into robot commands is called the "T-code Servicer". It runs on the fleet control computer. We will use the `T-codeServicerClient` class to connect to this program and talk to it.
 The first two lines create the client.
 
 .. note::
 
-   Note that the TCodeServicerClient constructor is called with no arguments. By default, it connects to the TCode Servicer running on the local machine. If you are running this code on a different machine, look at the
-   API documentation for how to specify the IP address and port of the target TCode Servicer.
+   Note that the T-codeServicerClient constructor is called with no arguments. By default, it connects to the T-code Servicer running on the local machine. If you are running this code on a different machine, look at the
+   API documentation for how to specify the IP address and port of the target T-code Servicer.
 
 .. code-block:: python
 
-  from tcode_api.servicer import TCodeServicerClient
-  client = TCodeServicerClient()
+  from tcode_api.servicer import T-codeServicerClient
+  client = T-codeServicerClient()
 
 The third line calls the `get_status` method to check that we are connected. In the response object, we can see a lot of information that will be useful later.
 
@@ -48,28 +48,28 @@ The third line calls the `get_status` method to check that we are connected. In 
 Step 2: Select a Robot
 ----------------------
 
-Now that we've successfully retrieved the fleet status, we are ready to select a robot to control! Let's first tell the TCode servicer to find a robot on the fleet.
+Now that we've successfully retrieved the fleet status, we are ready to select a robot to control! Let's first tell the T-code servicer to find a robot on the fleet.
 
 .. code-block:: python
 
    import tcode_api.api as tc
    from tcode_api.utilities import generate_id()
 
-   # Generate the TCode script
+   # Generate the T-code script
    robot_id = generate_id()
    commands = []
    commands.append(
      tc.ADD_ROBOT(id=robot_id, descriptor=tc.RobotDescriptor())
    )
 
-   # Schedule the TCode script
+   # Schedule the T-code script
    client.schedule_commands(commands)
 
-   # Run the TCode script
+   # Run the T-code script
    client.execute_run_loop()
 
-This script demonstrates the three main steps to run a TCode script on your fleet:
-  1. Generate a list of TCode commands
+This script demonstrates the three main steps to run a T-code script on your fleet:
+  1. Generate a list of T-code commands
   2. Schedule the script with your fleet
   3. Execute the script on your fleet
 
@@ -78,29 +78,29 @@ Let's first look at step 1:
 
   import tcode_api.api as tc
   from tcode_api.utilities import generate_id()
-  from tcode_api.servicer import TCodeServicerClient
+  from tcode_api.servicer import T-codeServicerClient
 
-  client = TCodeServicerClient()
+  client = T-codeServicerClient()
 
-When writing TCode, the primary python data structures for commands, errors, data structures. etc. are stored within ``tcode_api.api``. We import this library as ``tc`` for shorthand.
+When writing T-code, the primary python data structures for commands, errors, data structures. etc. are stored within ``tcode_api.api``. We import this library as ``tc`` for shorthand.
 
-In addition to the core API, ``tcode_api`` has a few helper functions to make writing TCode scripts in python easier. These functions are stored in ``tcode_api.utilities``. Here, we're importing
-a function to generate unique identifiers for TCode entities.
+In addition to the core API, ``tcode_api`` has a few helper functions to make writing T-code scripts in python easier. These functions are stored in ``tcode_api.utilities``. Here, we're importing
+a function to generate unique identifiers for T-code entities.
 
-The ``TCodeServicerClient`` code we've seen before, so let's move on.
+The ``T-codeServicerClient`` code we've seen before, so let's move on.
 
 .. code-block:: python
   
   robot_id = generate_id()
 
-Next, we'll instantiate an id for the robot. Entities that are referenced by TCode commands are referenced by identifier, and identifiers are linked to "real objects" on your fleet through ``ADD_***`` commands.
+Next, we'll instantiate an id for the robot. Entities that are referenced by T-code commands are referenced by identifier, and identifiers are linked to "real objects" on your fleet through ``ADD_***`` commands.
 Typically, your tcode generation code will have a block of ``generate_id()`` calls at the top to create ids for all of your relevant objects.
 
 .. code-block:: python
 
    commands = []
 
-This line instantiates an empty list to store TCode commands. We'll use ``append`` to serially write the script by adding commands to the end of this list.
+This line instantiates an empty list to store T-code commands. We'll use ``append`` to serially write the script by adding commands to the end of this list.
 
 Now: Let's add our first command!
 
@@ -114,14 +114,14 @@ This line appends our first command, ``tc.ADD_ROBOT``. Into this function, we pa
 and so will match any robot in the fleet. If your fleet has only one robot, this is great. If your fleet has multiple robots, however, you must add more information to the descriptor to ensure
 that you control the expected robot.
 
-How do we know that this is good TCode? Let's ask the fleet, by calling the ``schedule_commands`` endpoint.
+How do we know that this is good T-code? Let's ask the fleet, by calling the ``schedule_commands`` endpoint.
 
 .. code-block:: python
 
    client.schedule_commands(commands)
 
 This command will perform the following:
-  1. Check that the TCode is valid
+  1. Check that the T-code is valid
   2. Check that all of the entities resolve to valid "real-life" objects
   3. Schedule the commands.
 
