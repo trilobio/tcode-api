@@ -5,7 +5,7 @@ This section of the documentation covers the nitty-gritty of the various interfa
 
 Let's dive into the details!
 
-TCode API
+T-code API
 ---------
 
 The core data structures in the ``tcode_api`` package are all exposed in the ``tcode_api.api`` submodule. All examples will use the following import alias for brevity:
@@ -22,7 +22,7 @@ The core data structures in the ``tcode_api`` package are all exposed in the ``t
    labware
    locations
 
-TCode Servicer API
+T-code Servicer API
 ------------------
 
 The components that allow you runtime control of your fleet are exposed in the ``tcode_api.servicer`` submodule.
@@ -32,7 +32,7 @@ The components that allow you runtime control of your fleet are exposed in the `
 
    servicer
 
-TCode Integrator API
+T-code Integrator API
 --------------------
 
 This API allows you to integrate with external devices in one direction

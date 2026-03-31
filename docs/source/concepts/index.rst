@@ -1,7 +1,7 @@
-TCode Concepts
+T-code Concepts
 ==============
 
-Documentation of concepts underlying TCode scripting, useful for building more complex scripts after completing the tutorials.
+Documentation of concepts underlying T-code scripting, useful for building more complex scripts after completing the tutorials.
 
 .. toctree::
    :maxdepth: 2

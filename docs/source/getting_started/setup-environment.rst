@@ -17,7 +17,7 @@ Create a uv Application Project
 -------------------------------
 **Reference:** https://docs.astral.sh/uv/concepts/projects/init/
 
-1. Make a new folder, inside of which you will write your TCode scripts. In the example below,
+1. Make a new folder, inside of which you will write your T-code scripts. In the example below,
    I make a new folder called ``tcode-workspace/`` inside of the home directory. You can create this
    folder in a different location (ex. ``Desktop/``, or ``Documents/``) if you choose.
 
@@ -83,4 +83,4 @@ import ``tcode-api``.
    from tcode_api import api as tc
 
 3. If you don't see any error messages, congratulations! You've successfully set up your Python
-environment for TCode development.
+environment for T-code development.
