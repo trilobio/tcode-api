@@ -6,7 +6,7 @@ from ...common.value_with_units import ValueWithUnits
 from ..base import BaseRobotSpecificTCodeCommand
 
 
-class DISPENSE_V1(BaseRobotSpecificTCodeCommand):
+class DISPENSE(BaseRobotSpecificTCodeCommand):
     """Dispense a given fluid volume at a given speed."""
 
     type: Literal["DISPENSE"] = "DISPENSE"

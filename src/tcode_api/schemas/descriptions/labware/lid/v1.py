@@ -12,7 +12,7 @@ StackableField = Annotated[
 ]
 
 
-class LidDescriptionV1(BaseLabwareDescription):
+class LidDescription(BaseLabwareDescription):
     """Description of a plate lid."""
 
     type: Literal["Lid"] = "Lid"
@@ -21,7 +21,7 @@ class LidDescriptionV1(BaseLabwareDescription):
     stackable: StackableField
 
 
-class LidDescriptorV1(BaseLabwareDescriptor):
+class LidDescriptor(BaseLabwareDescriptor):
     """LidDescription with optional parameters."""
 
     type: Literal["Lid"] = "Lid"

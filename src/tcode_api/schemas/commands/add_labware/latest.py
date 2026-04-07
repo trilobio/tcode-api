@@ -1,3 +1,1 @@
-from .v3 import ADD_LABWARE_V3
-
-ADD_LABWARE = ADD_LABWARE_V3
+from .v3 import ADD_LABWARE

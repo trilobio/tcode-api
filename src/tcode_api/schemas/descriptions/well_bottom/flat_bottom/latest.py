@@ -1,4 +1,1 @@
-from .v1 import FlatBottomDescriptionV1, FlatBottomDescriptorV1
-
-FlatBottomDescription = FlatBottomDescriptionV1
-FlatBottomDescriptor = FlatBottomDescriptorV1
+from .v1 import FlatBottomDescription, FlatBottomDescriptor

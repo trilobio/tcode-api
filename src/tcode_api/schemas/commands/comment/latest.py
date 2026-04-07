@@ -1,3 +1,1 @@
-from .v1 import COMMENT_V1
-
-COMMENT = COMMENT_V1
+from .v1 import COMMENT

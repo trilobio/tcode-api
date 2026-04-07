@@ -5,7 +5,7 @@ from pydantic import Field
 from ..base import BaseLocation
 
 
-class LocationAsLabwareHolderV1(BaseLocation):
+class LocationAsLabwareHolder(BaseLocation):
     """Location specified by a labware holder's name."""
 
     type: Literal["LocationAsLabwareHolder"] = "LocationAsLabwareHolder"

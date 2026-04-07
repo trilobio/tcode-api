@@ -6,7 +6,7 @@ from ...common.value_with_units import ValueWithUnits
 from ..base import BaseRobotSpecificTCodeCommand
 
 
-class MOVE_GRIPPER_V1(BaseRobotSpecificTCodeCommand):
+class MOVE_GRIPPER(BaseRobotSpecificTCodeCommand):
     """Manually drive the target robot's gripper."""
 
     type: Literal["MOVE_GRIPPER"] = "MOVE_GRIPPER"

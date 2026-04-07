@@ -5,7 +5,7 @@ from pydantic import Field
 from ..base import BaseTCodeCommand
 
 
-class COMMENT_V1(BaseTCodeCommand):
+class COMMENT(BaseTCodeCommand):
     """A human-readable comment in the TCode script."""
 
     type: Literal["COMMENT"] = "COMMENT"

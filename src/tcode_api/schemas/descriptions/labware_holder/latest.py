@@ -1,3 +1,1 @@
-from .v1 import LabwareHolderDescriptorV1
-
-LabwareHolderDescriptor = LabwareHolderDescriptorV1
+from .v1 import LabwareHolderDescriptor

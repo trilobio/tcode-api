@@ -5,7 +5,7 @@ from pydantic import Field
 from ..base import BaseSchemaVersionedModel
 
 
-class PipetteTipLayoutV1(BaseSchemaVersionedModel):
+class PipetteTipLayout(BaseSchemaVersionedModel):
     """Data structure representing the layout of pipette tips in a box.
 
     :note: This class is designed to allow non-standard use cases, like adding partially filled

@@ -1,3 +1,1 @@
-from .v1 import ToolHolderDescriptorV1
-
-ToolHolderDescriptor = ToolHolderDescriptorV1
+from .v1 import ToolHolderDescriptor

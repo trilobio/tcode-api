@@ -27,7 +27,7 @@ well_shape_field_docstring = (
 bottom_shape_field_docstring = "The geometry of the bottom of the well. "
 
 
-class WellDescriptionV1(BaseDescriberWithTags):
+class WellDescription(BaseDescriberWithTags):
     """Description of a well in a labware."""
 
     type: Literal["Well"] = "Well"
@@ -44,7 +44,7 @@ class WellDescriptionV1(BaseDescriberWithTags):
     max_volume: MaxVolumeField
 
 
-class WellDescriptorV1(BaseDescriberWithTags):
+class WellDescriptor(BaseDescriberWithTags):
     """:class:``WellDescription`` with optional parameters."""
 
     type: Literal["Well"] = "Well"

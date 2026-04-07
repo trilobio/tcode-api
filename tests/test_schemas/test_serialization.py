@@ -4,14 +4,14 @@ import tempfile
 import unittest
 
 from tcode_api.schemas.common.value_with_units import ValueWithUnits
-from tcode_api.schemas.descriptions.grid.v1 import GridDescriptionV1
+from tcode_api.schemas.descriptions.grid.v1 import GridDescription
 from tcode_api.schemas.descriptions.labware.pipette_tip_box.v1 import (
-    PipetteTipBoxDescriptionV1,
+    PipetteTipBoxDescription as PipetteTipBoxDescriptionV1,
 )
 from tcode_api.schemas.descriptions.labware.pipette_tip_box.v2 import (
-    PipetteTipBoxDescriptionV2,
+    PipetteTipBoxDescription as PipetteTipBoxDescriptionV2,
 )
-from tcode_api.schemas.descriptions.pipette_tip.v1 import PipetteTipDescriptionV1
+from tcode_api.schemas.descriptions.pipette_tip.v1 import PipetteTipDescription
 
 
 class TestSchemaDeserialization(unittest.TestCase):
@@ -21,7 +21,7 @@ class TestSchemaDeserialization(unittest.TestCase):
         x_length=ValueWithUnits(magnitude=127.76, units="mm"),
         y_length=ValueWithUnits(magnitude=85.48, units="mm"),
         z_length=ValueWithUnits(magnitude=60.0, units="mm"),
-        grid=GridDescriptionV1(
+        grid=GridDescription(
             row_count=8,
             column_count=12,
             row_pitch=ValueWithUnits(magnitude=9.0, units="mm"),
@@ -29,7 +29,7 @@ class TestSchemaDeserialization(unittest.TestCase):
             row_offset=ValueWithUnits(magnitude=0.0, units="mm"),
             column_offset=ValueWithUnits(magnitude=0.0, units="mm"),
         ),
-        pipette_tip=PipetteTipDescriptionV1(
+        pipette_tip=PipetteTipDescription(
             has_filter=False,
             height=ValueWithUnits(magnitude=50.0, units="mm"),
             flange_height=ValueWithUnits(magnitude=10.0, units="mm"),

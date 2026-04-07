@@ -5,7 +5,7 @@ from pydantic import Field
 from ..base import BaseLabwareHolder
 
 
-class LabwareHolderNameV1(BaseLabwareHolder):
+class LabwareHolderName(BaseLabwareHolder):
     """LabwareHolder specified by name and target robot."""
 
     type: Literal["LabwareHolderName"] = "LabwareHolderName"

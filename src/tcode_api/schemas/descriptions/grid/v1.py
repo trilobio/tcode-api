@@ -64,7 +64,7 @@ ColumnOffsetField = Annotated[
 ]
 
 
-class GridDescriptionV1(BaseSchemaVersionedModel):
+class GridDescription(BaseSchemaVersionedModel):
     """Description of a grid layout."""
 
     type: Literal["Grid"] = "Grid"
@@ -78,7 +78,7 @@ class GridDescriptionV1(BaseSchemaVersionedModel):
     column_offset: ColumnOffsetField
 
 
-class GridDescriptorV1(BaseSchemaVersionedModel):
+class GridDescriptor(BaseSchemaVersionedModel):
     """:class:``GridDescription`` with optional parameters."""
 
     type: Literal["Grid"] = "Grid"

@@ -1,4 +1,1 @@
-from .v1 import RoundBottomDescriptionV1, RoundBottomDescriptorV1
-
-RoundBottomDescription = RoundBottomDescriptionV1
-RoundBottomDescriptor = RoundBottomDescriptorV1
+from .v1 import RoundBottomDescription, RoundBottomDescriptor

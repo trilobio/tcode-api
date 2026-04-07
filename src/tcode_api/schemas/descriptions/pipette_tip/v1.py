@@ -32,7 +32,7 @@ FlangeHeightField = Annotated[
 ]
 
 
-class PipetteTipDescriptionV1(BaseDescriberWithTags):
+class PipetteTipDescription(BaseDescriberWithTags):
     """Description of a pipette tip."""
 
     type: Literal["PipetteTip"] = "PipetteTip"
@@ -45,7 +45,7 @@ class PipetteTipDescriptionV1(BaseDescriberWithTags):
     min_volume: MinVolumeField
 
 
-class PipetteTipDescriptorV1(BaseDescriberWithTags):
+class PipetteTipDescriptor(BaseDescriberWithTags):
     """:class:``PipetteTipDescription`` with optional parameters."""
 
     type: Literal["PipetteTip"] = "PipetteTip"

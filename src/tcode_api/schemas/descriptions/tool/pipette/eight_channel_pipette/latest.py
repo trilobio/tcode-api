@@ -1,3 +1,1 @@
-from .v1 import EightChannelPipetteDescriptorV1
-
-EightChannelPipetteDescriptor = EightChannelPipetteDescriptorV1
+from .v1 import EightChannelPipetteDescriptor

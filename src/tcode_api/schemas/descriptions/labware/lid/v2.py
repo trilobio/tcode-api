@@ -5,7 +5,7 @@ from ..base import BaseLabwareDescription, BaseLabwareDescriptor
 from .v1 import StackableField
 
 
-class LidDescriptionV2(BaseLabwareDescription):
+class LidDescription(BaseLabwareDescription):
     """Description of a plate lid."""
 
     type: Literal["Lid"] = "Lid"
@@ -14,7 +14,7 @@ class LidDescriptionV2(BaseLabwareDescription):
     stackable: StackableField
 
 
-class LidDescriptorV2(BaseLabwareDescriptor):
+class LidDescriptor(BaseLabwareDescriptor):
     """LidDescription with optional parameters."""
 
     type: Literal["Lid"] = "Lid"

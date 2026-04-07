@@ -1,3 +1,1 @@
-from .v1 import SingleChannelPipetteDescriptorV1
-
-SingleChannelPipetteDescriptor = SingleChannelPipetteDescriptorV1
+from .v1 import SingleChannelPipetteDescriptor

@@ -8,7 +8,7 @@ from ...common.enums import GraspType
 from ..base import BaseRobotSpecificTCodeCommand
 
 
-class PICK_UP_LABWARE_V1(BaseRobotSpecificTCodeCommand):
+class PICK_UP_LABWARE(BaseRobotSpecificTCodeCommand):
     """Pick up a labware with the robot's plate gripper."""
 
     type: Literal["PICK_UP_LABWARE"] = "PICK_UP_LABWARE"

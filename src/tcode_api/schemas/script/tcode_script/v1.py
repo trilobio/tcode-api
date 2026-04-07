@@ -9,18 +9,18 @@ from pydantic import Field
 
 from ...base import BaseSchemaVersionedModel
 from ...commands.union import TCode
-from ..metadata.v1 import MetadataV1
+from ..metadata.v1 import Metadata
 
 _logger = logging.getLogger(__name__)
 
 
-class TCodeScriptV1(BaseSchemaVersionedModel):
+class TCodeScript(BaseSchemaVersionedModel):
     """Structure of a TCode script."""
 
     type: Literal["TCodeScript"] = "TCodeScript"
     schema_version: Literal[1] = 1
 
-    metadata: MetadataV1 = Field(
+    metadata: Metadata = Field(
         description="Script metadata, significantly includeing the tcode-api version used in generation."
     )
     commands: list[TCode] = Field(
@@ -29,7 +29,7 @@ class TCodeScriptV1(BaseSchemaVersionedModel):
     )
 
     @classmethod
-    def new(cls, name: str, description: str | None = None) -> TCodeScriptV1:
+    def new(cls, name: str, description: str | None = None) -> TCodeScript:
         """Create a new, empty TCode script with the given name and optional description.
 
         :param name: Name of the TCode script.
@@ -37,7 +37,7 @@ class TCodeScriptV1(BaseSchemaVersionedModel):
 
         :returns: A new, empty TCode script.
         """
-        metadata = MetadataV1(
+        metadata = Metadata(
             name=name,
             description=description,
             timestamp=datetime.datetime.now().isoformat(),
@@ -47,7 +47,7 @@ class TCodeScriptV1(BaseSchemaVersionedModel):
         return cls(metadata=metadata, commands=[])
 
     @classmethod
-    def read(cls, file_object: TextIO) -> TCodeScriptV1:
+    def read(cls, file_object: TextIO) -> TCodeScript:
         """Load a TCode script from a file-like object.
 
         :param file_object: A file-like object containing the TCode script.

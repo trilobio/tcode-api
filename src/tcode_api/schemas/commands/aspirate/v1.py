@@ -6,7 +6,7 @@ from ...common.value_with_units import ValueWithUnits
 from ..base import BaseRobotSpecificTCodeCommand
 
 
-class ASPIRATE_V1(BaseRobotSpecificTCodeCommand):
+class ASPIRATE(BaseRobotSpecificTCodeCommand):
     """Aspirate a given fluid volume at a given speed into the target robot's pipette."""
 
     type: Literal["ASPIRATE"] = "ASPIRATE"

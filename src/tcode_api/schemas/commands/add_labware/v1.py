@@ -6,7 +6,7 @@ from ...descriptions.labware.union import LabwareDescriptor
 from ..base import BaseTCodeCommand
 
 
-class ADD_LABWARE_V1(BaseTCodeCommand):
+class ADD_LABWARE(BaseTCodeCommand):
     """Find a matching labware on the fleet and assign it the given id.
 
     :raises ValidatorError: ``ValidatorErrorCode.ID_EXISTS`` if ``id`` is already registered to

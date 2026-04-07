@@ -2,11 +2,11 @@ from typing import Literal
 
 from pydantic import Field
 
-from ...location.location_as_labware_holder.v1 import LocationAsLabwareHolderV1
+from ...location.location_as_labware_holder.v1 import LocationAsLabwareHolder
 from ..base import BaseRobotSpecificTCodeCommand
 
 
-class CALIBRATE_LABWARE_HOLDER_V1(BaseRobotSpecificTCodeCommand):
+class CALIBRATE_LABWARE_HOLDER(BaseRobotSpecificTCodeCommand):
     """Calibrate the position of a target labware holder (deck slot) on the target robot by probing
     or by teaching.
 
@@ -39,6 +39,6 @@ class CALIBRATE_LABWARE_HOLDER_V1(BaseRobotSpecificTCodeCommand):
 
     type: Literal["CALIBRATE_LABWARE_HOLDER"] = "CALIBRATE_LABWARE_HOLDER"
     schema_version: Literal[1] = 1
-    location: LocationAsLabwareHolderV1 = Field(
+    location: LocationAsLabwareHolder = Field(
         description="The labware holder (probably a deck slot) to calibrate.",
     )

@@ -1,4 +1,1 @@
-from .v1 import PipetteTipDescriptionV1, PipetteTipDescriptorV1
-
-PipetteTipDescription = PipetteTipDescriptionV1
-PipetteTipDescriptor = PipetteTipDescriptorV1
+from .v1 import PipetteTipDescription, PipetteTipDescriptor

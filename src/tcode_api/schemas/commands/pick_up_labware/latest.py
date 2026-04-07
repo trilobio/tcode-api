@@ -1,3 +1,1 @@
-from .v1 import PICK_UP_LABWARE_V1
-
-PICK_UP_LABWARE = PICK_UP_LABWARE_V1
+from .v1 import PICK_UP_LABWARE

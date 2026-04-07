@@ -11,7 +11,7 @@ from ...base import BaseSchemaVersionedModel
 from ...common.docs import NamedTags, Tags
 
 
-class PipetteTipGroupDescriptorV1(BaseSchemaVersionedModel):
+class PipetteTipGroupDescriptor(BaseSchemaVersionedModel):
     """Grid layout of pipette tips."""
 
     type: Literal["PipetteTipGroup"] = "PipetteTipGroup"

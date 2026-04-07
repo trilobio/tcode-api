@@ -1,3 +1,1 @@
-from .v1 import LocationAsLabwareHolderV1
-
-LocationAsLabwareHolder = LocationAsLabwareHolderV1
+from .v1 import LocationAsLabwareHolder

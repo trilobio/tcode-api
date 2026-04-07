@@ -6,7 +6,7 @@ from ...descriptions.tool.union import ToolDescriptor
 from ..base import BaseRobotSpecificTCodeCommand
 
 
-class ADD_TOOL_V1(BaseRobotSpecificTCodeCommand):
+class ADD_TOOL(BaseRobotSpecificTCodeCommand):
     """Find a matching tool on the fleet and assign it the given id."""
 
     type: Literal["ADD_TOOL"] = "ADD_TOOL"

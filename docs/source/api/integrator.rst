@@ -1,5 +1,5 @@
 T-code Integrator API
-====================
+=====================
 
 The T-code integrator is the other side of :class:`tcode_api.commands.SEND_WEBHOOK`. Here
 is an example integration with ATC Thermocycler. The :code:`ATCThermoCycler` class came from
@@ -9,9 +9,9 @@ is an example integration with ATC Thermocycler. The :code:`ATCThermoCycler` cla
 
 .. code::
 
-    from tcode_api.servicer.integrator import T-codeIntegratorBase, WebHookBody
+    from tcode_api.servicer.integrator import TCodeIntegratorBase, WebHookBody
 
-    class ATCIntegrator(T-codeIntegratorBase):
+    class ATCIntegrator(TCodeIntegratorBase):
         async def perform_action(self, data: WebHookBody):
             thermal_cycler = ATCThermoCycler("192.168.8.129")
             await thermal_cycler.setup()
@@ -43,7 +43,7 @@ The T-code used to trigger this action is
 API Reference
 -------------
 
-.. autoclass:: tcode_api.servicer.integrator.T-codeIntegratorBase
+.. autoclass:: tcode_api.servicer.integrator.TCodeIntegratorBase
     :members:
 
 .. autoclass:: tcode_api.servicer.integrator.WebHookBody

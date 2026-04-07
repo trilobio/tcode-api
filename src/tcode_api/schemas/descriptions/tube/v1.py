@@ -34,7 +34,7 @@ TopHeightField = Annotated[
 ]
 
 
-class TubeDescriptionV1(BaseDescriberWithTags):
+class TubeDescription(BaseDescriberWithTags):
     """Description of a tube."""
 
     type: Literal["Tube"] = "Tube"
@@ -52,7 +52,7 @@ class TubeDescriptionV1(BaseDescriberWithTags):
     top_height: TopHeightField
 
 
-class TubeDescriptorV1(BaseDescriberWithTags):
+class TubeDescriptor(BaseDescriberWithTags):
     """:class:``TubeDescription`` with optional parameters."""
 
     type: Literal["Tube"] = "Tube"

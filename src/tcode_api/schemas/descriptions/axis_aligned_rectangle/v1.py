@@ -24,7 +24,7 @@ YLengthField = Annotated[
 ]
 
 
-class AxisAlignedRectangleDescriptionV1(BaseSchemaVersionedModel):
+class AxisAlignedRectangleDescription(BaseSchemaVersionedModel):
     """Description of an axis-aligned rectangle."""
 
     type: Literal["AxisAlignedRectangle"] = "AxisAlignedRectangle"
@@ -34,7 +34,7 @@ class AxisAlignedRectangleDescriptionV1(BaseSchemaVersionedModel):
     y_length: YLengthField
 
 
-class AxisAlignedRectangleDescriptorV1(BaseSchemaVersionedModel):
+class AxisAlignedRectangleDescriptor(BaseSchemaVersionedModel):
     """:class:``AxisAlignedRectangleDescription`` with optional parameters."""
 
     type: Literal["AxisAlignedRectangle"] = "AxisAlignedRectangle"

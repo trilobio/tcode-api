@@ -7,7 +7,7 @@ from tcode_api.types import Matrix
 from ..base import BaseLocation
 
 
-class LocationRelativeToLabwareV1(BaseLocation):
+class LocationRelativeToLabware(BaseLocation):
     """Location specified by relative to a labware's..base node.
 
     This location type is designed to define points on continuous-surface labware
