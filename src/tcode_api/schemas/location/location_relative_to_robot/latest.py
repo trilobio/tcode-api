@@ -1,3 +1,1 @@
-from .v1 import LocationRelativeToRobotV1
-
-LocationRelativeToRobot = LocationRelativeToRobotV1
+from .v1 import LocationRelativeToRobot

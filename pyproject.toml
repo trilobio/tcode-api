@@ -1,6 +1,6 @@
 [project]
 name = "tcode-api"
-version = "1.37.0"
+version = "1.37.1"
 description = "Python implementation of Trilobio's TCode API"
 authors = [{ name = "Trilobio", email = "hello@trilo.bio" }]
 readme = "README.md"
@@ -77,6 +77,10 @@ warn_required_dynamic_aliases = true
 
 [tool.ruff]
 line-length = 100
+
+[tool.ruff.lint]
+# latest.py files are intentional re-export facades; imports appear "unused" to static analysis
+per-file-ignores = {"**/latest.py" = ["F401"], "**/__init__.py" = ["F401"]}
 
 [tool.coverage.run]
 branch = true

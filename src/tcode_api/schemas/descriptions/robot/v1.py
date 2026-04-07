@@ -3,12 +3,12 @@ from typing import Literal
 from pydantic import Field
 
 from ..base import BaseDescriberWithSerialNumber
-from ..labware_holder.v1 import LabwareHolderDescriptorV1
+from ..labware_holder.v1 import LabwareHolderDescriptor
 from ..tool.union import ToolDescriptor
-from ..tool_holder.v1 import ToolHolderDescriptorV1
+from ..tool_holder.v1 import ToolHolderDescriptor
 
 
-class RobotDescriptorV1(BaseDescriberWithSerialNumber):
+class RobotDescriptor(BaseDescriberWithSerialNumber):
     """Descriptor for a robot in the fleet."""
 
     type: Literal["Robot"] = "Robot"
@@ -21,14 +21,14 @@ class RobotDescriptorV1(BaseDescriberWithSerialNumber):
             "Not currently used by the system, and will likely change before implementation. "
         ),
     )
-    tool_holders: dict[str, ToolHolderDescriptorV1] = Field(
+    tool_holders: dict[str, ToolHolderDescriptor] = Field(
         default_factory=dict,
         description=(
             "list of tool holders currently attached to the robot, with their respective serial numbers (if any) as keys. "
             "Not currently used by the system, and will likely change before implementation. "
         ),
     )
-    labware_holders: dict[str, LabwareHolderDescriptorV1] = Field(
+    labware_holders: dict[str, LabwareHolderDescriptor] = Field(
         default_factory=dict,
         description=(
             "list of labware holders currently attached to the robot, with their respective serial numbers (if any) as keys. "

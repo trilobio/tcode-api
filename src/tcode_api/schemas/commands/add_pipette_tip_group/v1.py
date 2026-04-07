@@ -2,11 +2,11 @@ from typing import Literal
 
 from pydantic import Field
 
-from ...descriptions.pipette_tip_group.v1 import PipetteTipGroupDescriptorV1
+from ...descriptions.pipette_tip_group.v1 import PipetteTipGroupDescriptor
 from ..base import BaseTCodeCommand
 
 
-class ADD_PIPETTE_TIP_GROUP_V1(BaseTCodeCommand):
+class ADD_PIPETTE_TIP_GROUP(BaseTCodeCommand):
     """Find a matching group of pipette tips on the fleet and assign it the given id.
 
     :raises ValidatorError: ``ValidatorErrorCode.ID_EXISTS`` if ``id`` is already registered to
@@ -23,6 +23,6 @@ class ADD_PIPETTE_TIP_GROUP_V1(BaseTCodeCommand):
         )
     )
 
-    descriptor: PipetteTipGroupDescriptorV1 = Field(
+    descriptor: PipetteTipGroupDescriptor = Field(
         description=("Minimal descriptor of the desired pipette tip group; resolved on the fleet.")
     )

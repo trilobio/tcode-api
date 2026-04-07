@@ -6,7 +6,7 @@ from ...location.union import Location
 from ..base import BaseRobotSpecificTCodeCommand
 
 
-class PUT_DOWN_PIPETTE_TIP_V1(BaseRobotSpecificTCodeCommand):
+class PUT_DOWN_PIPETTE_TIP(BaseRobotSpecificTCodeCommand):
     """Put down the currently held pipette tip(s)."""
 
     type: Literal["PUT_DOWN_PIPETTE_TIP"] = "PUT_DOWN_PIPETTE_TIP"

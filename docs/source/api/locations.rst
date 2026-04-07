@@ -14,6 +14,6 @@ many other entites.
 
 Documentation
 -------------
-.. automodule:: tcode_api.api.location
+.. automodule:: tcode_api.schemas.location
    :members:
    :member-order: bysource

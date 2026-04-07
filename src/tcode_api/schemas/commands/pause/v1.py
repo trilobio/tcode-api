@@ -3,7 +3,7 @@ from typing import Literal
 from ..base import BaseTCodeCommand
 
 
-class PAUSE_V1(BaseTCodeCommand):
+class PAUSE(BaseTCodeCommand):
     """Pause execution until manually resumed."""
 
     type: Literal["PAUSE"] = "PAUSE"

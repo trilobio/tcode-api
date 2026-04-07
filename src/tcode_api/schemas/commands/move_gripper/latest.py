@@ -1,3 +1,1 @@
-from .v1 import MOVE_GRIPPER_V1
-
-MOVE_GRIPPER = MOVE_GRIPPER_V1
+from .v1 import MOVE_GRIPPER

@@ -6,7 +6,7 @@ from ...common.value_with_units import ValueWithUnits
 from ..base import BaseRobotSpecificTCodeCommand
 
 
-class WAIT_V1(BaseRobotSpecificTCodeCommand):
+class WAIT(BaseRobotSpecificTCodeCommand):
     """Delay execution for a specified duration."""
 
     type: Literal["WAIT"] = "WAIT"

@@ -12,8 +12,8 @@ DepthField = Annotated[
     ValueWithUnits,
     Field(
         description=(
-            "Distance from the top of the tube to the centered bottom of the tube. ",
-            "expects length units",
+            "Distance from the top of the tube to the centered bottom of the tube. "
+            "Expects length units."
         ),
     ),
 ]
@@ -27,14 +27,13 @@ TopHeightField = Annotated[
     ValueWithUnits,
     Field(
         description=(
-            "The height of the tube cap above the top of the tube. ",
-            "expects length units.",
+            "The height of the tube cap above the top of the tube. " "Expects length units."
         ),
     ),
 ]
 
 
-class TubeDescriptionV1(BaseDescriberWithTags):
+class TubeDescription(BaseDescriberWithTags):
     """Description of a tube."""
 
     type: Literal["Tube"] = "Tube"
@@ -52,7 +51,7 @@ class TubeDescriptionV1(BaseDescriberWithTags):
     top_height: TopHeightField
 
 
-class TubeDescriptorV1(BaseDescriberWithTags):
+class TubeDescriptor(BaseDescriberWithTags):
     """:class:``TubeDescription`` with optional parameters."""
 
     type: Literal["Tube"] = "Tube"

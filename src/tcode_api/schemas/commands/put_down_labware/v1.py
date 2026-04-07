@@ -7,7 +7,7 @@ from ...labware_holder.union import LabwareHolder
 from ..base import BaseRobotSpecificTCodeCommand
 
 
-class PUT_DOWN_LABWARE_V1(BaseRobotSpecificTCodeCommand):
+class PUT_DOWN_LABWARE(BaseRobotSpecificTCodeCommand):
     """Put down the currently held labware."""
 
     type: Literal["PUT_DOWN_LABWARE"] = "PUT_DOWN_LABWARE"

@@ -4,7 +4,7 @@ from ...common.docs import LabwareIdField, LidIdField
 from ..base import BaseRobotSpecificTCodeCommand
 
 
-class REPLACE_LABWARE_LID_V1(BaseRobotSpecificTCodeCommand):
+class REPLACE_LABWARE_LID(BaseRobotSpecificTCodeCommand):
     """Replace the lid on the target labware."""
 
     type: Literal["REPLACE_LABWARE_LID"] = "REPLACE_LABWARE_LID"

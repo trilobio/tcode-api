@@ -7,7 +7,7 @@ from ...labware_holder.union import LabwareHolder
 from ..base import BaseRobotSpecificTCodeCommand
 
 
-class REMOVE_LABWARE_LID_V1(BaseRobotSpecificTCodeCommand):
+class REMOVE_LABWARE_LID(BaseRobotSpecificTCodeCommand):
     """Remove the lid from the target labware."""
 
     type: Literal["REMOVE_LABWARE_LID"] = "REMOVE_LABWARE_LID"

@@ -1,3 +1,1 @@
-from .v1 import DISPENSE_V1
-
-DISPENSE = DISPENSE_V1
+from .v1 import DISPENSE

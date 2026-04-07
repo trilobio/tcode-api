@@ -13,7 +13,7 @@ OffsetField = Annotated[
 ]
 
 
-class ConicalBottomDescriptionV1(BaseSchemaVersionedModel):
+class ConicalBottomDescription(BaseSchemaVersionedModel):
     """Description of a conical bottom well.
 
     :note: It is assumed that the conical portion of the well comes to a point at the bottom of the well
@@ -25,7 +25,7 @@ class ConicalBottomDescriptionV1(BaseSchemaVersionedModel):
     offset: OffsetField
 
 
-class ConicalBottomDescriptorV1(BaseSchemaVersionedModel):
+class ConicalBottomDescriptor(BaseSchemaVersionedModel):
     """:class:``ConicalBottomDescription`` with optional parameters."""
 
     type: Literal["Conical"] = "Conical"

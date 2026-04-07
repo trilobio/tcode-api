@@ -5,7 +5,7 @@ from pydantic import Field
 from ..base import BaseLocation
 
 
-class LocationAsNodeIdV1(BaseLocation):
+class LocationAsNodeId(BaseLocation):
     """Location specified by a node ID in the fleet's ``TransformTree``."""
 
     type: Literal["LocationAsNodeId"] = "LocationAsNodeId"

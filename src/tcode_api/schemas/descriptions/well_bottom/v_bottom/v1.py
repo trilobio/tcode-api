@@ -20,7 +20,7 @@ OffsetField = Annotated[
 ]
 
 
-class VBottomDescriptionV1(BaseSchemaVersionedModel):
+class VBottomDescription(BaseSchemaVersionedModel):
     """Description of a V-bottom well (e.g. trough)."""
 
     type: Literal["V-Shape"] = "V-Shape"
@@ -30,7 +30,7 @@ class VBottomDescriptionV1(BaseSchemaVersionedModel):
     offset: OffsetField
 
 
-class VBottomDescriptorV1(BaseSchemaVersionedModel):
+class VBottomDescriptor(BaseSchemaVersionedModel):
     """:class:``VBottomDescription`` with optional parameters."""
 
     type: Literal["V-Shape"] = "V-Shape"

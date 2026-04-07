@@ -13,7 +13,7 @@ DiameterField = Annotated[
 ]
 
 
-class CircleDescriptionV1(BaseSchemaVersionedModel):
+class CircleDescription(BaseSchemaVersionedModel):
     """Description of a circle."""
 
     schema_version: Literal[1] = 1
@@ -22,7 +22,7 @@ class CircleDescriptionV1(BaseSchemaVersionedModel):
     diameter: DiameterField
 
 
-class CircleDescriptorV1(BaseSchemaVersionedModel):
+class CircleDescriptor(BaseSchemaVersionedModel):
     """CircleDescription with optional parameters."""
 
     type: Literal["Circle"] = "Circle"

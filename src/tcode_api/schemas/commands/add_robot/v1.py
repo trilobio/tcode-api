@@ -2,11 +2,11 @@ from typing import Literal
 
 from pydantic import Field
 
-from ...descriptions.robot.v1 import RobotDescriptorV1
+from ...descriptions.robot.v1 import RobotDescriptor
 from ..base import BaseTCodeCommand
 
 
-class ADD_ROBOT_V1(BaseTCodeCommand):
+class ADD_ROBOT(BaseTCodeCommand):
     """Find a matching robot on the fleet and assign it the given id."""
 
     type: Literal["ADD_ROBOT"] = "ADD_ROBOT"
@@ -19,6 +19,6 @@ class ADD_ROBOT_V1(BaseTCodeCommand):
         )
     )
 
-    descriptor: RobotDescriptorV1 = Field(
+    descriptor: RobotDescriptor = Field(
         description="Minimal descriptor of the desired robot; resolved on the fleet."
     )

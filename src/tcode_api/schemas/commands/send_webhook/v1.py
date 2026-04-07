@@ -5,7 +5,7 @@ from pydantic import Field
 from ..base import BaseTCodeCommand
 
 
-class SEND_WEBHOOK_V1(BaseTCodeCommand):
+class SEND_WEBHOOK(BaseTCodeCommand):
     """Send an HTTP webhook request."""
 
     type: Literal["SEND_WEBHOOK"] = "SEND_WEBHOOK"

@@ -8,9 +8,9 @@ A T-code script is a list of commands, typically beginning with a chunk of ``ADD
 .. tip::
   :collapsible: closed
 
-  An important concept to understand before diving into T-code commands it the ``ValueWithUnits`` class, used in many of the following commands to represent physical quantities such as distances, speeds, and volumes.
+  An important concept to understand before diving into T-code commands is the ``ValueWithUnits`` class, used in many of the following commands to represent physical quantities such as distances, speeds, and volumes.
 
-  .. autopydantic_model:: tcode_api.api.core.ValueWithUnits
+  See :doc:`common` for full documentation of ``ValueWithUnits`` and related types.
 
-.. automodule:: tcode_api.api.commands
+.. automodule:: tcode_api.schemas.commands
    :members:

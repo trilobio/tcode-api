@@ -7,7 +7,7 @@ from ...labware_holder.union import LabwareHolder
 from ..base import BaseRobotSpecificTCodeCommand
 
 
-class CREATE_LABWARE_V1(BaseRobotSpecificTCodeCommand):
+class CREATE_LABWARE(BaseRobotSpecificTCodeCommand):
     """Create a new physical labware on the targeted robot's deck."""
 
     type: Literal["CREATE_LABWARE"] = "CREATE_LABWARE"

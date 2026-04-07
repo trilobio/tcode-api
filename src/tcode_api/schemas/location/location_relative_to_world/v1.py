@@ -7,7 +7,7 @@ from tcode_api.types import Matrix
 from ..base import BaseLocation
 
 
-class LocationRelativeToWorldV1(BaseLocation):
+class LocationRelativeToWorld(BaseLocation):
     """Location specified relative to the fleet's root node."""
 
     type: Literal["LocationRelativeToWorld"] = "LocationRelativeToWorld"

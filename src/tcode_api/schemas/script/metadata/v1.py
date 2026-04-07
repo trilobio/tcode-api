@@ -5,7 +5,7 @@ from pydantic import Field
 from ...base import BaseSchemaVersionedModel
 
 
-class MetadataV1(BaseSchemaVersionedModel):
+class Metadata(BaseSchemaVersionedModel):
     """TCode script metadata."""
 
     type: Literal["Metadata"] = "Metadata"

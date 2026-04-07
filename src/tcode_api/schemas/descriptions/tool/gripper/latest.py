@@ -1,3 +1,1 @@
-from .v1 import GripperDescriptorV1
-
-GripperDescriptor = GripperDescriptorV1
+from .v1 import GripperDescriptor

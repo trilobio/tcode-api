@@ -1,3 +1,1 @@
-from .v1 import RobotDescriptorV1
-
-RobotDescriptor = RobotDescriptorV1
+from .v1 import RobotDescriptor

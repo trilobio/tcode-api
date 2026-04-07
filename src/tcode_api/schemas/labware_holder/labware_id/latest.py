@@ -1,3 +1,1 @@
-from .v1 import LabwareIdV1
-
-LabwareId = LabwareIdV1
+from .v1 import LabwareId

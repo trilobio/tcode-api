@@ -1,3 +1,1 @@
-from .v1 import LocationAsNodeIdV1
-
-LocationAsNodeId = LocationAsNodeIdV1
+from .v1 import LocationAsNodeId

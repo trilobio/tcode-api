@@ -5,7 +5,7 @@ from pydantic import Field
 from ..base import BaseLabwareHolder
 
 
-class LabwareIdV1(BaseLabwareHolder):
+class LabwareId(BaseLabwareHolder):
     """LabwareHolder specifed by a TCode-assigned labware ID."""
 
     type: Literal["LabwareId"] = "LabwareId"

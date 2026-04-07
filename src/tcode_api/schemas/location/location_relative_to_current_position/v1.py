@@ -7,7 +7,7 @@ from tcode_api.types import Matrix
 from ..base import BaseLocation
 
 
-class LocationRelativeToCurrentPositionV1(BaseLocation):
+class LocationRelativeToCurrentPosition(BaseLocation):
     """Location specified by a transformation matrix relative to position of the robot's current control node."""
 
     type: Literal["LocationRelativeToCurrentPosition"] = "LocationRelativeToCurrentPosition"

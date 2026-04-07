@@ -3,29 +3,29 @@ from typing import Literal
 
 from pydantic import Field
 
-from ...grid.v1 import GridDescriptionV1, GridDescriptorV1
-from ...tube.v1 import TubeDescriptionV1, TubeDescriptorV1
+from ...grid.v1 import GridDescription, GridDescriptor
+from ...tube.v1 import TubeDescription, TubeDescriptor
 from ..base import BaseLabwareDescription, BaseLabwareDescriptor
 
 grid_description = "Grid defining the layout of tube slots in the tube holder."
 tube_description = "Description of a tube held by the tube holder. All tubes are assumed identical."
 
 
-class TubeHolderDescriptionV2(BaseLabwareDescription):
+class TubeHolderDescription(BaseLabwareDescription):
     """Description of a tube holder."""
 
     type: Literal["TubeHolder"] = "TubeHolder"
     schema_version: Literal[2] = 2
 
-    grid: GridDescriptionV1 = Field(description=grid_description)
-    tube: TubeDescriptionV1 = Field(description=tube_description)
+    grid: GridDescription = Field(description=grid_description)
+    tube: TubeDescription = Field(description=tube_description)
 
 
-class TubeHolderDescriptorV2(BaseLabwareDescriptor):
+class TubeHolderDescriptor(BaseLabwareDescriptor):
     """:class:``TubeHolderDescription`` with optional parameters."""
 
     type: Literal["TubeHolder"] = "TubeHolder"
     schema_version: Literal[2] = 2
 
-    grid: GridDescriptorV1 | None = Field(description=grid_description, default=None)
-    tube: TubeDescriptorV1 | None = Field(description=tube_description, default=None)
+    grid: GridDescriptor | None = Field(description=grid_description, default=None)
+    tube: TubeDescriptor | None = Field(description=tube_description, default=None)

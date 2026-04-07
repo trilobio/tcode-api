@@ -1,3 +1,1 @@
-from .v1 import ASPIRATE_V1
-
-ASPIRATE = ASPIRATE_V1
+from .v1 import ASPIRATE

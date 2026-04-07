@@ -9,5 +9,6 @@ Related T-code Commands:
 - ``PICK_UP_LABWARE``
 - ``PUT_DOWN_LABWARE``
 
-.. automodule:: tcode_api.api.labware
+.. automodule:: tcode_api.schemas.descriptions
    :members:
+   :noindex:

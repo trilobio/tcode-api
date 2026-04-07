@@ -8,8 +8,8 @@ UnsanitizedFloat: TypeAlias = Annotated[
     float | int | str,
     Field(
         description=(
-            "A float value that has not yet been sanitized. ",
-            "Can be a float, int, or string representation of a number.",
+            "A float value that has not yet been sanitized. "
+            "Can be a float, int, or string representation of a number."
         ),
     ),
 ]
@@ -18,8 +18,8 @@ Matrix: TypeAlias = Annotated[
     list[list[float]],
     Field(
         description=(
-            "A 3D 4x4 transformation matrix represented in row-major order. ",
-            "Used to represent the position and orientation in 3D space.",
+            "A 3D 4x4 transformation matrix represented in row-major order. "
+            "Used to represent the position and orientation in 3D space."
         ),
     ),
 ]

@@ -7,7 +7,7 @@ from tcode_api.types import Matrix
 from ..base import BaseLocation
 
 
-class LocationRelativeToRobotV1(BaseLocation):
+class LocationRelativeToRobot(BaseLocation):
     """Location relative to the robot's root node."""
 
     type: Literal["LocationRelativeToRobot"] = "LocationRelativeToRobot"

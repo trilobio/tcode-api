@@ -5,7 +5,7 @@ from pydantic import Field
 from ..base import BaseRobotSpecificTCodeCommand
 
 
-class CALIBRATE_TOOL_V1(BaseRobotSpecificTCodeCommand):
+class CALIBRATE_TOOL(BaseRobotSpecificTCodeCommand):
     """Calibrate the target robot's currently held tool for probing."""
 
     type: Literal["CALIBRATE_TOOL"] = "CALIBRATE_TOOL"

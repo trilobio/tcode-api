@@ -6,7 +6,7 @@ from ...common.value_with_units import ValueWithUnits
 from ..base import BaseRobotSpecificTCodeCommand
 
 
-class MOVE_TO_JOINT_POSE_V1(BaseRobotSpecificTCodeCommand):
+class MOVE_TO_JOINT_POSE(BaseRobotSpecificTCodeCommand):
     """Move the robot to the specified joint positions."""
 
     type: Literal["MOVE_TO_JOINT_POSE"] = "MOVE_TO_JOINT_POSE"

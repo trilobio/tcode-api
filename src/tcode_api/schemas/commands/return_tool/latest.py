@@ -1,3 +1,1 @@
-from .v1 import RETURN_TOOL_V1
-
-RETURN_TOOL = RETURN_TOOL_V1
+from .v1 import RETURN_TOOL

@@ -2,9 +2,9 @@ from typing import Literal
 
 from pydantic import Field
 
-from ....pipette_tip_layout.v1 import PipetteTipLayoutV1
-from ...grid.v1 import GridDescriptionV1, GridDescriptorV1
-from ...pipette_tip.v1 import PipetteTipDescriptionV1, PipetteTipDescriptorV1
+from ....pipette_tip_layout.v1 import PipetteTipLayout
+from ...grid.v1 import GridDescription, GridDescriptor
+from ...pipette_tip.v1 import PipetteTipDescription, PipetteTipDescriptor
 from ..base import BaseLabwareDescription, BaseLabwareDescriptor
 
 grid_description = "Layout of the pipette tip box slots. typically an 8*12 grid for a 96 tip box."
@@ -19,20 +19,20 @@ pipette_tip_layout_description = (
 )
 
 
-class PipetteTipBoxDescriptionV2(BaseLabwareDescription):
+class PipetteTipBoxDescription(BaseLabwareDescription):
     """Description of a pipette tip box."""
 
     type: Literal["PipetteTipBox"] = "PipetteTipBox"
     schema_version: Literal[2] = 2
 
-    grid: GridDescriptionV1 = Field(
+    grid: GridDescription = Field(
         description=grid_description,
     )
-    pipette_tip: PipetteTipDescriptionV1 = Field(
+    pipette_tip: PipetteTipDescription = Field(
         description=pipette_tip_description,
     )
-    pipette_tip_layout: PipetteTipLayoutV1 = Field(
-        default_factory=PipetteTipLayoutV1.full,
+    pipette_tip_layout: PipetteTipLayout = Field(
+        default_factory=PipetteTipLayout.full,
         description=pipette_tip_layout_description,
     )
 
@@ -55,27 +55,27 @@ def migrate_v1_to_v2(data: dict) -> dict:
     if data["full"] is None:
         new_data["pipette_tip_layout"] = None
     elif data["full"] is True:
-        new_data["pipette_tip_layout"] = PipetteTipLayoutV1.full()
+        new_data["pipette_tip_layout"] = PipetteTipLayout.full()
     else:
-        new_data["pipette_tip_layout"] = PipetteTipLayoutV1.empty()
+        new_data["pipette_tip_layout"] = PipetteTipLayout.empty()
     return new_data
 
 
-class PipetteTipBoxDescriptorV2(BaseLabwareDescriptor):
+class PipetteTipBoxDescriptor(BaseLabwareDescriptor):
     """PipetteTipBoxDescription with optional parameters."""
 
     type: Literal["PipetteTipBox"] = "PipetteTipBox"
     schema_version: Literal[2] = 2
 
-    grid: GridDescriptorV1 | None = Field(
+    grid: GridDescriptor | None = Field(
         default=None,
         description=grid_description,
     )
-    pipette_tip: PipetteTipDescriptorV1 | None = Field(
+    pipette_tip: PipetteTipDescriptor | None = Field(
         default=None,
         description=pipette_tip_description,
     )
-    pipette_tip_layout: PipetteTipLayoutV1 | None = Field(
+    pipette_tip_layout: PipetteTipLayout | None = Field(
         default=None,
         description=pipette_tip_layout_description,
     )

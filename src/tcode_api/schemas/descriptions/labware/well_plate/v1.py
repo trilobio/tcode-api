@@ -3,10 +3,10 @@ from typing import Annotated, Literal
 from pydantic import Field
 
 from ....common.value_with_units import ValueWithUnits
-from ...grid.v1 import GridDescriptionV1, GridDescriptorV1
-from ...well.v1 import WellDescriptionV1, WellDescriptorV1
+from ...grid.v1 import GridDescription, GridDescriptor
+from ...well.v1 import WellDescription, WellDescriptor
 from ..base import BaseLabwareDescription, BaseLabwareDescriptor
-from ..lid.v1 import LidDescriptionV1, LidDescriptorV1
+from ..lid.v1 import LidDescription, LidDescriptor
 
 LidOffsetField = Annotated[
     ValueWithUnits,
@@ -24,7 +24,7 @@ well_description = (
 lid_description = "Description of the lid, or None if the plate is un-liddable."
 
 
-class WellPlateDescriptionV1(BaseLabwareDescription):
+class WellPlateDescription(BaseLabwareDescription):
     """Description of a well plate.
 
     :note: The exception to the 'no optional attributes' rule for ``***Description`` classes
@@ -35,37 +35,37 @@ class WellPlateDescriptionV1(BaseLabwareDescription):
     type: Literal["WellPlate"] = "WellPlate"
     schema_version: Literal[1] = 1
 
-    grid: GridDescriptionV1 = Field(
+    grid: GridDescription = Field(
         description=grid_description,
     )
-    well: WellDescriptionV1 = Field(
+    well: WellDescription = Field(
         description=well_description,
     )
 
     # Lid parameters
     lid_offset: LidOffsetField | None = None
-    lid: LidDescriptionV1 | None = Field(
+    lid: LidDescription | None = Field(
         default=None,
         description=lid_description,
     )
 
 
-class WellPlateDescriptorV1(BaseLabwareDescriptor):
+class WellPlateDescriptor(BaseLabwareDescriptor):
     """:class:``WellPlateDescription`` with optional parameters."""
 
     type: Literal["WellPlate"] = "WellPlate"
     schema_version: Literal[1] = 1
 
-    grid: GridDescriptorV1 | None = Field(
+    grid: GridDescriptor | None = Field(
         default=None,
         description=grid_description,
     )
-    well: WellDescriptorV1 | None = Field(
+    well: WellDescriptor | None = Field(
         default=None,
         description=well_description,
     )
     lid_offset: LidOffsetField | None = None
-    lid: LidDescriptorV1 | None = Field(
+    lid: LidDescriptor | None = Field(
         default=None,
         description=lid_description,
     )
