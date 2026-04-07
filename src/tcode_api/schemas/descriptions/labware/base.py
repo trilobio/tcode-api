@@ -9,27 +9,21 @@ from ..base import BaseDescriberWithTags
 XLengthField = Annotated[
     ValueWithUnits,
     Field(
-        description=(
-            "The labware's extent along the x-axis of it's coordinate system. Expects length units.",
-        ),
+        description="The labware's extent along the x-axis of it's coordinate system. Expects length units.",
     ),
 ]
 
 YLengthField = Annotated[
     ValueWithUnits,
     Field(
-        description=(
-            "The labware's extent along the y-axis of it's coordinate system. Expects length units.",
-        ),
+        description="The labware's extent along the y-axis of it's coordinate system. Expects length units.",
     ),
 ]
 
 ZLengthField = Annotated[
     ValueWithUnits,
     Field(
-        description=(
-            "The labware's extent along the z-axis of it's coordinate system. Expects length units.",
-        ),
+        description="The labware's extent along the z-axis of it's coordinate system. Expects length units.",
     ),
 ]
 
