@@ -24,9 +24,9 @@ FlangeHeightField = Annotated[
     ValueWithUnits,
     Field(
         description=(
-            "The distance from the top of the pipette tip to the flange ",
-            "which rests against the tip rack when the tip is racked; ",
-            "expects length units",
+            "The distance from the top of the pipette tip to the flange "
+            "which rests against the tip rack when the tip is racked. "
+            "Expects length units."
         ),
     ),
 ]

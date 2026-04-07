@@ -19,8 +19,8 @@ NamedTags = Annotated[
     Field(
         default_factory=dict,
         description=(
-            "Map of names and values of named tags attached to the entity. ",
-            "Values can be strings, numbers, or booleans.",
+            "Map of names and values of named tags attached to the entity. "
+            "Values can be strings, numbers, or booleans."
         ),
     ),
 ]
@@ -29,8 +29,8 @@ MinVolumeField = Annotated[
     ValueWithUnits,
     Field(
         description=(
-            "The minimum working fluid volume, as recommended by the manufacturer.",
-            "expects volume units",
+            "The minimum working fluid volume, as recommended by the manufacturer. "
+            "Expects volume units."
         ),
     ),
 ]
@@ -39,8 +39,8 @@ MaxVolumeField = Annotated[
     ValueWithUnits,
     Field(
         description=(
-            "The maximum working fluid volume, as recommended by the manufacturer.",
-            "expects volume units",
+            "The maximum working fluid volume, as recommended by the manufacturer. "
+            "Expects volume units."
         ),
     ),
 ]
@@ -49,9 +49,8 @@ TypeField = Annotated[
     str,
     Field(
         description=(
-            "Discriminator field; ",
-            "overridden in subclass with class name as string sans versioning information.",
-            'ex. ``class MyLabwareHolderV1(BaseLabwareHolder): type: Literal["MyLabwareHolder"]`` = "MyLabwareHolder"',
+            "Discriminator field; overridden in subclass with class name as string sans versioning information. "
+            'ex. ``class MyLabwareHolderV1(BaseLabwareHolder): type: Literal["MyLabwareHolder"]`` = "MyLabwareHolder"'
         ),
     ),
 ]
@@ -60,8 +59,8 @@ LabwareIdField = Annotated[
     str,
     Field(
         description=(
-            "Identifier for a target piece of ANSI-SLAS-compatible labware, ",
-            "assigned by previous :class:``ADD_LABWARE`` command.",
+            "Identifier for a target piece of ANSI-SLAS-compatible labware, "
+            "assigned by previous :class:``ADD_LABWARE`` command."
         ),
     ),
 ]
@@ -70,8 +69,8 @@ LidIdField = Annotated[
     str,
     Field(
         description=(
-            "Identifier for the targeted lid of a piece of ANSI-SLAS-compatible labware, ",
-            "assigned by previous :class:``ADD_LABWARE`` command via the ``lid_id`` argument.",
+            "Identifier for the targeted lid of a piece of ANSI-SLAS-compatible labware, "
+            "assigned by previous :class:``ADD_LABWARE`` command via the ``lid_id`` argument."
         ),
     ),
 ]
