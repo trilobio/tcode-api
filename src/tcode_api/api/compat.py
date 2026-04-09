@@ -447,6 +447,7 @@ def load_api_object(
             msg="Unable to find expected key 'type' in command schema",
             data=data,
         ) from err
+
     try:
         schema_version = data["schema_version"]
     except KeyError:
@@ -500,7 +501,13 @@ def load_api_object(
         data = migrator(data)
 
     try:
-        return context.schema_registry.build_instance(data=data, key=new_name)
+        new_data = {}
+        for key, value in data.items():
+            if key == "type":
+                new_data[key] = new_name
+            else:
+                new_data[key] = value
+        return context.schema_registry.build_instance(data=new_data, key=new_name)
     except ValidationError as err:
         raise InvalidDataError(
             msg=f"Data failed validation against schema '{new_name}' version '{schema_version}'.",
