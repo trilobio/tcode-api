@@ -23,8 +23,7 @@ RowPitchField = Annotated[
     ValueWithUnits,
     Field(
         description=(
-            "The distance between the centers of adjacent rows in the grid. "
-            "Expects length units."
+            "The distance between the centers of adjacent rows in the grid. Expects length units."
         ),
     ),
 ]

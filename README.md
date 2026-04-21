@@ -54,3 +54,19 @@ http://tcode.trilo.bio/
 
 If you are looking for documentation for a specific version of `tcode-api`, you can build it
 locally on your machine by following the instructions in the `docs/README.md` file in this repository.
+
+# Linting
+
+To lint and check the code, use the following commands:
+```
+uv run ruff format
+uv run ruff check --fix
+uv run mypy ./
+```
+
+## Set up Pre-commit Hook
+
+To automatically run the linter and checker on the code, run the following command from the repository root directory:
+```
+ln -sf ../../scripts/hooks/pre-commit .git/hooks/pre-commit
+```

@@ -63,7 +63,7 @@ class TCodeServicerClient:
         Returns a connected socketio.Client-like instance, or None if socketio is unavailable.
         """
         try:
-            import socketio  # type: ignore[import-untyped]
+            import socketio  # type: ignore[import-untyped]  # noqa: PLC0415
         except Exception as e:  # pragma: no cover
             raise RuntimeError(
                 "Socket.IO client support requires python-socketio to be installed. "
@@ -276,9 +276,9 @@ class TCodeServicerClient:
             response = ExitTeachModeResponse.model_validate(rsp.json())
             transform = response.transform
 
-        assert (
-            transform is not None
-        ), "teach_point() managed to fail calling teach_node endpoint(s) without raising an error?"
+        assert transform is not None, (
+            "teach_point() managed to fail calling teach_node endpoint(s) without raising an error?"
+        )
         return transform
 
     def discover_fleet(self) -> None:

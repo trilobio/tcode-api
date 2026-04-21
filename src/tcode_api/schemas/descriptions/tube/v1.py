@@ -26,9 +26,7 @@ shape_field_docstring = (
 TopHeightField = Annotated[
     ValueWithUnits,
     Field(
-        description=(
-            "The height of the tube cap above the top of the tube. " "Expects length units."
-        ),
+        description=("The height of the tube cap above the top of the tube. Expects length units."),
     ),
 ]
 

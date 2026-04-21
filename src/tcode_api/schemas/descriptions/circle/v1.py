@@ -8,7 +8,7 @@ from ...common.value_with_units import ValueWithUnits
 DiameterField = Annotated[
     ValueWithUnits,
     Field(
-        description=("Maximum distance across the circle. " "expects length units"),
+        description=("Maximum distance across the circle. expects length units"),
     ),
 ]
 

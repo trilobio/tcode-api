@@ -13,7 +13,7 @@ class CALIBRATE_TOOL_FOR_PROBING(BaseRobotSpecificTCodeCommand):
 
     z_only: bool = Field(
         description=(
-            "When true, calibrate only for z-axis probing. " "When false, calibrate x, y, and z."
+            "When true, calibrate only for z-axis probing. When false, calibrate x, y, and z."
         )
     )
 
