@@ -17,7 +17,6 @@ from tcode_api.servicer.servicer_api import (
 )
 
 __all__ = [
-    "TCodeServicerClient",
     "ClearScheduleResponse",
     "EnterTeachModeRequest",
     "EnterTeachModeResponse",
@@ -30,4 +29,5 @@ __all__ = [
     "ScheduleCommandsRequest",
     "TCodeCommandSchedulingReport",
     "TCodeSchedulingReport",
+    "TCodeServicerClient",
 ]

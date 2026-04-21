@@ -11,8 +11,7 @@ from ..base import BaseLabwareDescription, BaseLabwareDescriptor
 grid_description = "Layout of the pipette tip box slots. typically an 8*12 grid for a 96 tip box."
 
 pipette_tip_description = (
-    "Description of the pipette tips used in the box. "
-    "All pipette tips are assumed to be identical."
+    "Description of the pipette tips used in the box. All pipette tips are assumed to be identical."
 )
 pipette_tip_layout_description = (
     "Specifies which slots contain pipette tips."

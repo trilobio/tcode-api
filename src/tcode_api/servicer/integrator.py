@@ -73,7 +73,6 @@ class TCodeIntegratorBase:
             request: Request,
             background_tasks: BackgroundTasks,
         ):
-
             if request.client is not None:
                 self.incoming_request_host = request.client.host
 

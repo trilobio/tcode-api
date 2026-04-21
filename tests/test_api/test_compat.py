@@ -58,9 +58,9 @@ class TestResolveAPIProfile(unittest.TestCase):
             if key in dict2 and dict1[key] != dict2[key]
         }
         if len(missing_keys) > 0 or len(extra_keys) > 0 or len(bad_values) > 0:
-            error_message = (
-                "Dicts are not equal:\n" "  Dict1: {dict1}\n" "  Dict2: {dict2}\n"
-            ).format(dict1=dict1, dict2=dict2)
+            error_message = ("Dicts are not equal:\n  Dict1: {dict1}\n  Dict2: {dict2}\n").format(
+                dict1=dict1, dict2=dict2
+            )
             if len(missing_keys) > 0:
                 error_message += f"  dict2 missing keys: {missing_keys}\n"
             if len(extra_keys) > 0:
@@ -707,7 +707,7 @@ class TestTCodeAPI(unittest.TestCase):
 
     def test_tcode_api_entities_match_compat_context(self) -> None:
         """Test that all entities in the tcode_api.api package are represented in the API history log."""
-        from tcode_api.api.compat import tcode_api_compat_context
+        from tcode_api.api.compat import tcode_api_compat_context  # noqa: PLC0415
 
         api_versioned_entity_names = [name for name, cls in self._get_tcode_api_versioned_models()]
 

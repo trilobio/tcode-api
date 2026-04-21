@@ -13,7 +13,7 @@ class LabwareHolderName(BaseLabwareHolder):
 
     robot_id: str = Field(
         description=(
-            "TCode-assigned robot id. " "Assigned previously with :class:``ADD_ROBOT`` command. "
+            "TCode-assigned robot id. Assigned previously with :class:``ADD_ROBOT`` command. "
         ),
     )
     name: str = Field(

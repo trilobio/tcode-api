@@ -385,7 +385,6 @@ def resolve_api_profile(
         key=Version,
     )
     for version_str in versions_of_note:
-
         # Check if we've got a modern enough version to return
         if Version(version_str) > requested:
             break

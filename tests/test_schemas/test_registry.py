@@ -17,7 +17,6 @@ class AV1(BaseSchemaVersionedModel):
 
 
 class BV1(BaseSchemaVersionedModel):
-
     type: Literal["B"] = "B"
     schema_version: Literal[1] = 1
 
@@ -45,7 +44,6 @@ def migrate_b_v1_to_v2(data: RawData) -> RawData:
 
 
 class TestSchemaRegistry(unittest.TestCase):
-
     def test_unregistered_key_raises_error(self) -> None:
         """Requesting an unregistered key should raise a BuilderNotFoundError."""
         registry = SchemaRegistry()
@@ -117,7 +115,6 @@ class TestSchemaRegistry(unittest.TestCase):
 
 
 class TestMigrationRegistry(unittest.TestCase):
-
     def test_unregistered_key_raises_error(self) -> None:
         """Requesting an unregistered migrator should raise a BuilderNotFoundError."""
         registry = MigrationRegistry()
