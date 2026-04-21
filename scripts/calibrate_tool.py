@@ -245,8 +245,8 @@ def main(
             tc.ADD_PIPETTE_TIP_GROUP(
                 id=pipette_tip_group_id,
                 descriptor=tc.PipetteTipGroupDescriptor(
-                    row_count=channel_count,
-                    column_count=1,
+                    row_count=1,
+                    column_count=channel_count,
                 ),
             )
         )
