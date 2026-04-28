@@ -6,7 +6,7 @@ from ...descriptions.pipette_tip_group.v1 import PipetteTipGroupDescriptor
 from ..base import BaseRobotSpecificTCodeCommand
 
 
-class ADD_PIPETTE_TIP_GROUP_V1(BaseRobotSpecificTCodeCommand):
+class ADD_PIPETTE_TIP_GROUP(BaseRobotSpecificTCodeCommand):
     """Find a matching group of pipette tips on the fleet and assign it the given id.
 
     :raises ValidatorError: ``ValidatorErrorCode.ID_EXISTS`` if ``id`` is already registered to

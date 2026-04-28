@@ -3,7 +3,7 @@ from typing import Literal
 from ..base import BaseRobotSpecificTCodeCommand
 
 
-class PAUSE_V1(BaseRobotSpecificTCodeCommand):
+class PAUSE(BaseRobotSpecificTCodeCommand):
     """Pause execution of the target robot until manually resumed.
 
     While ``WAIT`` delays a target robot for a set duration, ``PAUSE`` halts the target robot
