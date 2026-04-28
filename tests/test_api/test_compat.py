@@ -16,6 +16,7 @@ from tcode_api.api.compat import (
     SchemaVersionMismatchError,
     TargetSchemaNotFoundError,
     load_api_object,
+    migrate_data_to_latest,
     resolve_api_profile,
     tcode_api_compat_context,
 )
@@ -717,6 +718,37 @@ class TestTCodeAPI(unittest.TestCase):
             self.fail(
                 f"The following entities are `schema_version`ed entities exposed in tcode_api.api but not represented in the API history log for the most recent version: {missing_from_profile}"
             )
+
+
+class TestMigrateDataToLatest(unittest.TestCase):
+    """Tests for the ``migrate_data_to_latest`` function."""
+
+    def test_regression_packaging_version_type_error(self) -> None:
+        """Regressoion test for migrate_data_to_latest raising a TypeError."""
+        data = {"type": "Teacup", "schema_version": 1}
+        context = CompatContext(
+            migration_registry=MigrationRegistry(
+                _migrators_to_preload={"Teacup": {2: migrate_teacup_v1_to_teacup_v2}},
+            ),
+            schema_registry=SchemaRegistry(
+                _builders_to_preload={
+                    "Teacup": TeacupV2,
+                },
+            ),
+            api_history_log=APIHistoryLog(
+                name="test_regression_packaging_version_type_error",
+                increments={
+                    "v0.1.0": {"Teacup": 1},
+                    "v0.2.0": {"Teacup": 2},
+                },
+            ),
+        )
+        migrated_data = migrate_data_to_latest(
+            data=data,
+            schema_name="Teacup",
+            context=context,
+        )
+        self.assertEqual(migrated_data["schema_version"], 2)
 
 
 if __name__ == "__main__":
