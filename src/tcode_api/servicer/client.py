@@ -35,9 +35,10 @@ class TCodeServicerClient:
     for interacting with the fleet programmatically.
     """
 
-    def __init__(self, servicer_url: str | None = None) -> None:
+    def __init__(self, servicer_url: str | None = None, tcode_api_version: str | None = None) -> None:
         self.servicer_url = servicer_url or _default_servicer_url
-        self.tcode_api_version = importlib.metadata.version("tcode_api")
+        if tcode_api_version is None:
+            self.tcode_api_version = importlib.metadata.version("tcode_api")
         self.timeout = (
             5  # Reference: https://docs.python-requests.org/en/latest/user/advanced/#timeouts
         )

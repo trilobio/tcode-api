@@ -9,7 +9,9 @@ def migrate_v1_to_v2(data: RawData) -> RawData:
         **data,
     }
     retval["schema_version"] = 2
-    retval["speed"] = None  # Add the new field with a default value
+    if "speed" not in retval:
+        retval["speed"] = None  # Add the new field with a default value
+
     return retval
 
 
