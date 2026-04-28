@@ -8,7 +8,7 @@ from ...location.union import Location
 from ..base import BaseRobotSpecificTCodeCommand
 
 
-class MOVE_TO_LOCATION_V2(BaseRobotSpecificTCodeCommand):
+class MOVE_TO_LOCATION(BaseRobotSpecificTCodeCommand):
     """Move the robot's control point to a specified location."""
 
     type: Literal["MOVE_TO_LOCATION"] = "MOVE_TO_LOCATION"
