@@ -1,1 +1,1 @@
-from .v1 import MOVE_TO_LOCATION
+from .v2 import MOVE_TO_LOCATION

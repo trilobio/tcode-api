@@ -35,9 +35,19 @@ class TCodeServicerClient:
     for interacting with the fleet programmatically.
     """
 
-    def __init__(self, servicer_url: str | None = None) -> None:
+    def __init__(
+        self, servicer_url: str | None = None, tcode_api_version: str | None = None
+    ) -> None:
+        """Initialize the client.
+
+        :param servicer_url: The URL of the TCode servicer to connect to. If not provided, assumes the servicer is running locally on port 8002.
+        :param tcode_api_version: tcode-api version to use in requests.
+            In production systems, this value is auto-populated correctly.
+            When developing on tcode-api itself, specify this explicitly to ensure the client is using your developmental version.
+        """
+
         self.servicer_url = servicer_url or _default_servicer_url
-        self.tcode_api_version = importlib.metadata.version("tcode_api")
+        self.tcode_api_version = tcode_api_version or importlib.metadata.version("tcode_api")
         self.timeout = (
             5  # Reference: https://docs.python-requests.org/en/latest/user/advanced/#timeouts
         )

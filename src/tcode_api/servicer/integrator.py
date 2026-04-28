@@ -55,7 +55,7 @@ class TCodeIntegratorBase:
         """
         self.tcode_server_host = tcode_server_host
         # this will be set dynamically as requests come in
-        self.incoming_request_host = None
+        self.incoming_request_host: str | None = None
         self.app = FastAPI()
 
         @self.app.exception_handler(RequestValidationError)

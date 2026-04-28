@@ -305,6 +305,9 @@ tcode_api_compat_context = CompatContext(
                 "CALIBRATE_LABWARE_HEIGHT": 1,
                 "CALIBRATE_TOOL": 1,
             },
+            "v1.38.0": {
+                "MOVE_TO_LOCATION": 2,
+            },
         },
         migrations={
             "v1.37.0": {
@@ -354,7 +357,7 @@ def migrate_data_to_latest(
         ) from err
 
     migrators = context.migration_registry.get_migrators_for_schema(schema_name)
-    for version in sorted(migrators.keys(), key=Version):  # type: ignore [arg-type]
+    for version in sorted(migrators):
         if version > schema_version:
             data = migrators[version](data)
 

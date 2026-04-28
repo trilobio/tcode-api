@@ -15,7 +15,7 @@ RawCommandData: TypeAlias = Annotated[
         description="Raw tcode-api schema; will be migrated (if necessary) on load. See ``tcode_api.TCode`` for full structure example.",
         example=tc.MOVE_TO_LOCATION(
             type="MOVE_TO_LOCATION",
-            schema_version=1,
+            schema_version=2,
             robot_id=generate_id(),
             location=tc.LocationAsLabwareIndex(
                 type="LocationAsLabwareIndex",
@@ -29,6 +29,7 @@ RawCommandData: TypeAlias = Annotated[
             flange_offset=identity_transform(),
             path_type=None,
             trajectory_type=None,
+            speed=None,
         ).model_dump(),
     ),
 ]
