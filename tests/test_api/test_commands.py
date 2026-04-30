@@ -88,48 +88,69 @@ class TestTCodeEndpoints(unittest.TestCase):
                 )
 
 
-class TestSyncFields(unittest.TestCase):
-    """Tests for depends_on and sync_group on _TCodeBase."""
+class TestScheduleCommandRequestSyncFields(unittest.TestCase):
+    """Tests for envelope-level depends_on/sync_group on ScheduleCommandRequest.
 
-    def test_defaults_omitted_from_json(self) -> None:
-        """Default sync fields should not bloat serialized output."""
-        cmd = tc.COMMENT(type="COMMENT", text="hello")
-        data = cmd.model_dump(exclude_defaults=True)
-        self.assertNotIn("depends_on", data)
-        self.assertNotIn("sync_group", data)
+    These coordination fields live on the schedule envelope, not on the TCode command itself,
+    because they reference envelope-level CommandIDs and are only meaningful to the scheduler.
+    """
+
+    def _make_command(self) -> dict:
+        return tc.COMMENT(type="COMMENT", text="hello").model_dump()
+
+    def test_defaults_are_empty_lists(self) -> None:
+        """A request without sync fields has empty defaults."""
+        from tcode_api.servicer.servicer_api import ScheduleCommandRequest  # noqa: PLC0415
+
+        req = ScheduleCommandRequest(command_id="cmd-1", command=self._make_command())
+        self.assertEqual(req.depends_on, [])
+        self.assertEqual(req.sync_group, [])
 
     def test_sync_fields_round_trip(self) -> None:
-        """Populated sync fields survive serialize → deserialize."""
-        cmd = tc.COMMENT(
-            type="COMMENT",
-            text="hello",
+        """Populated sync fields survive serialize -> deserialize."""
+        from tcode_api.servicer.servicer_api import ScheduleCommandRequest  # noqa: PLC0415
+
+        req = ScheduleCommandRequest(
+            command_id="cmd-1",
+            command=self._make_command(),
             depends_on=["cmd-0"],
             sync_group=["cmd-2", "cmd-3"],
         )
-        data = cmd.model_dump()
-        restored = tc.COMMENT.model_validate(data)
+        restored = ScheduleCommandRequest.model_validate(req.model_dump())
         self.assertEqual(restored.depends_on, ["cmd-0"])
         self.assertEqual(restored.sync_group, ["cmd-2", "cmd-3"])
 
-    def test_sync_fields_on_robot_specific_command(self) -> None:
-        """Robot-specific commands inherit sync fields from _TCodeBase."""
-        cmd = tc.RETURN_TOOL(
-            type="RETURN_TOOL",
-            robot_id="r1",
-            depends_on=["prev"],
-        )
-        self.assertEqual(cmd.depends_on, ["prev"])
-        self.assertEqual(cmd.sync_group, [])
-
     def test_sync_fields_json_round_trip(self) -> None:
         """Sync fields survive JSON serialization."""
-        cmd = tc.RETURN_TOOL(
-            type="RETURN_TOOL",
-            robot_id="r1",
+        from tcode_api.servicer.servicer_api import ScheduleCommandRequest  # noqa: PLC0415
+
+        req = ScheduleCommandRequest(
+            command_id="cmd-1",
+            command=self._make_command(),
             depends_on=["a", "b"],
             sync_group=["c"],
         )
-        json_str = cmd.model_dump_json()
-        restored = tc.RETURN_TOOL.model_validate_json(json_str)
+        restored = ScheduleCommandRequest.model_validate_json(req.model_dump_json())
         self.assertEqual(restored.depends_on, ["a", "b"])
         self.assertEqual(restored.sync_group, ["c"])
+
+    def test_bulk_request_carries_per_entry_sync_fields(self) -> None:
+        """ScheduleCommandsRequest.commands is a list of ScheduleCommandRequest envelopes."""
+        from tcode_api.servicer.servicer_api import (  # noqa: PLC0415
+            ScheduleCommandRequest,
+            ScheduleCommandsRequest,
+        )
+
+        bulk = ScheduleCommandsRequest(
+            commands=[
+                ScheduleCommandRequest(command_id="a", command=self._make_command()),
+                ScheduleCommandRequest(
+                    command_id="b",
+                    command=self._make_command(),
+                    depends_on=["a"],
+                ),
+            ]
+        )
+        restored = ScheduleCommandsRequest.model_validate_json(bulk.model_dump_json())
+        self.assertEqual(restored.commands[0].depends_on, [])
+        self.assertEqual(restored.commands[1].depends_on, ["a"])

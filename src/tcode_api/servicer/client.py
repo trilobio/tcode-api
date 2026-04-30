@@ -210,7 +210,10 @@ class TCodeServicerClient:
         :returns: A list of reports on the attempted scheduling, in the same order as the commands were given. See :py:class:`ScheduleCommandResponse` for details.
         """
         tcode_api_version = tcode_api_version or self.tcode_api_version
-        data = [(id, command.model_dump()) for id, command in commands]
+        data = [
+            ScheduleCommandRequest(command_id=id, command=command.model_dump()).model_dump()
+            for id, command in commands
+        ]
         rsp = requests.put(
             f"{self.servicer_url}/{tcode_api_version}/schedule_commands",
             json=data,

@@ -25,6 +25,7 @@ __all__ = [
     "ExitTeachModeResponse",
     "GetStatusResponse",
     "Result",
+    "RobotStatusDetail",
     "ScheduleCommandRequest",
     "ScheduleCommandResponse",
     "ScheduleCommandsRequest",
