@@ -249,7 +249,9 @@ def main(
         tip_group_id = generate_id()
         tip_group_ids.append(tip_group_id)
         script.commands.append(
-            tc.ADD_PIPETTE_TIP_GROUP(id=tip_group_id, descriptor=tip_group_descriptor)
+            tc.ADD_PIPETTE_TIP_GROUP(
+                robot_id=robot_id, id=tip_group_id, descriptor=tip_group_descriptor
+            )
         )
 
     # ACTIONS

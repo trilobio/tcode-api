@@ -73,6 +73,7 @@ def main(
         tip_group_ids.append(tip_group_id)
         script.commands.append(
             tc.ADD_PIPETTE_TIP_GROUP(
+                robot_id=robot_id,
                 id=tip_group_id,
                 descriptor=describe_pipette_tip_group(
                     row_count=1,
