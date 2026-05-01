@@ -751,6 +751,47 @@ class TestMigrateDataToLatest(unittest.TestCase):
         self.assertEqual(migrated_data["schema_version"], 2)
 
 
+class TestPauseV1ToV2Migration(unittest.TestCase):
+    """Regression tests for the PAUSE v1->v2 migration (added in tcode-api v1.39.0)."""
+
+    def test_migrate_pause_v1_with_robot_id(self) -> None:
+        """A v1 PAUSE payload that already carries a ``robot_id`` migrates to v2."""
+        data = {"type": "PAUSE", "schema_version": 1, "robot_id": "robot-a"}
+        migrated = migrate_data_to_latest(data=data, schema_name="PAUSE")
+        self.assertEqual(migrated["schema_version"], 2)
+        self.assertEqual(migrated["robot_id"], "robot-a")
+
+    def test_migrate_pause_v1_without_robot_id_raises(self) -> None:
+        """A v1 PAUSE payload missing ``robot_id`` cannot be auto-migrated."""
+        data = {"type": "PAUSE", "schema_version": 1}
+        with self.assertRaises(ValueError):
+            migrate_data_to_latest(data=data, schema_name="PAUSE")
+
+
+class TestAddPipetteTipGroupV1ToV2Migration(unittest.TestCase):
+    """Regression tests for the ADD_PIPETTE_TIP_GROUP v1->v2 migration (added in tcode-api v1.39.0)."""
+
+    def _v1_payload(self) -> dict:
+        return {
+            "type": "ADD_PIPETTE_TIP_GROUP",
+            "schema_version": 1,
+            "id": "tips-a",
+            "descriptor": {},
+        }
+
+    def test_migrate_add_pipette_tip_group_v1_with_robot_id(self) -> None:
+        """A v1 ADD_PIPETTE_TIP_GROUP payload that already carries a ``robot_id`` migrates to v2."""
+        data = {**self._v1_payload(), "robot_id": "robot-a"}
+        migrated = migrate_data_to_latest(data=data, schema_name="ADD_PIPETTE_TIP_GROUP")
+        self.assertEqual(migrated["schema_version"], 2)
+        self.assertEqual(migrated["robot_id"], "robot-a")
+
+    def test_migrate_add_pipette_tip_group_v1_without_robot_id_raises(self) -> None:
+        """A v1 ADD_PIPETTE_TIP_GROUP payload missing ``robot_id`` cannot be auto-migrated."""
+        with self.assertRaises(ValueError):
+            migrate_data_to_latest(data=self._v1_payload(), schema_name="ADD_PIPETTE_TIP_GROUP")
+
+
 if __name__ == "__main__":
     logging.basicConfig(level=logging.WARNING)
     unittest.main()

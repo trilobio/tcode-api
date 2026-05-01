@@ -69,6 +69,16 @@ class ClearScheduleResponse(BaseModel):
     cleared_commands: list[tc.TCode]
 
 
+class RobotStatusDetail(BaseModel):
+    """Per-robot status information."""
+
+    robot_id: str
+    command_id: CommandID | None
+    queue_depth: int
+    run_state: bool
+    result: Result
+
+
 class GetStatusResponse(BaseModel):
     """Response object for get_status endpoint."""
 
@@ -76,13 +86,23 @@ class GetStatusResponse(BaseModel):
     operation_count: int
     run_state: bool
     result: Result
+    robots: list[RobotStatusDetail] = Field(default_factory=list)
 
 
 class ScheduleCommandRequest(BaseModel):
-    """Request object for the schedule_command endpoint."""
+    """Request object for the schedule_command endpoint.
+
+    :param command_id: Unique identifier for this scheduled command (envelope-level).
+    :param command: The raw TCode command payload.
+    :param depends_on: Command IDs that must complete before this command executes.
+    :param sync_group: Command IDs of peer commands that must be at the head of their
+        respective robot queues (with satisfied dependencies) before this command proceeds.
+    """
 
     command_id: CommandID
     command: RawCommandData
+    depends_on: list[CommandID] = Field(default_factory=list)
+    sync_group: list[CommandID] = Field(default_factory=list)
 
 
 class ScheduleCommandResponse(BaseModel):
@@ -97,7 +117,7 @@ class ScheduleCommandResponse(BaseModel):
 class ScheduleCommandsRequest(BaseModel):
     """Request object for the schedule_commands endpoint."""
 
-    commands: list[tuple[CommandID, RawCommandData]]
+    commands: list[ScheduleCommandRequest]
 
 
 class EnterTeachModeRequest(BaseModel):

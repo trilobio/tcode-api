@@ -1,1 +1,1 @@
-from .v1 import PAUSE
+from .v2 import PAUSE

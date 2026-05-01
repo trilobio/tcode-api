@@ -193,7 +193,7 @@ def main(
         script_name = (
             f"Pick up tips {deck_slot_name} (Cols{','.join(str(c) for c in column_values)}) (C8)"
         )
-        tip_group_rows, tip_group_cols = 8, 1
+        tip_group_rows, tip_group_cols = 1, 8
         tip_group_count = 12
 
     else:
@@ -249,7 +249,9 @@ def main(
         tip_group_id = generate_id()
         tip_group_ids.append(tip_group_id)
         script.commands.append(
-            tc.ADD_PIPETTE_TIP_GROUP(id=tip_group_id, descriptor=tip_group_descriptor)
+            tc.ADD_PIPETTE_TIP_GROUP(
+                robot_id=robot_id, id=tip_group_id, descriptor=tip_group_descriptor
+            )
         )
 
     # ACTIONS

@@ -308,6 +308,10 @@ tcode_api_compat_context = CompatContext(
             "v1.38.0": {
                 "MOVE_TO_LOCATION": 2,
             },
+            "v1.39.0": {
+                "PAUSE": 2,
+                "ADD_PIPETTE_TIP_GROUP": 2,
+            },
         },
         migrations={
             "v1.37.0": {

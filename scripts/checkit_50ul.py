@@ -146,6 +146,7 @@ def main(
     script.commands.append(tc.ADD_LABWARE(id=trash_can_id, descriptor=tc.TrashDescriptor()))
     script.commands.append(
         tc.ADD_PIPETTE_TIP_GROUP(
+            robot_id=robot_id,
             id=pipette_tip_group_id_1,
             descriptor=tc.PipetteTipGroupDescriptor(
                 row_count=channel_count,
