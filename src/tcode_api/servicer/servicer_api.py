@@ -13,24 +13,30 @@ RawCommandData: TypeAlias = Annotated[
     Mapping[str, Any],
     Field(
         description="Raw tcode-api schema; will be migrated (if necessary) on load. See ``tcode_api.TCode`` for full structure example.",
-        example=tc.MOVE_TO_LOCATION(
-            type="MOVE_TO_LOCATION",
-            schema_version=2,
-            robot_id=generate_id(),
-            location=tc.LocationAsLabwareIndex(
-                type="LocationAsLabwareIndex",
-                schema_version=1,
-                labware_id=generate_id(),
-                location_index=0,
-                well_part=tc.WellPartType.BOTTOM,
-            ),
-            location_offset=identity_transform(),
-            flange=None,
-            flange_offset=identity_transform(),
-            path_type=None,
-            trajectory_type=None,
-            speed=None,
-        ).model_dump(),
+        # AI(claude-opus-4.7 via VS Code Copilot): Pydantic v2 deprecated the
+        # ad-hoc `example=` kwarg on `Field`; nest under `json_schema_extra`
+        # so it still flows into the generated OpenAPI schema without a
+        # deprecation warning.
+        json_schema_extra={
+            "example": tc.MOVE_TO_LOCATION(
+                type="MOVE_TO_LOCATION",
+                schema_version=2,
+                robot_id=generate_id(),
+                location=tc.LocationAsLabwareIndex(
+                    type="LocationAsLabwareIndex",
+                    schema_version=1,
+                    labware_id=generate_id(),
+                    location_index=0,
+                    well_part=tc.WellPartType.BOTTOM,
+                ),
+                location_offset=identity_transform(),
+                flange=None,
+                flange_offset=identity_transform(),
+                path_type=None,
+                trajectory_type=None,
+                speed=None,
+            ).model_dump(),
+        },
     ),
 ]
 
