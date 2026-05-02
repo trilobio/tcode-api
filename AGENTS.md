@@ -72,6 +72,12 @@ After finishing a set of edits and before committing or handing off for review:
 1. `uv run ruff format`
 2. `uv run ruff check`
 3. `uv run mypy ./`
-4. `uv run pytest`
+4. `uv run python -m unittest discover tests`
+
+Tests in this repo are written against the standard library `unittest`
+framework (see e.g. `tests/test_api/test_compat.py`,
+`tests/test_schemas/test_serialization.py`). Use `unittest.TestCase` /
+`unittest.IsolatedAsyncioTestCase` and run them with `python -m unittest`
+rather than `pytest` (the project does not depend on `pytest`).
 
 If any step fails, fix the reported issues before committing. If a failure is unrelated or blocked, say so explicitly.
