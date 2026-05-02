@@ -7,7 +7,7 @@ from tcode_api.servicer.servicer_api import GetStatusResponse, Result
 
 def _ok_result() -> Result:
     """Minimal `Result` for response construction; payload shape isn't relevant here."""
-    return Result(success=True, code="", error_message="", details={})
+    return Result(success=True, code="")
 
 
 class TestGetStatusResponseMockField(unittest.TestCase):
@@ -34,11 +34,11 @@ class TestGetStatusResponseMockField(unittest.TestCase):
 
     def test_legacy_payload_without_mock_key(self) -> None:
         """A pre-7.1 server payload (no `mock` key) still validates as `mock=False`."""
-        legacy = {
+        legacy: dict = {
             "command_id": None,
             "operation_count": 0,
             "run_state": False,
-            "result": {"success": True, "code": "", "error_message": "", "details": {}},
+            "result": {"success": True, "code": ""},
             "robots": [],
         }
         response = GetStatusResponse.model_validate(legacy)
