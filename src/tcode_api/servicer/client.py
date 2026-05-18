@@ -284,7 +284,7 @@ class TCodeServicerClient:
     def discover_fleet(self) -> None:
         """Scan the fleet for new robots, and update all robot states. Useful if you swapped tools manually as a developer."""
         rsp = requests.get(
-            f"{self.servicer_url}/{self.tcode_api_version}/discover_fleet", timeout=20
+            f"{self.servicer_url}/{self.tcode_api_version}/discover_fleet", timeout=40
         )
         rsp.raise_for_status()
 

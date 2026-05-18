@@ -26,10 +26,14 @@ from tcode_api.utilities import (
 @plac.annotations(
     servicer_url=servicer_url_annotation,
     output_file_path=output_file_path_annotation,
+    start_slot=plac.Annotation(
+        "Deck slot number to start from (1-16)", kind="option", abbrev="d", type=int
+    ),
 )
 def main(
     servicer_url: str = DEFAULT_SERVICER_URL,
     output_file_path: pathlib.Path | None = None,
+    start_slot: int = 1,
 ) -> None:
     script = tc.TCodeScript.new(
         name=__file__,
@@ -54,13 +58,14 @@ def main(
 
     # LABWARE
     deck_slots = [f"DeckSlot_{i}" for i in range(1, 17)]
+    start_index = max(0, min(start_slot - 1, len(deck_slots) - 1))
     script.commands.append(
         tc.CREATE_LABWARE(
             robot_id=robot_id,
             description=load_labware("biotix_utip_p300_box"),
             holder=tc.LabwareHolderName(
                 robot_id=robot_id,
-                name=deck_slots[0],
+                name=deck_slots[start_index],
             ),
         ),
     )
@@ -88,7 +93,7 @@ def main(
     script.commands.append(tc.SWAP_TO_TOOL(robot_id=robot_id, id=pipette_id))
     script.commands.append(tc.COMMENT(text="Walk tip box through all deck slots"))
 
-    for idx, next_slot in enumerate(deck_slots[1:], start=1):
+    for idx, next_slot in enumerate(deck_slots[start_index + 1:], start=start_index + 1):
         current_slot = deck_slots[idx - 1]
 
         script.commands.append(tc.COMMENT(text=f"Corner check in {current_slot}"))

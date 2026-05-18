@@ -18,7 +18,7 @@
   },
   "z_length": {
     "type": "ValueWithUnits",
-    "magnitude": 14.3,
+    "magnitude": 22.5,
     "units": "mm"
   },
   "type": "WellPlate",
@@ -51,7 +51,7 @@
     "type": "Well",
     "depth": {
       "type": "ValueWithUnits",
-      "magnitude": 10.85,
+      "magnitude": 12.85,
       "units": "mm"
     },
     "shape": {

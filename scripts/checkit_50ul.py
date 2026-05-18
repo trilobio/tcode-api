@@ -32,7 +32,7 @@ DEFAULT_BLOWOUT_VOLUME = ul(10)
 DEFAULT_PIPETTE_VOLUME = ul(300)
 DEFAULT_CHANNEL_COUNT = 8
 DEFAULT_PIPETTE_SPEED = ul_per_s(100)
-DEFAULT_WELL_BOTTOM_OFFSET = mm(3)
+DEFAULT_WELL_BOTTOM_OFFSET = mm(1)
 
 
 @plac.annotations(
@@ -62,6 +62,11 @@ DEFAULT_WELL_BOTTOM_OFFSET = mm(3)
         choices=[1, 8],
         abbrev="cc",
     ),
+    well=plac.Annotation(
+        "well row to pipette from (A-H), single-channel only",
+        kind="option",
+        abbrev="w",
+    ),
 )
 def main(
     servicer_url: str = DEFAULT_SERVICER_URL,
@@ -71,6 +76,7 @@ def main(
     pipette_volume: tc.ValueWithUnits = DEFAULT_PIPETTE_VOLUME,
     well_bottom_offset: tc.ValueWithUnits = DEFAULT_WELL_BOTTOM_OFFSET,
     channel_count: int = DEFAULT_CHANNEL_COUNT,
+    well: str | None = None,
 ) -> None:
     """Generate and execute the `checkit_50ul` TCode script."""
     pipette_volume_ul = pipette_volume.to("ul").magnitude
@@ -79,6 +85,16 @@ def main(
 
     if channel_count not in (1, 8):
         raise ValueError("Channel count must be 1 or 8, got %s" % channel_count)
+
+    # Resolve well row for single-channel
+    row_index = 0  # default to row A
+    if well is not None:
+        well = well.upper()
+        if len(well) != 1 or well not in "ABCDEFGH":
+            raise ValueError("Well must be a single letter A-H, got '%s'" % well)
+        if channel_count != 1:
+            raise ValueError("--well is only supported for single-channel pipettes")
+        row_index = ord(well) - ord("A")
 
     _logger.info("Transfer volume: %s", transfer_volume)
     _logger.info("Blowout volume: %s", blowout_volume)
@@ -154,8 +170,13 @@ def main(
         )
     )
 
+    # Compute labware indices for source and destination
+    source_index = row_index * 12       # column 1
+    dest_index = row_index * 12 + 11    # column 12
+    row_letter = chr(ord("A") + row_index)
+
     # ACTIONS #
-    script.commands.append(tc.COMMENT(text="50 uL A1 -> A12"))
+    script.commands.append(tc.COMMENT(text=f"50 uL {row_letter}1 -> {row_letter}12"))
     well_bottom_offset_matrix = create_transform(z=well_bottom_offset)
     script.commands.append(tc.RETRIEVE_TOOL(robot_id=robot_id, id=pipette_id))
     script.commands.append(
@@ -164,7 +185,7 @@ def main(
     script.commands.append(
         tc.MOVE_TO_LOCATION(
             robot_id=robot_id,
-            location=location_as_labware_index(plate_id, 0, tc.WellPartType.TOP),
+            location=location_as_labware_index(plate_id, source_index, tc.WellPartType.TOP),
         )
     )
     pipette_speed = DEFAULT_PIPETTE_SPEED
@@ -174,7 +195,7 @@ def main(
     script.commands.append(
         tc.MOVE_TO_LOCATION(
             robot_id=robot_id,
-            location=location_as_labware_index(plate_id, 0, tc.WellPartType.BOTTOM),
+            location=location_as_labware_index(plate_id, source_index, tc.WellPartType.BOTTOM),
             path_type=tc.PathType.DIRECT,
             location_offset=well_bottom_offset_matrix,
         )
@@ -185,7 +206,7 @@ def main(
     script.commands.append(
         tc.MOVE_TO_LOCATION(
             robot_id=robot_id,
-            location=location_as_labware_index(plate_id, 11, tc.WellPartType.BOTTOM),
+            location=location_as_labware_index(plate_id, dest_index, tc.WellPartType.BOTTOM),
             location_offset=well_bottom_offset_matrix,
         )
     )
@@ -195,7 +216,7 @@ def main(
     script.commands.append(
         tc.MOVE_TO_LOCATION(
             robot_id=robot_id,
-            location=location_as_labware_index(plate_id, 11, tc.WellPartType.TOP),
+            location=location_as_labware_index(plate_id, dest_index, tc.WellPartType.TOP),
             path_type=tc.PathType.DIRECT,
         )
     )
