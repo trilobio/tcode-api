@@ -26,10 +26,14 @@ from tcode_api.utilities import (
 @plac.annotations(
     servicer_url=servicer_url_annotation,
     output_file_path=output_file_path_annotation,
+    pipette_volume=plac.Annotation(
+        "Max pipette volume in uL", kind="option", abbrev="v", type=float
+    ),
 )
 def main(
     servicer_url: str = DEFAULT_SERVICER_URL,
     output_file_path: pathlib.Path | None = None,
+    pipette_volume: float = 300,
 ) -> None:
     script = tc.TCodeScript.new(
         name=__file__,
@@ -47,7 +51,7 @@ def main(
             robot_id=robot_id,
             id=pipette_id,
             descriptor=tc.SingleChannelPipetteDescriptor(
-                max_volume=tc.ValueWithUnits(units="ul", magnitude=300)
+                max_volume=tc.ValueWithUnits(units="ul", magnitude=pipette_volume)
             ),
         )
     )
