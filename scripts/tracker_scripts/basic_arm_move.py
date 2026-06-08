@@ -30,7 +30,7 @@ def main(
                 robot_id=robot_id,
                 location=tc.LocationRelativeToRobot(
                     robot_id=robot_id,
-                    matrix=create_transform(x=mm(150), y=mm(0), z=mm(300))
+                    matrix=create_transform(x=mm(150), y=mm(150), z=mm(300))
                 ),
                 path_type=tc.PathType.DIRECT,
             )
@@ -46,9 +46,15 @@ def main(
                 robot_id=robot_id,
                 location=tc.LocationRelativeToRobot(
                     robot_id=robot_id,
-                    matrix=create_transform(x=mm(250), y=mm(0), z=mm(300))
+                    matrix=create_transform(x=mm(250), y=mm(250), z=mm(300))
                 ),
                 path_type=tc.PathType.DIRECT,
+            )
+        )
+        script.commands.append(
+            tc.WAIT(
+                robot_id=robot_id,
+                duration=s(3)
             )
         )
 
