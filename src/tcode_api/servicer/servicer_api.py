@@ -158,6 +158,35 @@ class ExitTeachModeResponse(BaseModel):
     transform: Matrix
 
 
+class SerialNumberLookupRequest(BaseModel):
+    """tcode-servicer serial_number_lookup endpoint request data structure."""
+
+    ids: list[str] = Field(
+        description="IDs to look up. Interpreted as referencing an entity with a SerialNumber (ex. a robot or tool)",
+    )
+
+
+class SerialNumberLookupResult(BaseModel):
+    """Individual result entry for a single ID lookup in the serial_number_lookup endpoint."""
+
+    serial_number: str | None = Field(
+        default=None,
+        description="Resolved serial number, or null if resolution failed for any reason (including not found).",
+        examples=["T0004V0102F01L00N003D"],
+    )
+    result: Result = Field(
+        description="Result of the lookup attempt, including success status and error details if applicable.",
+    )
+
+
+class SerialNumberLookupResponse(BaseModel):
+    """tcode-servicer serial_number_lookup endpoint response data structure."""
+
+    results: dict[str, SerialNumberLookupResult] = Field(
+        description="Mapping of input IDs to their corresponding lookup results, including resolved serial numbers and result metadata.",
+    )
+
+
 class TCodeCommandSchedulingReport(BaseModel):
     """Report from a single TCode command scheduling call."""
 
