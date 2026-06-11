@@ -19,6 +19,7 @@ from tcode_api.servicer.servicer_api import (
     GetStatusResponse,
     ScheduleCommandRequest,
     ScheduleCommandResponse,
+    SerialNumberLookupResponse,
 )
 from tcode_api.types import Matrix
 from tcode_api.utilities import generate_id, mm, rad
@@ -173,6 +174,28 @@ class TCodeServicerClient:
         )
         rsp.raise_for_status()
         return GetStatusResponse.model_validate_json(rsp.text)
+
+    def serial_number_lookup(self, id: str) -> str:
+        """Look up the serial number associated with a given TCode id.
+
+        :param id: The TCode id to look up.
+
+        :returns: The serial number associated with the given TCode id.
+        """
+        rsp = requests.get(
+            f"{self.servicer_url}/{self.tcode_api_version}/serial_number_lookup",
+            params={"id": id},
+            timeout=self.timeout,
+        )
+        rsp.raise_for_status()
+        rsp_valid = SerialNumberLookupResponse.model_validate_json(rsp.text)
+        result = rsp_valid.results[id]
+        if result.result.success:
+            assert result.serial_number is not None  # mypy type narrowing
+            return result.serial_number
+        raise ValueError(
+            f"Serial number lookup failed for id={id}: {result.result.message} (see debug logs for details)"
+        )
 
     def schedule_command(
         self, id: str, command: tc.TCode, tcode_api_version: str | None = None

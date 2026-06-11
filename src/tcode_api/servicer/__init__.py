@@ -1,4 +1,4 @@
-"""tcode_api.servicer submoduler API."""
+"""tcode_api.servicer submodule API."""
 
 from tcode_api.servicer.client import TCodeServicerClient
 from tcode_api.servicer.servicer_api import (
@@ -13,6 +13,9 @@ from tcode_api.servicer.servicer_api import (
     ScheduleCommandRequest,
     ScheduleCommandResponse,
     ScheduleCommandsRequest,
+    SerialNumberLookupRequest,
+    SerialNumberLookupResponse,
+    SerialNumberLookupResult,
     TCodeCommandSchedulingReport,
     TCodeSchedulingReport,
 )
@@ -29,6 +32,9 @@ __all__ = [
     "ScheduleCommandRequest",
     "ScheduleCommandResponse",
     "ScheduleCommandsRequest",
+    "SerialNumberLookupRequest",
+    "SerialNumberLookupResponse",
+    "SerialNumberLookupResult",
     "TCodeCommandSchedulingReport",
     "TCodeSchedulingReport",
     "TCodeServicerClient",
