@@ -5,7 +5,7 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
-## [Unreleased]
+## [1.40.0]
 ### Added
 - `TCodeServicerClient.serial_number_lookup` method
 - `SerialNumberLookupRequest`, `SerialNumberLookupResponse`, `SerialNumberLookupResult` models for serial number lookup API.
