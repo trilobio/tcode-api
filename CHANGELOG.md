@@ -3,6 +3,10 @@
 All notable changes to this project will be documented here.
 Format: [Semantic Versioning](https://semver.org)
 
+## [1.40.1]
+## Fixed
+- Fix `TCodeServicerClient` requests call to tcode servicer `serial_number_lookup` endpoint
+
 ---
 
 ## [1.40.0]
