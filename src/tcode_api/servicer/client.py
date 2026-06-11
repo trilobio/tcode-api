@@ -19,6 +19,7 @@ from tcode_api.servicer.servicer_api import (
     GetStatusResponse,
     ScheduleCommandRequest,
     ScheduleCommandResponse,
+    SerialNumberLookupRequest,
     SerialNumberLookupResponse,
 )
 from tcode_api.types import Matrix
@@ -182,9 +183,9 @@ class TCodeServicerClient:
 
         :returns: The serial number associated with the given TCode id.
         """
-        rsp = requests.get(
+        rsp = requests.post(
             f"{self.servicer_url}/{self.tcode_api_version}/serial_number_lookup",
-            params={"id": id},
+            json=SerialNumberLookupRequest(ids=[id]).model_dump(),
             timeout=self.timeout,
         )
         rsp.raise_for_status()
