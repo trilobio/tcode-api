@@ -26,6 +26,11 @@ from tcode_api.utilities import (
 @plac.annotations(
     servicer_url=servicer_url_annotation,
     output_file_path=output_file_path_annotation,
+    robot_sn=plac.Annotation(
+        "Robot serial number to target (optional).",
+        kind="option",
+        abbrev="r",
+    ),
     pipette_volume=plac.Annotation(
         "Max pipette volume in uL", kind="option", abbrev="v", type=float
     ),
@@ -33,6 +38,7 @@ from tcode_api.utilities import (
 def main(
     servicer_url: str = DEFAULT_SERVICER_URL,
     output_file_path: pathlib.Path | None = None,
+    robot_sn: str | None = None,
     pipette_volume: float = 300,
 ) -> None:
     script = tc.TCodeScript.new(
@@ -42,7 +48,12 @@ def main(
 
     # FLEET
     robot_id, gripper_id, pipette_id, tip_box_id = [generate_id() for _ in range(4)]
-    script.commands.append(tc.ADD_ROBOT(id=robot_id, descriptor=tc.RobotDescriptor()))
+    # serial_number is matched by the tcode servicer's robot resolver
+    # (tcode/resolver/robots.py), pinning the script to that robot.
+    robot_descriptor = (
+        tc.RobotDescriptor(serial_number=robot_sn) if robot_sn else tc.RobotDescriptor()
+    )
+    script.commands.append(tc.ADD_ROBOT(id=robot_id, descriptor=robot_descriptor))
     script.commands.append(
         tc.ADD_TOOL(robot_id=robot_id, id=gripper_id, descriptor=tc.GripperDescriptor())
     )
