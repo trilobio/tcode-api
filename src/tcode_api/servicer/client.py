@@ -323,7 +323,17 @@ class TCodeServicerClient:
         rsp = requests.get(
             f"{self.servicer_url}/{self.tcode_api_version}/discover_fleet", timeout=20
         )
-        rsp.raise_for_status()
+        try:
+            rsp.raise_for_status()
+        except requests.exceptions.HTTPError as err:
+            if err.response.status_code == 503:
+                details = err.response.json()["detail"]
+                service_name = details.get("service_name", "internal")
+                url = details.get("url", "unspecified address")
+                raise RuntimeError(f"Failed to connect to {service_name} @ {url}") from err
+            else:
+                raise err
+
 
     def execute_run_loop(self) -> None:
         """Run a blocking loop that monitors the servicer's status and exits when the current
@@ -371,6 +381,16 @@ class TCodeServicerClient:
 
         :param script: The TCode script to run.
         """
+        try:
+            self.get_status()
+        except requests.exceptions.ConnectionError as err:
+            inner = err.args[0]
+            msg = "Failed to connect to tcode service"
+            if hasattr(inner, "pool"):
+                msg += f" @ {inner.pool.host}:{inner.pool.port}"
+
+            raise RuntimeError(msg) from err
+
         sio = None
         if enable_socketio_user_input:
             # Some commands (ex. CALIBRATE_LABWARE_HOLDER with a pipette) block awaiting
@@ -387,7 +407,6 @@ class TCodeServicerClient:
             self.clear_tcode_resolution()
             self.clear_tf_tree_history()
             self.discover_fleet()
-
         total_commands = len(script.commands)
 
         if not batch_process:
