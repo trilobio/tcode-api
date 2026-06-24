@@ -1,4 +1,4 @@
-"""Generate Basic Fluid Movement TCode script for unittesting."""
+"""Generate a tcode script to move the robot continuously for testing"""
 
 import pathlib
 
@@ -25,7 +25,6 @@ from math import ceil
 
 @plac.annotations(
     servicer_url=servicer_url_annotation,
-    output_file_path=output_file_path_annotation,
     number_of_commands=(
         "Number of TCode commands to generate approximately. Default is 27000. Each line takes approximately 2 seconds to run.",
         "option",
@@ -35,9 +34,14 @@ from math import ceil
 )
 def main(
     servicer_url: str = DEFAULT_SERVICER_URL,
-    output_file_path: pathlib.Path | None = None,
     number_of_commands=30**3,
 ) -> None:
+    """
+    A simple script to generate MOVE_TO_LOCATION TCode commands for stress-testing
+    the robot performance. It moves the robot within a safe radius below the tool rack.
+
+    This script should only be ran when the robot isn't holding a tool.
+    """
     points_per_axis = ceil(number_of_commands ** (1 / 3))
 
     space = []
