@@ -33,8 +33,6 @@ def main(
     output_file_path: pathlib.Path | None = None,
 ) -> None:
     pipette_volume = ul(300)
-    transfer_volume = ul(100)
-    transfer_speed = ul_per_s(5)
     channel_count = 1
     pipette_descriptor = tc.SingleChannelPipetteDescriptor(max_volume=pipette_volume)
     well_bottom_offset = create_transform(z=mm(3))
@@ -125,7 +123,7 @@ def main(
         )
     )
     script.commands.append(
-        tc.ASPIRATE(robot_id=robot_id, volume=transfer_volume, speed=transfer_speed)
+        tc.ASPIRATE(robot_id=robot_id, volume=ul(100), speed=ul_per_s(5))
     )
     script.commands.append(
         tc.MOVE_TO_LOCATION(
@@ -135,7 +133,7 @@ def main(
         )
     )
     script.commands.append(
-        tc.DISPENSE(robot_id=robot_id, volume=transfer_volume, speed=transfer_speed)
+        tc.DISPENSE(robot_id=robot_id, volume=ul(100), speed=ul_per_s(100))
     )
     script.commands.append(tc.DISCARD_PIPETTE_TIP_GROUP(robot_id=robot_id))
     script.commands.append(tc.RETURN_TOOL(robot_id=robot_id))
