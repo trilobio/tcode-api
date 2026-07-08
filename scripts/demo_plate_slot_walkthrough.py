@@ -1,7 +1,8 @@
-"""Move a Biotix P300 tip box through deck slots 1-16.
+"""Move a Biotix tip box through deck slots 1-16.
 
 For each slot hop, a single-channel pipette picks up and returns the four corner tips
-before the gripper moves the box to the next slot.
+before the gripper moves the box to the next slot. The tip box labware is selected to
+match the pipette volume (e.g. a P300 pipette uses the uTIP P300 box).
 """
 
 import pathlib
@@ -22,6 +23,19 @@ from tcode_api.utilities import (
     load_labware,
 )
 
+# Biotix uTIP box sizes available in tcode_labware, keyed by max pipette volume in uL.
+SUPPORTED_PIPETTE_VOLUMES = (20, 100, 200, 250, 300, 1000)
+
+
+def tip_box_labware_name(pipette_volume: float) -> str:
+    """Return the Biotix uTIP box labware name matching a pipette's max volume."""
+    if pipette_volume not in SUPPORTED_PIPETTE_VOLUMES:
+        raise ValueError(
+            f"No Biotix uTIP box for a {pipette_volume} uL pipette; "
+            f"supported volumes: {', '.join(str(v) for v in SUPPORTED_PIPETTE_VOLUMES)}"
+        )
+    return f"biotix_utip_p{int(pipette_volume)}_box"
+
 
 @plac.annotations(
     servicer_url=servicer_url_annotation,
@@ -32,7 +46,11 @@ from tcode_api.utilities import (
         abbrev="r",
     ),
     pipette_volume=plac.Annotation(
-        "Max pipette volume in uL", kind="option", abbrev="v", type=float
+        "Max pipette volume in uL; must match an available Biotix uTIP box "
+        f"({', '.join(str(v) for v in SUPPORTED_PIPETTE_VOLUMES)})",
+        kind="option",
+        abbrev="v",
+        type=float,
     ),
 )
 def main(
@@ -72,7 +90,7 @@ def main(
     script.commands.append(
         tc.CREATE_LABWARE(
             robot_id=robot_id,
-            description=load_labware("biotix_utip_p300_box"),
+            description=load_labware(tip_box_labware_name(pipette_volume)),
             holder=tc.LabwareHolderName(
                 robot_id=robot_id,
                 name=deck_slots[0],
