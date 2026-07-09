@@ -3,6 +3,19 @@
 All notable changes to this project will be documented here.
 Format: [Semantic Versioning](https://semver.org)
 
+## [Unreleased]
+
+---
+
+## [1.41.0]
+
+### Added
+- robot_serial_number_annotation to tcode_api.cli module
+- Added robot serial number optional argument to all tcode scripts
+- Update demo plate walkthrough to include pipette volume parametrically
+
+---
+
 ## [1.40.1]
 ## Fixed
 - Fix `TCodeServicerClient` requests call to tcode servicer `serial_number_lookup` endpoint
