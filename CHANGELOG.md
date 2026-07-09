@@ -8,10 +8,10 @@ Format: [Semantic Versioning](https://semver.org)
 ---
 
 ## [1.41.0]
-
-### Added
-- robot_serial_number_annotation to tcode_api.cli module
-- Added robot serial number optional argument to all tcode scripts
+## Added
+- `tcode_api.cli.robot_serial_number_annotation` plac canned annotation for providing a target
+    robot in preparation for supporting single-robot targeting within fleets.
+- Integrate robot targeting by serial number into all tcode_api scripts.
 - Update demo plate walkthrough to include pipette volume parametrically
 
 ---
