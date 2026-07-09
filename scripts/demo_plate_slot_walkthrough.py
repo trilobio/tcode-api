@@ -63,8 +63,6 @@ def main(
 
     # FLEET
     robot_id, gripper_id, pipette_id, tip_box_id = [generate_id() for _ in range(4)]
-    # serial_number is matched by the tcode servicer's robot resolver
-    # (tcode/resolver/robots.py), pinning the script to that robot.
     robot_descriptor = tc.RobotDescriptor(serial_number=robot_sn)
     script.commands.append(tc.ADD_ROBOT(id=robot_id, descriptor=robot_descriptor))
     script.commands.append(
