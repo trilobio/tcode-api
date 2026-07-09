@@ -89,6 +89,9 @@ class RobotStatusDetail(BaseModel):
     """Per-robot status information."""
 
     robot_id: str
+    # Serial number of the physical robot this tcode robot_id resolved to;
+    # None if resolution hasn't happened yet.
+    serial_number: str | None = None
     command_id: CommandID | None
     queue_depth: int
     run_state: bool
