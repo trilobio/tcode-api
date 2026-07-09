@@ -13,6 +13,7 @@ import tcode_api.api as tc
 from tcode_api.cli import (
     DEFAULT_SERVICER_URL,
     output_file_path_annotation,
+    robot_serial_number_annotation,
     servicer_url_annotation,
 )
 from tcode_api.servicer import TCodeServicerClient
@@ -40,11 +41,7 @@ def tip_box_labware_name(pipette_volume: float) -> str:
 @plac.annotations(
     servicer_url=servicer_url_annotation,
     output_file_path=output_file_path_annotation,
-    robot_sn=plac.Annotation(
-        "Robot serial number to target (optional).",
-        kind="option",
-        abbrev="r",
-    ),
+    robot_sn=robot_serial_number_annotation,
     pipette_volume=plac.Annotation(
         "Max pipette volume in uL; must match an available Biotix uTIP box "
         f"({', '.join(str(v) for v in SUPPORTED_PIPETTE_VOLUMES)})",
@@ -68,9 +65,7 @@ def main(
     robot_id, gripper_id, pipette_id, tip_box_id = [generate_id() for _ in range(4)]
     # serial_number is matched by the tcode servicer's robot resolver
     # (tcode/resolver/robots.py), pinning the script to that robot.
-    robot_descriptor = (
-        tc.RobotDescriptor(serial_number=robot_sn) if robot_sn else tc.RobotDescriptor()
-    )
+    robot_descriptor = tc.RobotDescriptor(serial_number=robot_sn)
     script.commands.append(tc.ADD_ROBOT(id=robot_id, descriptor=robot_descriptor))
     script.commands.append(
         tc.ADD_TOOL(robot_id=robot_id, id=gripper_id, descriptor=tc.GripperDescriptor())
