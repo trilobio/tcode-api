@@ -3,6 +3,19 @@
 All notable changes to this project will be documented here.
 Format: [Semantic Versioning](https://semver.org)
 
+## [Unreleased]
+
+---
+
+## [1.41.0]
+## Added
+- `tcode_api.cli.robot_serial_number_annotation` plac canned annotation for providing a target
+    robot in preparation for supporting single-robot targeting within fleets.
+- Integrate robot targeting by serial number into all tcode_api scripts.
+- Update demo plate walkthrough to include pipette volume parametrically
+
+---
+
 ## [1.40.1]
 ## Fixed
 - Fix `TCodeServicerClient` requests call to tcode servicer `serial_number_lookup` endpoint

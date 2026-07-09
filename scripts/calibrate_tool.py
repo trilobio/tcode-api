@@ -10,6 +10,7 @@ import tcode_api.api as tc
 from tcode_api.cli import (
     DEFAULT_SERVICER_URL,
     output_file_path_annotation,
+    robot_serial_number_annotation,
     servicer_url_annotation,
 )
 from tcode_api.servicer import TCodeServicerClient
@@ -146,11 +147,7 @@ def yes_no_prompt(question: str) -> bool:
 @plac.annotations(
     servicer_url=servicer_url_annotation,
     output_file_path=output_file_path_annotation,
-    robot_sn=plac.Annotation(
-        "Robot serial number to target (optional).",
-        kind="option",
-        abbrev="r",
-    ),
+    robot_sn=robot_serial_number_annotation,
     z_only=plac.Annotation("If set, only calibrate the Z axis (no XY)", kind="flag", abbrev="z"),
 )
 def main(
@@ -207,9 +204,7 @@ def main(
         pipette_tip_group_id,
     ) = [generate_id() for _ in range(4)]
 
-    robot_descriptor = (
-        tc.RobotDescriptor(serial_number=robot_sn) if robot_sn else tc.RobotDescriptor()
-    )
+    robot_descriptor = tc.RobotDescriptor(serial_number=robot_sn)
     script.commands.append(tc.ADD_ROBOT(id=robot_id, descriptor=robot_descriptor))
     script.commands.append(tc.ADD_TOOL(robot_id=robot_id, id=pipette_id, descriptor=descriptor))
 

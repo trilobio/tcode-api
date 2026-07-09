@@ -16,6 +16,7 @@ import plac  # type: ignore [import-untyped]
 import tcode_api.api as tc
 from tcode_api.cli import (
     DEFAULT_SERVICER_URL,
+    robot_serial_number_annotation,
     servicer_url_annotation,
 )
 from tcode_api.servicer import TCodeServicerClient
@@ -24,9 +25,11 @@ from tcode_api.utilities import generate_id
 
 @plac.annotations(
     servicer_url=servicer_url_annotation,
+    robot_sn=robot_serial_number_annotation,
 )
 def main(
     servicer_url: str = DEFAULT_SERVICER_URL,
+    robot_sn: str | None = None,
 ) -> None:
     """CLI for the teach_point example script. See module docstring for full documentation."""
     script = tc.TCodeScript.new(
@@ -36,7 +39,9 @@ def main(
 
     # FLEET
     robot_id, gripper_id = [generate_id() for _ in range(2)]
-    script.commands.append(tc.ADD_ROBOT(id=robot_id, descriptor=tc.RobotDescriptor()))
+    script.commands.append(
+        tc.ADD_ROBOT(id=robot_id, descriptor=tc.RobotDescriptor(serial_number=robot_sn))
+    )
     script.commands.append(
         tc.ADD_TOOL(robot_id=robot_id, id=gripper_id, descriptor=tc.GripperDescriptor())
     )

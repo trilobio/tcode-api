@@ -23,6 +23,7 @@ import tcode_api.api as tc
 from tcode_api.cli import (
     DEFAULT_SERVICER_URL,
     output_file_path_annotation,
+    robot_serial_number_annotation,
     servicer_url_annotation,
 )
 from tcode_api.servicer import TCodeServicerClient
@@ -141,6 +142,7 @@ def manifold_match_tag_for_volume_ul(volume_ul: int) -> str:
     ),
     servicer_url=servicer_url_annotation,
     output_file_path=output_file_path_annotation,
+    robot_sn=robot_serial_number_annotation,
 )
 def main(
     pipette: Literal["c1", "c8"],
@@ -151,6 +153,7 @@ def main(
     keep_tool: bool = False,
     servicer_url: str = DEFAULT_SERVICER_URL,
     output_file_path: pathlib.Path | None = None,
+    robot_sn: str | None = None,
 ) -> None:
     """Generate and run a minimal script to pick up one tip."""
 
@@ -205,7 +208,9 @@ def main(
     script = tc.TCodeScript.new(name=script_name, description=__doc__)
 
     # ROBOT + TOOL
-    script.commands.append(tc.ADD_ROBOT(id=robot_id, descriptor=tc.RobotDescriptor()))
+    script.commands.append(
+        tc.ADD_ROBOT(id=robot_id, descriptor=tc.RobotDescriptor(serial_number=robot_sn))
+    )
     script.commands.append(tc.ADD_TOOL(robot_id=robot_id, id=tool_id, descriptor=descriptor))
 
     # TIP BOX LABWARE
