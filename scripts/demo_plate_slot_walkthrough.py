@@ -1,7 +1,8 @@
-"""Move a Biotix P300 tip box through deck slots 1-16.
+"""Move a Biotix tip box through deck slots 1-16.
 
 In every slot (including the last), a single-channel pipette picks up and returns the
-four corner tips; the gripper then moves the box to the next slot.
+four corner tips; the gripper then moves the box to the next slot. The tip box labware
+is selected to match the pipette volume (e.g. a P300 pipette uses the uTIP P300 box).
 
 With --continue-through-failures, a failed tip pickup skips the rest of that slot's
 corner check and continues with the box move to the next slot, instead of aborting.
@@ -17,6 +18,7 @@ import tcode_api.api as tc
 from tcode_api.cli import (
     DEFAULT_SERVICER_URL,
     output_file_path_annotation,
+    robot_serial_number_annotation,
     servicer_url_annotation,
 )
 from tcode_api.servicer import TCodeServicerClient
@@ -29,6 +31,19 @@ from tcode_api.utilities import (
 
 DECK_SLOTS = [f"DeckSlot_{i}" for i in range(1, 17)]
 CORNER_INDICES = [0, 11, 84, 95]  # Four corners of 8x12 tip box
+
+# Biotix uTIP box sizes available in tcode_labware, keyed by max pipette volume in uL.
+SUPPORTED_PIPETTE_VOLUMES = (20, 100, 200, 250, 300, 1000)
+
+
+def tip_box_labware_name(pipette_volume: float) -> str:
+    """Return the Biotix uTIP box labware name matching a pipette's max volume."""
+    if pipette_volume not in SUPPORTED_PIPETTE_VOLUMES:
+        raise ValueError(
+            f"No Biotix uTIP box for a {pipette_volume} uL pipette; "
+            f"supported volumes: {', '.join(str(v) for v in SUPPORTED_PIPETTE_VOLUMES)}"
+        )
+    return f"biotix_utip_p{int(pipette_volume)}_box"
 
 
 @dataclasses.dataclass
@@ -86,7 +101,7 @@ def build_walkthrough_plan(
     setup_commands.append(
         tc.CREATE_LABWARE(
             robot_id=robot_id,
-            description=load_labware("biotix_utip_p300_box"),
+            description=load_labware(tip_box_labware_name(pipette_volume)),
             holder=tc.LabwareHolderName(
                 robot_id=robot_id,
                 name=DECK_SLOTS[0],
@@ -237,13 +252,13 @@ def run_walkthrough(client: TCodeServicerClient, plan: WalkthroughPlan) -> list[
 @plac.annotations(
     servicer_url=servicer_url_annotation,
     output_file_path=output_file_path_annotation,
-    robot_sn=plac.Annotation(
-        "Robot serial number to target (optional).",
-        kind="option",
-        abbrev="r",
-    ),
+    robot_sn=robot_serial_number_annotation,
     pipette_volume=plac.Annotation(
-        "Max pipette volume in uL", kind="option", abbrev="v", type=float
+        "Max pipette volume in uL; must match an available Biotix uTIP box "
+        f"({', '.join(str(v) for v in SUPPORTED_PIPETTE_VOLUMES)})",
+        kind="option",
+        abbrev="v",
+        type=float,
     ),
     continue_through_failures=plac.Annotation(
         "On a tip pickup failure, skip the rest of that slot's corner check and continue "
