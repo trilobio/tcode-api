@@ -1,1 +1,1 @@
-from .v1 import SEND_WEBHOOK
+from .v2 import SEND_WEBHOOK

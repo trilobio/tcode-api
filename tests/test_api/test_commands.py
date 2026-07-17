@@ -8,6 +8,7 @@ from typing import get_args
 
 # Using the below import style because it's how we expect users to import tcode_api
 import tcode_api.api as tc
+from tcode_api.api.compat import load_api_object
 from tcode_api.schemas.commands.base.robot_specific_tcode_command.v1 import (
     BaseRobotSpecificTCodeCommandV1,
 )
@@ -156,3 +157,32 @@ class TestScheduleCommandRequestSyncFields(unittest.TestCase):
         restored = ScheduleCommandsRequest.model_validate_json(bulk.model_dump_json())
         self.assertEqual(restored.commands[0].depends_on, [])
         self.assertEqual(restored.commands[1].depends_on, ["a"])
+
+
+class TestSendWebhookV2(unittest.TestCase):
+    """SEND_WEBHOOK v2: per-robot routing via optional robot_id."""
+
+    def test_latest_carries_robot_id(self) -> None:
+        cmd = tc.SEND_WEBHOOK(
+            robot_id="robot_a",
+            pause_execution=False,
+            url="http://example.invalid/hook",
+        )
+        self.assertEqual(cmd.schema_version, 2)
+        self.assertEqual(cmd.robot_id, "robot_a")
+
+    def test_v1_payload_migrates_to_v2(self) -> None:
+        """A v1 wire payload (no robot_id) migrates to v2 with robot_id=None."""
+        cmd = load_api_object(
+            data={
+                "type": "SEND_WEBHOOK",
+                "schema_version": 1,
+                "pause_execution": True,
+                "url": "http://example.invalid/hook",
+            },
+            api_version="v1.40.0",
+        )
+        assert isinstance(cmd, tc.SEND_WEBHOOK)
+        self.assertEqual(cmd.schema_version, 2)
+        self.assertIsNone(cmd.robot_id)
+        self.assertTrue(cmd.pause_execution)
