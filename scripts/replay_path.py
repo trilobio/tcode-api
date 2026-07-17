@@ -9,12 +9,9 @@ reverse.
 from __future__ import annotations
 
 import pathlib
+from typing import Literal
 
 import plac  # type: ignore [import-untyped]
-import tcode_api.api as tc
-from tcode_api.servicer import TCodeServicerClient
-from tcode_api.utilities import create_transform, mm
-
 from teach_path import (
     DEFAULT_DECK_SLOT,
     DEFAULT_FILE_PATH,
@@ -31,8 +28,12 @@ from teach_path import (
     yield_path,
 )
 
+import tcode_api.api as tc
+from tcode_api.servicer import TCodeServicerClient
+from tcode_api.utilities import create_transform
 
-def _direction_to_mode(raw: str) -> str:
+
+def _direction_to_mode(raw: str) -> Literal["forward", "backward"]:
     """Map a user-facing direction onto yield_path's mode argument."""
     value = raw.lower()
     if value in ("forward", "f", "fwd"):

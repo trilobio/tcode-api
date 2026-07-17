@@ -1,12 +1,21 @@
-"""Teach mode structures for the Synergy HTX plate reader."""
+"""Interactively teach a robot a multi-point path and save it to disk.
+
+Picks up a labware (or just closes the gripper with --no-labware), then prompts the
+user to record points; the resulting Path is written to a JSON file for later replay
+(see replay_path.py).
+"""
 
 from __future__ import annotations
 
 import datetime
 import pathlib
+from typing import Generator, Literal
 
 import plac  # type: ignore [import-untyped]
+
 import tcode_api.api as tc
+from tcode_api.api import ValueWithUnits
+from tcode_api.schemas.base import BaseSchemaVersionedModel
 from tcode_api.servicer import TCodeServicerClient
 from tcode_api.types import Matrix
 from tcode_api.utilities import (
@@ -15,30 +24,11 @@ from tcode_api.utilities import (
     generate_id,
     load_labware,
 )
-from tcode_api.api import ValueWithUnits
-import pathlib
 
-import plac  # type: ignore [import-untyped]
-
-DEFAULT_PLATE_READER_SERVICE_URL = "http://192.168.8.127:5000"
-DEFAULT_PCR_SERVICE_URL = "http://192.168.8.200:8092"
 DEFAULT_DECK_SLOT = "DeckSlot_1"
 DEFAULT_LABWARE = "costar_3603_plate"
-DEFAULT_FILE_PATH = (
-    pathlib.Path(__file__).resolve().parent.parent / "data" / "path.json"
-)
+DEFAULT_FILE_PATH = pathlib.Path(__file__).resolve().parent.parent / "data" / "path.json"
 DEFAULT_TCODE_SERVICE_URL = "http://localhost:8002"
-DEFAULT_PROTOCOL_PATH = r"C:\Users\Public\Documents\Protocols\c1_rapid_sweep_630.prt"
-DEFAULT_TARGET_PLATE_INDEX = 1
-
-"""Data structure for storing and retrieving multi-point paths."""
-
-
-import datetime
-from typing import Generator, Literal
-
-from tcode_api.schemas.base import BaseSchemaVersionedModel
-from tcode_api.types import Matrix
 
 
 class Path(BaseSchemaVersionedModel):
@@ -73,15 +63,15 @@ def yield_path(
 def _sanitize_deck_slot_name(raw_name: str) -> str:
     """Ensure deck slot name follows 'DeckSlot_#' format."""
     try:
-        int_name = int(raw_name)
-        return f"DeckSlot_{int_name}"
+        return f"DeckSlot_{int(raw_name)}"
     except ValueError:
-        if raw_name[:9] != "DeckSlot_" or int(raw_name[9:]) < 1:
-            raise ValueError(
-                "%s not an int, and doesn't contain 'DeckSlot_' => deemed invalid",
-                raw_name,
-            )
-        return raw_name
+        pass
+    suffix = raw_name[9:] if raw_name.startswith("DeckSlot_") else ""
+    if not suffix.isdigit() or int(suffix) < 1:
+        raise ValueError(
+            f"{raw_name!r} is not an int and doesn't match 'DeckSlot_<n>' => deemed invalid"
+        )
+    return raw_name
 
 
 filepath_annotation = plac.Annotation(
@@ -90,9 +80,7 @@ filepath_annotation = plac.Annotation(
     kind="option",
     type=pathlib.Path,
 )
-tcode_url_annotation = plac.Annotation(
-    "URL of TCodeServicer", kind="option", abbrev="u1", type=str
-)
+tcode_url_annotation = plac.Annotation("URL of TCodeServicer", kind="option", abbrev="u1", type=str)
 
 deck_slot_name_annotation = plac.Annotation(
     "Name of deck slot in which to put labware (accepts clean ints) (ex. DeckSlot_1,10)",
@@ -133,7 +121,7 @@ def _generate_pick_up_labware_script(
     try:
         description = load_labware(labware_name)
     except Exception as err:
-        raise ValueError("Invalid labware_name arg %s", labware_name) from err
+        raise ValueError(f"Invalid labware_name arg {labware_name!r}") from err
 
     script = tc.TCodeScript.new(
         name=__file__,
@@ -192,9 +180,7 @@ def _send_gripper_command(
     tc_client.run_script(script, clean_environment=False)
 
 
-def teach_path(
-    tc_client: TCodeServicerClient, robot_id: str, no_labware: bool = False
-) -> Path:
+def teach_path(tc_client: TCodeServicerClient, robot_id: str, no_labware: bool = False) -> Path:
     """Prompt a user to teach a robot a path."""
     if no_labware:
         prompt = "[a(dd point)|o(pen)|c(lose)|d(one)|q(uit)]: "
@@ -260,9 +246,7 @@ def teach(
             )
         )
         script.commands.append(
-            tc.WAIT(
-                robot_id=robot_id, duration=ValueWithUnits(magnitude=0.5, units="s")
-            )
+            tc.WAIT(robot_id=robot_id, duration=ValueWithUnits(magnitude=0.5, units="s"))
         )
     tc_client = TCodeServicerClient(servicer_url=tcode_service_url)
     tc_client.run_script(script)
