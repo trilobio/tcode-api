@@ -5,65 +5,27 @@ from pydantic import Field
 from ....common.value_with_units import ValueWithUnits
 from ..base import BaseLabwareDescription, BaseLabwareDescriptor
 
+_translation_description = (
+    "{axis} translation from the module's base to its labware holder (where a held "
+    "labware's base sits). Expects length units."
+)
+_rotation_description = (
+    "Rotation of the module's labware holder about the {axis}-axis. Applied as "
+    "Rz(a)·Ry(b)·Rx(c). Expects angle units."
+)
+
 HolderXField = Annotated[
-    ValueWithUnits,
-    Field(
-        description=(
-            "X translation from the module's base to its labware holder (where a held "
-            "labware's base sits). Expects length units."
-        ),
-    ),
+    ValueWithUnits, Field(description=_translation_description.format(axis="X"))
 ]
-
 HolderYField = Annotated[
-    ValueWithUnits,
-    Field(
-        description=(
-            "Y translation from the module's base to its labware holder (where a held "
-            "labware's base sits). Expects length units."
-        ),
-    ),
+    ValueWithUnits, Field(description=_translation_description.format(axis="Y"))
 ]
-
 HolderZField = Annotated[
-    ValueWithUnits,
-    Field(
-        description=(
-            "Z translation from the module's base to its labware holder (where a held "
-            "labware's base sits). Expects length units."
-        ),
-    ),
+    ValueWithUnits, Field(description=_translation_description.format(axis="Z"))
 ]
-
-HolderAField = Annotated[
-    ValueWithUnits,
-    Field(
-        description=(
-            "Rotation of the module's labware holder about the z-axis. Applied as "
-            "Rz(a)·Ry(b)·Rx(c). Expects angle units."
-        ),
-    ),
-]
-
-HolderBField = Annotated[
-    ValueWithUnits,
-    Field(
-        description=(
-            "Rotation of the module's labware holder about the y-axis. Applied as "
-            "Rz(a)·Ry(b)·Rx(c). Expects angle units."
-        ),
-    ),
-]
-
-HolderCField = Annotated[
-    ValueWithUnits,
-    Field(
-        description=(
-            "Rotation of the module's labware holder about the x-axis. Applied as "
-            "Rz(a)·Ry(b)·Rx(c). Expects angle units."
-        ),
-    ),
-]
+HolderAField = Annotated[ValueWithUnits, Field(description=_rotation_description.format(axis="z"))]
+HolderBField = Annotated[ValueWithUnits, Field(description=_rotation_description.format(axis="y"))]
+HolderCField = Annotated[ValueWithUnits, Field(description=_rotation_description.format(axis="x"))]
 
 LiftableField = Annotated[
     bool,
