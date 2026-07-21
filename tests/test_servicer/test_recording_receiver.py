@@ -42,16 +42,34 @@ class TestResolveDestination(unittest.TestCase):
         self.assertIsNone(self.receiver.resolve_destination("/../outside.mp4"))
         self.assertIsNone(self.receiver.resolve_destination("/a/../../outside.mp4"))
 
+
+class TestOpenUnique(unittest.TestCase):
+    def setUp(self) -> None:
+        self._tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self._tmp.name).resolve()
+        self.receiver = RecordingReceiver(self.root)
+
+    def tearDown(self) -> None:
+        self._tmp.cleanup()
+
+    def _open(self, name: str) -> Path:
+        out, dest = self.receiver.open_unique(self.root / name)
+        out.close()
+        return dest
+
     def test_existing_file_never_overwritten(self) -> None:
-        (self.root / "clip.mp4").touch()
-        self.assertEqual(self.receiver.resolve_destination("/clip.mp4"), self.root / "clip-1.mp4")
-        (self.root / "clip-1.mp4").touch()
-        self.assertEqual(self.receiver.resolve_destination("/clip.mp4"), self.root / "clip-2.mp4")
+        self.assertEqual(self._open("clip.mp4"), self.root / "clip.mp4")
+        self.assertEqual(self._open("clip.mp4"), self.root / "clip-1.mp4")
+        self.assertEqual(self._open("clip.mp4"), self.root / "clip-2.mp4")
 
     def test_hyphenated_name_kept_intact(self) -> None:
-        (self.root / "my-clip.mp4").touch()
-        dest = self.receiver.resolve_destination("/my-clip.mp4")
-        self.assertEqual(dest, self.root / "my-clip-1.mp4")
+        self.assertEqual(self._open("my-clip.mp4"), self.root / "my-clip.mp4")
+        self.assertEqual(self._open("my-clip.mp4"), self.root / "my-clip-1.mp4")
+
+    def test_creates_parent_directories(self) -> None:
+        dest = self._open("a/b/clip.mp4")
+        self.assertEqual(dest, self.root / "a" / "b" / "clip.mp4")
+        self.assertTrue(dest.exists())
 
 
 class TestReceiverServer(unittest.TestCase):
@@ -66,7 +84,10 @@ class TestReceiverServer(unittest.TestCase):
         cls.server = uvicorn.Server(config)
         cls.thread = threading.Thread(target=cls.server.run, daemon=True)
         cls.thread.start()
+        deadline = time.monotonic() + 10
         while not cls.server.started:
+            if time.monotonic() > deadline:
+                raise RuntimeError("uvicorn failed to start within 10 s")
             time.sleep(0.01)
         cls.base = "http://127.0.0.1:{}".format(cls.server.servers[0].sockets[0].getsockname()[1])
 

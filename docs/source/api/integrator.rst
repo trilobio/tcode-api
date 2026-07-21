@@ -1,7 +1,7 @@
 T-code Integrator API
 =====================
 
-The T-code integrator is the other side of :class:`tcode_api.commands.SEND_WEBHOOK`. Here
+The T-code integrator is the other side of :class:`tcode_api.api.SEND_WEBHOOK`. Here
 is an example integration with ATC Thermocycler. The :code:`ATCThermoCycler` class came from
 `pylabrobot`_.
 
@@ -53,7 +53,7 @@ controller. Run it standalone:
     python -m tcode_api.servicer.recording_receiver --directory ./recordings --port 8096
 
 then start a remote recording pointing at it, e.g. via
-:class:`tcode_api.commands.SEND_WEBHOOK` with url
+:class:`tcode_api.api.SEND_WEBHOOK` with url
 ``http://<rcm>:8095/api/v1/cameras/CAM_POS_X/remote-recording/start`` and payload
 
 .. code::

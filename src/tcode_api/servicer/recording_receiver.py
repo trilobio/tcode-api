@@ -7,7 +7,9 @@ of the robot's limited storage.
 """
 
 from pathlib import Path
+from typing import BinaryIO
 
+import anyio.to_thread
 import fastapi
 import plac  # type: ignore [import-untyped]
 import uvicorn
@@ -15,8 +17,6 @@ from fastapi import FastAPI, Request
 from starlette.requests import ClientDisconnect
 
 RECORDING_RECEIVER_DEFAULT_PORT = 8096
-
-_CHUNK_LOG_INTERVAL_BYTES = 64 * 1024 * 1024
 
 
 class RecordingReceiver:
@@ -43,31 +43,37 @@ class RecordingReceiver:
         @self.app.put("/{_:path}")
         @self.app.post("/{_:path}")
         async def _(request: Request) -> fastapi.Response:
-            dest = self.resolve_destination(request.url.path)
-            if dest is None:
+            candidate = self.resolve_destination(request.url.path)
+            if candidate is None:
                 return fastapi.responses.JSONResponse(
                     status_code=fastapi.status.HTTP_400_BAD_REQUEST,
-                    content={"detail": "path escapes the recording directory"},
+                    content={"detail": "invalid recording path"},
                 )
-            dest.parent.mkdir(parents=True, exist_ok=True)
             total = 0
             try:
-                with open(dest, "wb") as out:
-                    async for chunk in request.stream():
-                        out.write(chunk)
-                        total += len(chunk)
-            except (ClientDisconnect, OSError) as exc:
+                out, dest = await anyio.to_thread.run_sync(self.open_unique, candidate)
+            except OSError as exc:
+                return _write_failure(candidate, exc)
+            try:
+                async for chunk in request.stream():
+                    await anyio.to_thread.run_sync(out.write, chunk)
+                    total += len(chunk)
+            except ClientDisconnect:
                 # A dropped sender is expected; the fMP4 prefix stays playable.
-                print(f"{dest}: connection ended early after {total} bytes ({exc!r})")
+                print(f"{dest}: connection ended early after {total} bytes")
+            except OSError as exc:
+                return _write_failure(dest, exc)
+            finally:
+                await anyio.to_thread.run_sync(out.close)
             print(f"{dest} <- {total} bytes")
             return fastapi.Response(status_code=fastapi.status.HTTP_201_CREATED)
 
     def resolve_destination(self, url_path: str) -> Path | None:
-        """Map a request URL path to a safe destination file under ``root``.
+        """Map a request URL path to a destination file under ``root``.
 
         Returns None when the path is empty, points at a directory, or escapes
-        ``root``. The ``.mp4`` suffix is enforced and an existing file is never
-        overwritten — a numeric suffix is appended instead.
+        ``root``. The ``.mp4`` suffix is enforced. The returned path is a
+        candidate only — :meth:`open_unique` performs the collision-free create.
 
         :param url_path: The path component of the request URL.
         """
@@ -81,17 +87,39 @@ class RecordingReceiver:
         dest = (self.root / rel).resolve()
         if not dest.is_relative_to(self.root) or dest == self.root:
             return None
+        return dest
+
+    def open_unique(self, dest: Path) -> tuple[BinaryIO, Path]:
+        """Atomically create and open a new file at ``dest`` for writing.
+
+        An existing file is never overwritten: on collision a ``-N`` suffix is
+        appended and the create retried (``O_EXCL``, so concurrent uploads to
+        the same path each get their own file).
+
+        :param dest: The candidate path from :meth:`resolve_destination`.
+        """
+        dest.parent.mkdir(parents=True, exist_ok=True)
         base = dest
         counter = 1
-        while dest.exists():
-            dest = base.with_name(f"{base.stem}-{counter}{base.suffix}")
-            counter += 1
-        return dest
+        while True:
+            try:
+                return open(dest, "xb"), dest
+            except FileExistsError:
+                dest = base.with_name(f"{base.stem}-{counter}{base.suffix}")
+                counter += 1
 
     def serve(self, host: str = "0.0.0.0", port: int = RECORDING_RECEIVER_DEFAULT_PORT):
         self.root.mkdir(parents=True, exist_ok=True)
         print(f"recording receiver on :{port} -> {self.root}")
         uvicorn.run(self.app, host=host, port=port)
+
+
+def _write_failure(dest: Path, exc: OSError) -> fastapi.responses.JSONResponse:
+    print(f"{dest}: write failed ({exc})")
+    return fastapi.responses.JSONResponse(
+        status_code=fastapi.status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={"detail": f"failed to write recording: {exc}"},
+    )
 
 
 @plac.annotations(
