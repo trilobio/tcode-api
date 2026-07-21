@@ -40,6 +40,29 @@ The T-code used to trigger this action is
     )
 
 
+Recording receiver
+------------------
+
+Robot cameras (trilo-cam) can stream a recording to a network target instead of
+the robot's limited local storage. The recording receiver is the other side of
+that: it accepts the streamed MP4 over HTTP and writes it to disk on the fleet
+controller. Run it standalone:
+
+.. code::
+
+    python -m tcode_api.servicer.recording_receiver --directory ./recordings --port 8096
+
+then start a remote recording pointing at it, e.g. via
+:class:`tcode_api.commands.SEND_WEBHOOK` with url
+``http://<rcm>:8095/api/v1/cameras/CAM_POS_X/remote-recording/start`` and payload
+
+.. code::
+
+    {"url": "http://<fleet-controller>:8096/robot1/CAM_POS_X.mp4", "max_duration_s": 600}
+
+The request path selects the file under the receiver's directory; existing
+files are never overwritten.
+
 API Reference
 -------------
 
@@ -47,4 +70,7 @@ API Reference
     :members:
 
 .. autoclass:: tcode_api.servicer.integrator.WebHookBody
+
+.. autoclass:: tcode_api.servicer.recording_receiver.RecordingReceiver
+    :members:
 
