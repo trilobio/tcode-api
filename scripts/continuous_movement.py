@@ -1,13 +1,14 @@
 """Generate a tcode script to move the robot continuously for testing"""
 
-import pathlib
 
+from math import ceil
+
+import numpy as np
 import plac  # type: ignore [import-untyped]
 
 import tcode_api.api as tc
 from tcode_api.cli import (
     DEFAULT_SERVICER_URL,
-    output_file_path_annotation,
     servicer_url_annotation,
 )
 from tcode_api.schemas.location.location_relative_to_robot import LocationRelativeToRobot
@@ -17,10 +18,7 @@ from tcode_api.utilities import (
     generate_id,
     m,
     rad,
-    ul,
 )
-import numpy as np
-from math import ceil
 
 
 @plac.annotations(
@@ -63,7 +61,7 @@ def main(
     np.random.shuffle(space)
 
     script = tc.TCodeScript.new(
-        name=f"Stress test",
+        name="Stress test",
     )
     robot_id = generate_id()
 
