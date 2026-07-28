@@ -1,6 +1,4 @@
-from typing import Callable
-
-from ...registry import RawData
+from ...registry import Migrator, RawData
 
 
 def migrate_v1_to_v2(data: RawData) -> RawData:
@@ -19,6 +17,6 @@ def migrate_v1_to_v2(data: RawData) -> RawData:
     return retval
 
 
-MIGRATORS: dict[int, Callable] = {
+MIGRATORS: dict[int, Migrator] = {
     2: migrate_v1_to_v2,
 }

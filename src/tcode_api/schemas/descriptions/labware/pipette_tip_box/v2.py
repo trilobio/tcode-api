@@ -3,6 +3,7 @@ from typing import Literal
 from pydantic import Field
 
 from ....pipette_tip_layout.v1 import PipetteTipLayout
+from ....registry import RawData
 from ...grid.v1 import GridDescription, GridDescriptor
 from ...pipette_tip.v1 import PipetteTipDescription, PipetteTipDescriptor
 from ..base import BaseLabwareDescription, BaseLabwareDescriptor
@@ -36,7 +37,7 @@ class PipetteTipBoxDescription(BaseLabwareDescription):
     )
 
 
-def migrate_v1_to_v2(data: dict) -> dict:
+def migrate_v1_to_v2(data: RawData) -> RawData:
     """Migrate :class:``PipetteTipBoxDescription``|:class:``PipetteTipBoxDescriptor`` data from v1 to v2."""
     # This logic allows data with no `schema_version` defined, which is fine, because older models didn't have that!
     # We're assuming that all older models are version 1.

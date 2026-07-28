@@ -15,6 +15,8 @@ Format: [Semantic Versioning](https://semver.org)
 
 ### Changed
 - `commit-hook` now uses `runner.py`
+- `migrate.py` files across `tcode_api.schemas` now type their `MIGRATORS` dict values as
+  `Migrator` (from `tcode_api.schemas.registry`) instead of `Callable`.
 
 ---
 
