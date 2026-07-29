@@ -6,6 +6,12 @@ Format: [Semantic Versioning](https://semver.org)
 ## [Unreleased]
 ### Added
 - `runner.py` for standardized, easy running of the linting, formatting, and tests.
+- New `ValidatorErrorCode`s:
+   - `INCOMPATIBLE_LABWARE`
+   - `HOLDER_OCCUPIED`
+- New `ResolverCode`s:
+   - `DESCRIPTOR_INCOMPATIBLE_WITH_LID`
+   - `LID_ID_REQUIRED`
 
 ### Changed
 - `commit-hook` now uses `runner.py`

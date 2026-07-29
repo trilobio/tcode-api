@@ -33,11 +33,17 @@ class ValidatorErrorCode(enum.StrEnum):
     EXTERNAL_SERVICE_UNREACHABLE = "external_service_unreachable"
     SIZE_LIMIT_EXCEEDED = "size_limit_exceeded"
     ID_EXISTS = "id_exists"
+
+    #: Returned when a given id doesn't exist in the tcode service for the given entity type.
+    #: This error could mean the id doesn't exist at all, or that it references an entity of a
+    #: different type than expected, ex. robot_id passed for tool_id.
     ID_NOT_FOUND = "id_not_found"
     INTERNAL_ERROR = "internal_error"
     JOINT_COUNT_MISMATCH = "joint_count_mismatch"
     LID_NOT_FOUND = "lid_not_found"
     TRANSFORM_SIZE_LIMIT_EXCEEDED = "transform_size_limit_exceeded"
+
+    #: Returned when a labware targeted for lidding doesn't support lids
     NO_LID_SUPPORT = "no_lid_support"
     NOT_IMPLEMENTED = "not_implemented"
     PIPETTE_TIP_GROUP_DISCARDED = "pipette_tip_group_discarded"
@@ -48,6 +54,8 @@ class ValidatorErrorCode(enum.StrEnum):
     TRASH_NOT_FOUND = "trash_not_found"
     UNEXPECTED_LABWARE = "unexpected_labware"
     UNEXPECTED_LABWARE_TYPE = "unexpected_labware_type"
+
+    #: Returned when a lid is found on a labware targeted for lidding
     UNEXPECTED_LID = "unexpected_lid"
     UNEXPECTED_PIPETTE_TIP = "unexpected_pipette_tip"
     UNEXPECTED_PIPETTE_TIP_GROUP = "unexpected_pipette_tip_group"
@@ -56,6 +64,15 @@ class ValidatorErrorCode(enum.StrEnum):
     UNNECESSARY = "unnecessary"
     WRONG_TOOL_MOUNTED = "wrong_tool_mounted"
     INVALID_INDEX = "invalid_index"
+
+    #: Returned when a labware and lid are incompatible, e.g. a lid is placed on a labware that it does not fit.
+    INCOMPATIBLE_LABWARE = "incompatible_labware"
+
+    #: Returned when a targeted deck slot, tool holder, or other holder is already holding an item,
+    #: and the operation requires it to be empty.
+    #: ex. tc.REMOVE_LABWARE_LID.storage_holder referencing a deck slot that already contains a
+    #: labware.
+    HOLDER_OCCUPIED = "holder_occupied"
 
 
 class ValidatorError(_TCodeResultReportBase):
@@ -106,6 +123,14 @@ class ResolverCode(str, enum.Enum):
     LABWARE_HOLDER_NOT_EMPTY = "labware_holder_occupied"
     LABWARE_HOLDER_EMPTY = "labware_holder_empty"
     PLATE_NOT_STACKABLE = "plate_not_stackable"
+
+    #: Returned when a lid_id is provided to ADD_LABWARE, but the provided labware descriptor does
+    #: not support lids.
+    DESCRIPTOR_INCOMPATIBLE_WITH_LID = "descriptor_incompatible_with_lid"
+
+    #: Returned when a labware descriptor with a lid is provided to ADD_LABWARE, but no lid_id is
+    #: provided.
+    LID_ID_REQUIRED = "lid_id_required"
 
 
 class ResolverResult(_TCodeResultReportBase):
