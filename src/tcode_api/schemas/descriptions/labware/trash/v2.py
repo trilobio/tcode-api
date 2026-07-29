@@ -1,4 +1,8 @@
-# Protocol Designer starts the LabwareDescriptorBase at V3, so this increment has no changes.
+"""TrashDescriptor & TrashDescription v2
+
+- No changes; version bump only (Protocol Designer starts labware descriptors at v3).
+"""
+
 from typing import Literal
 
 from pydantic import Field

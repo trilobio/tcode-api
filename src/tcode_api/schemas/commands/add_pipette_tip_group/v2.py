@@ -1,3 +1,9 @@
+"""ADD_PIPETTE_TIP_GROUP v2
+
+- Scope to a specific robot (extend `BaseRobotSpecificTCodeCommand` instead of
+  `BaseTCodeCommand`).
+"""
+
 from typing import Literal
 
 from pydantic import Field

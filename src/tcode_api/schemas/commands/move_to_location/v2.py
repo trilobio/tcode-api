@@ -1,3 +1,8 @@
+"""MOVE_TO_LOCATION v2
+
+- Add optional `speed` field to override movement speed for this command.
+"""
+
 from typing import Literal
 
 from pydantic import Field

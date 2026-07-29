@@ -1,3 +1,8 @@
+"""PipetteTipBoxDescriptor & PipetteTipBoxDescription v2
+
+- Replace `full` boolean field with structured `pipette_tip_layout` field.
+"""
+
 from typing import Literal
 
 from pydantic import Field

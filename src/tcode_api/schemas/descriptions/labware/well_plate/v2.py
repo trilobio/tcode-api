@@ -1,4 +1,8 @@
-# Protocol Designer starts the LabwareDescriptorBase at V3, so this increment has no changes.
+"""WellPlateDescriptor & WellPlateDescription v2
+
+- Increment `lid` attribute to v2.
+"""
+
 from typing import Annotated, Literal
 
 from pydantic import Field
