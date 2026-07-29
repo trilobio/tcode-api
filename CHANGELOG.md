@@ -4,6 +4,11 @@ All notable changes to this project will be documented here.
 Format: [Semantic Versioning](https://semver.org)
 
 ## [Unreleased]
+### Added
+- `runner.py` for standardized, easy running of the linting, formatting, and tests.
+
+### Changed
+- `commit-hook` now uses `runner.py`
 
 ---
 
