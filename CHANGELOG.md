@@ -56,14 +56,21 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
+## [1.41.1]
+## Added
+- Added party mode script
+- Default progress display for `TCodeServicerClient.run_script()`
+
+## Fixed
+- Fixed mismatching batch scheduling type between TCode server and client
+
+
 ## [1.41.0]
 ## Added
 - `tcode_api.cli.robot_serial_number_annotation` plac canned annotation for providing a target
     robot in preparation for supporting single-robot targeting within fleets.
 - Integrate robot targeting by serial number into all tcode_api scripts.
 - Update demo plate walkthrough to include pipette volume parametrically
-
----
 
 ## [1.40.1]
 ## Fixed
