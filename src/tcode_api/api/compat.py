@@ -312,6 +312,10 @@ tcode_api_compat_context = CompatContext(
                 "PAUSE": 2,
                 "ADD_PIPETTE_TIP_GROUP": 2,
             },
+            "v1.42.0": {
+                "REMOVE_LABWARE_LID": 2,
+                "REPLACE_LABWARE_LID": 2,
+            },
         },
         migrations={
             "v1.37.0": {
