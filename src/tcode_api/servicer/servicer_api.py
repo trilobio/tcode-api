@@ -63,6 +63,20 @@ class Result(BaseModel):
         return serialized_details
 
 
+class DiscoverFleetRequest(BaseModel):
+    """Request object for discover_fleet endpoint."""
+
+    robot_serial_numbers: list[str] = Field(
+        default_factory=list,
+        description="List of robot serial numbers to discover. If empty, all robots will be discovered.",
+        examples=["T0001V0105F01L00N0001", "T0001V0105F01L00N0002"],
+    )
+
+
+class DiscoverFleetResponse(BaseModel):
+    """Response object for discover_fleet endpoint."""
+
+
 class ClearScheduleResponse(BaseModel):
     """Response object for clear_schedule endpoint."""
 

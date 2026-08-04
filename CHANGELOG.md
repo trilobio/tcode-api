@@ -21,6 +21,7 @@ Format: [Semantic Versioning](https://semver.org)
   `base.py` files into versioned `base/<model>/v1.py` packages, one model per file
   (`Description`/`Descriptor` pairs kept together), with class names suffixed `V1`. No
   behavior change; internal-only, not part of the public API.
+- Added `DiscoverFleetRequest` and `DiscoverFleetResponse` models for fleet discovery API.
 
 ---
 
