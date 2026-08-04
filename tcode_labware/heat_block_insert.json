@@ -1,4 +1,5 @@
 {
+  "schema_version": 4,
   "tags": [],
   "named_tags": {
     "name": "An abandoned heat block insert",
@@ -20,8 +21,10 @@
     "magnitude": 42.0,
     "units": "mm"
   },
+  "pinchable": false,
   "type": "TubeHolder",
   "grid": {
+    "schema_version": 1,
     "type": "Grid",
     "row_count": 4,
     "column_count": 6,
@@ -47,15 +50,17 @@
     }
   },
   "tube": {
-    "type": "Tube",
+    "schema_version": 1,
     "tags": [],
     "named_tags": {},
+    "type": "Tube",
     "depth": {
       "type": "ValueWithUnits",
       "magnitude": 38.6,
       "units": "mm"
     },
     "shape": {
+      "schema_version": 1,
       "type": "Circle",
       "diameter": {
         "type": "ValueWithUnits",
@@ -64,6 +69,7 @@
       }
     },
     "bottom_shape": {
+      "schema_version": 1,
       "type": "Flat"
     },
     "min_volume": {

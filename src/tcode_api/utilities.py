@@ -6,12 +6,15 @@ import json
 import pathlib
 import site
 import uuid
+from typing import cast
 
 import numpy as np
-from pydantic import TypeAdapter
 from scipy.spatial.transform import Rotation  # type: ignore[import-untyped]
 
 import tcode_api.api as tc
+from tcode_api.api.compat import migrate_data_to_latest
+from tcode_api.schemas.base.schema_versioned_model.v1 import BaseSchemaVersionedModelV1
+from tcode_api.schemas.registry import schema_registry
 from tcode_api.types import Matrix, UnsanitizedFloat
 
 SCIPY_SEQ = "zyx"  # Extrinsic rotation sequence
@@ -32,70 +35,78 @@ else:
     DEFAULT_LABWARE_PATH = current_path.parent.parent.parent / DEFAULT_LABWARE_DIR
 
 
-class LabwareIO:
-    """Class for reading/writing labware descriptions from storage."""
+class SchemaIO:
+    """Class for reading/writing any registered tcode_api schema from/to storage.
 
-    def __init__(self, labware_dir: pathlib.Path | None = None) -> None:
-        """Initialize LabwareIO."""
-        if labware_dir is None:
-            self.labware_dir = DEFAULT_LABWARE_PATH
+    Unlike a fixed-type loader, each file is dispatched by its own ``"type"`` discriminator via
+    ``schema_registry``, so a single instance can read a directory containing a mix of schema
+    kinds (e.g. ``tcode_labware/`` mixes labware descriptions with nested ``PipetteTip`` files).
+    """
+
+    def __init__(self, schema_dir: pathlib.Path | None = None) -> None:
+        """Initialize SchemaIO."""
+        if schema_dir is None:
+            self.schema_dir = DEFAULT_LABWARE_PATH
         else:
-            self.labware_dir = pathlib.Path(labware_dir)
+            self.schema_dir = pathlib.Path(schema_dir)
 
-        if not self.labware_dir.exists():
+        if not self.schema_dir.exists():
             raise FileNotFoundError(
-                f"Labware directory not found: {self.labware_dir}. Please check whether tcode is installed correctly."
+                f"Schema directory not found: {self.schema_dir}. Please check whether tcode is installed correctly."
             )
-
-        self.labware_type_adapter: TypeAdapter = TypeAdapter(tc.LabwareDescription)
 
     def _resolve_file_path(
         self, file_path: str | pathlib.Path, exists: bool | None = None
     ) -> pathlib.Path:
-        """Resolve file path to labware description file.
+        """Resolve file path to a schema file.
 
-        :param file_path: Name of file or path to file containing description. If file_path is a string,
-            checks tcode_api/labware for a file whose name matches file_path. If no such file exists,
-            file_path is cast to a pathlib Path.
+        :param file_path: Name of file or path to file containing schema data. If file_path is a
+            string, checks ``self.schema_dir`` for a file whose name matches file_path. If no
+            such file exists, file_path is cast to a pathlib Path.
         :param exists: If True, raises FileNotFoundError if the resolved file does not exist. If
             False, does not check for existence. If None, doesn't check file existence.
-        :return: Resolved pathlib.Path to the labware description file.
+        :return: Resolved pathlib.Path to the schema file.
         """
         if isinstance(file_path, str):
-            file_path = self.labware_dir / f"{file_path}.json"
+            file_path = self.schema_dir / f"{file_path}.json"
             if not file_path.exists():
                 file_path = pathlib.Path(file_path)
 
         if exists is True and not file_path.exists():
-            raise FileNotFoundError(f"Labware file not found: {file_path}")
+            raise FileNotFoundError(f"Schema file not found: {file_path}")
         if exists is False and file_path.exists():
-            raise FileExistsError(f"Labware file already exists: {file_path}")
+            raise FileExistsError(f"Schema file already exists: {file_path}")
         return file_path
 
-    def load(self, identifier: str | pathlib.Path) -> tc.LabwareDescription:
-        """Read labware description from JSON file.
+    def load(self, identifier: str | pathlib.Path) -> BaseSchemaVersionedModelV1:
+        """Read a schema instance from a JSON file, migrating it to the current version first.
 
-        :param identifier: Name of file or path to file containing description. If file_path is a string,
-            checks tcode_api/labware for a file whose name matches file_path. If no such file exists,
-            file_path is cast to a pathlib Path.
-        :return: tc.LabwareDescription loaded from the file.
+        :param identifier: Name of file or path to file containing schema data. If file_path is
+            a string, checks ``self.schema_dir`` for a file whose name matches file_path. If no
+            such file exists, file_path is cast to a pathlib Path.
+        :return: The current-version schema instance loaded from the file, dispatched by its
+            ``"type"`` field.
         """
         file_path = self._resolve_file_path(identifier, exists=True)
         with file_path.open("r", encoding="utf-8") as f:
-            data = f.read()
+            data = json.load(f)
 
-        model_constructor = self.labware_type_adapter.validate_python(json.loads(data))
-        return model_constructor.model_validate_json(data)
+        migrated = migrate_data_to_latest(
+            data=data,
+            schema_name=data["type"],
+            schema_version=data.get("schema_version", 1),
+        )
+        return schema_registry.build_instance(migrated)
 
-    def write(self, identifier: str | pathlib.Path, labware: tc.LabwareDescription) -> None:
-        """Write labware description to JSON file.
+    def write(self, identifier: str | pathlib.Path, schema: BaseSchemaVersionedModelV1) -> None:
+        """Write a schema instance to a JSON file.
 
-        :param identifier: Path to file where description will be written.
-        :param labware: tc.LabwareDescription to write to file.
+        :param identifier: Path to file where the schema data will be written.
+        :param schema: Schema instance to write to file.
         """
         file_path = pathlib.Path(identifier)
         with file_path.open("w", encoding="utf-8") as f:
-            f.write(labware.model_dump_json(indent=2))
+            f.write(schema.model_dump_json(indent=2))
 
 
 def load_labware(
@@ -110,8 +121,8 @@ def load_labware(
 
     :return: loaded tc.LabwareDescription.
     """
-    labware_io = LabwareIO(labware_dir=labware_dir)
-    return labware_io.load(identifier)
+    schema_io = SchemaIO(schema_dir=labware_dir)
+    return cast(tc.LabwareDescription, schema_io.load(identifier))
 
 
 def generate_id() -> str:

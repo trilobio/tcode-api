@@ -28,6 +28,12 @@ Format: [Semantic Versioning](https://semver.org)
   (`Description`/`Descriptor` pairs kept together), with class names suffixed `V1`. No
   behavior change; internal-only, not part of the public API.
 - Added `DiscoverFleetRequest` and `DiscoverFleetResponse` models for fleet discovery API.
+- `LabwareIO` replaced with `SchemaIO` in `tcode_api.utilities`: dispatches by each file's own
+  `"type"` field via `schema_registry` instead of a hardcoded `LabwareDescription` adapter, so
+  one instance can load a directory mixing schema kinds, and `load()` now migrates data to the
+  current version before validating instead of failing on stale fixtures. `load_labware()` keeps
+  its prior signature/return type as a thin wrapper. `scripts/migrate_labware.py` renamed to
+  `scripts/migrate_schemas.py` and simplified accordingly.
 
 ---
 

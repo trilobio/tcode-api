@@ -1,4 +1,5 @@
 {
+  "schema_version": 4,
   "tags": [],
   "named_tags": {
     "name": "266120_Thermo NUNC_96W_flat_lid",
@@ -21,6 +22,7 @@
     "magnitude": 8.0,
     "units": "mm"
   },
+  "pinchable": true,
   "type": "Lid",
   "stackable": true
 }

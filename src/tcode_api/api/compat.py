@@ -354,6 +354,7 @@ def migrate_data_to_latest(
     :param context: The targeted compatibility context. Defaults to the tcode-api context.
 
     :returns: The migrated json blob, updated to match the latest version of the schema.
+        If no migrators were found for the given schema, returns the data unchanged.
 
     :raises InvalidDataError: If the schema name or version cannot be inferred from the data and
         not provided as an argument.
@@ -374,7 +375,13 @@ def migrate_data_to_latest(
             data=data,
         ) from err
 
-    migrators = context.migration_registry.get_migrators_for_schema(schema_name)
+    try:
+        migrators = context.migration_registry.get_migrators_for_schema(schema_name)
+    except BuilderNotFoundError:
+        _logger.warning(
+            "No migrators found for schema '%s', returning data unchanged.", schema_name
+        )
+        migrators = {}
     for version in sorted(migrators):
         if version > schema_version:
             data = migrators[version](data)

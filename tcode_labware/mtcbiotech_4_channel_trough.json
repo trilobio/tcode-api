@@ -1,4 +1,5 @@
 {
+  "schema_version": 4,
   "tags": [],
   "named_tags": {
     "name": "mtcbiotech_4_channel_trough",
@@ -21,8 +22,10 @@
     "magnitude": 31.4,
     "units": "mm"
   },
+  "pinchable": true,
   "type": "WellPlate",
   "grid": {
+    "schema_version": 1,
     "type": "Grid",
     "row_count": 1,
     "column_count": 4,
@@ -48,6 +51,9 @@
     }
   },
   "well": {
+    "schema_version": 1,
+    "tags": [],
+    "named_tags": {},
     "type": "Well",
     "depth": {
       "type": "ValueWithUnits",
@@ -55,6 +61,7 @@
       "units": "mm"
     },
     "shape": {
+      "schema_version": 1,
       "type": "AxisAlignedRectangle",
       "x_length": {
         "type": "ValueWithUnits",
@@ -68,6 +75,7 @@
       }
     },
     "bottom_shape": {
+      "schema_version": 1,
       "type": "V-Shape",
       "direction": "y-axis",
       "offset": {
@@ -85,9 +93,7 @@
       "type": "ValueWithUnits",
       "magnitude": 47500.0,
       "units": "uL"
-    },
-    "well_tags": [],
-    "well_named_tags": {}
+    }
   },
   "lid_offset": null,
   "lid": null

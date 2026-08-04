@@ -1,4 +1,5 @@
 {
+  "schema_version": 4,
   "tags": [],
   "named_tags": {
     "name": "biotix_utip_p250_box",
@@ -21,8 +22,10 @@
     "magnitude": 42.1,
     "units": "mm"
   },
+  "pinchable": false,
   "type": "PipetteTipBox",
   "grid": {
+    "schema_version": 1,
     "type": "Grid",
     "row_count": 8,
     "column_count": 12,
@@ -47,20 +50,8 @@
       "units": "mm"
     }
   },
-  "pipette_tip_layout": {
-    "layout": [
-      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-      [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
-    ]
-  },
   "pipette_tip": {
-    "type": "PipetteTip",
+    "schema_version": 1,
     "tags": [
       "manifold_match_7"
     ],
@@ -68,6 +59,7 @@
       "brand": "biotix_utip",
       "model": "biotix_utip_p250.obj"
     },
+    "type": "PipetteTip",
     "has_filter": false,
     "height": {
       "type": "ValueWithUnits",
@@ -89,5 +81,123 @@
       "magnitude": 20.0,
       "units": "uL"
     }
+  },
+  "pipette_tip_layout": {
+    "schema_version": 1,
+    "type": "PipetteTipLayout",
+    "layout": [
+      [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      [
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1,
+        1
+      ]
+    ]
   }
 }

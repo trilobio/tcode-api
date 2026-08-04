@@ -1,4 +1,5 @@
 {
+  "schema_version": 4,
   "tags": [],
   "named_tags": {
     "name": "checkit_50ul",
@@ -21,8 +22,10 @@
     "magnitude": 14.3,
     "units": "mm"
   },
+  "pinchable": true,
   "type": "WellPlate",
   "grid": {
+    "schema_version": 1,
     "type": "Grid",
     "row_count": 8,
     "column_count": 12,
@@ -48,6 +51,9 @@
     }
   },
   "well": {
+    "schema_version": 1,
+    "tags": [],
+    "named_tags": {},
     "type": "Well",
     "depth": {
       "type": "ValueWithUnits",
@@ -55,6 +61,7 @@
       "units": "mm"
     },
     "shape": {
+      "schema_version": 1,
       "type": "Circle",
       "diameter": {
         "type": "ValueWithUnits",
@@ -63,6 +70,7 @@
       }
     },
     "bottom_shape": {
+      "schema_version": 1,
       "type": "Flat"
     },
     "min_volume": {
@@ -74,9 +82,7 @@
       "type": "ValueWithUnits",
       "magnitude": 300.0,
       "units": "uL"
-    },
-    "well_tags": [],
-    "well_named_tags": {}
+    }
   },
   "lid_offset": null,
   "lid": null
