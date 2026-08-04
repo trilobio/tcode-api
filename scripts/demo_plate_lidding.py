@@ -1,6 +1,7 @@
-"""Demonstrate using a labware gripper to stack and un-stack lidded plates."""
+"""Demonstrate using a labware gripper to lid and un-lid lidded plates."""
 
 import pathlib
+from typing import cast
 
 import plac  # type: ignore [import-untyped]
 
@@ -40,74 +41,48 @@ def main(
     )
 
     # LABWARE
-    plate_count = 3
+    plate_count = 1
     script.commands.append(tc.COMMENT(text=f"Create {plate_count} lidded Thermo NUNC plates"))
     labware_ids = [generate_id() for _ in range(plate_count)]
     lid_ids = [generate_id() for _ in range(plate_count)]
-    idxs_in_stack_order = list(range(1, len(labware_ids)))
     labware_holders = [
-        tc.LabwareHolderName(robot_id=robot_id, name=f"DeckSlot_{i}") for i in (2, 3, 4)
-    ]
+        tc.LabwareHolderName(robot_id=robot_id, name=f"DeckSlot_{i}") for i in (8, 9, 12)
+    ][:plate_count]
+    lid_holders = [
+        tc.LabwareHolderName(robot_id=robot_id, name=f"DeckSlot_{i}") for i in (7, 10, 11)
+    ][:plate_count]
+
+    description = cast(tc.WellPlateDescription, load_labware("thermo_nunc_266120_plate"))
+    lid_description = cast(tc.LidDescription, load_labware("thermo_nunc_266120_lid"))
+    description.lid = lid_description
     for id, lid_id, holder in zip(labware_ids, lid_ids, labware_holders):
         script.commands.append(
             tc.CREATE_LABWARE(
                 robot_id=robot_id,
-                description=load_labware("thermo_nunc_266120_plate"),
+                description=description,
                 holder=holder,
             ),
         )
-        script.commands.append(
+        script.commands += [
             tc.ADD_LABWARE(id=id, descriptor=describe_well_plate(has_lid=True), lid_id=lid_id)
-        )
+        ]
 
     # ACTIONS #
     script.commands.append(tc.SWAP_TO_TOOL(robot_id=robot_id, id=gripper_id))
 
-    script.commands.append(tc.COMMENT(text="Stack plates"))
-    for idx in idxs_in_stack_order:
-        bottom_id, top_id = labware_ids[idx - 1], labware_ids[idx]
-        script.commands.append(tc.COMMENT(text=f"Stacking {top_id} on {bottom_id}"))
-        script.commands.append(
-            tc.PICK_UP_LABWARE(robot_id=robot_id, labware_id=top_id, grasp_type=tc.GraspType.PINCH)
-        )
-        script.commands.append(
-            tc.PUT_DOWN_LABWARE(
-                robot_id=robot_id,
-                holder=tc.LabwareId(id=bottom_id),
-            )
-        )
-
-    script.commands.append(tc.COMMENT(text="Move plate stack"))
-    deck_slot_name = "DeckSlot_1"
-    script.commands.append(tc.COMMENT(text=f"Moving {labware_ids[0]} to {deck_slot_name}"))
-    script.commands.append(
-        tc.PICK_UP_LABWARE(
-            robot_id=robot_id, labware_id=labware_ids[0], grasp_type=tc.GraspType.LIFT
-        )
-    )
-    script.commands.append(
-        tc.PUT_DOWN_LABWARE(
+    i = 0
+    script.commands += [
+        tc.REMOVE_LABWARE_LID(
             robot_id=robot_id,
-            holder=tc.LabwareHolderName(robot_id=robot_id, name=deck_slot_name),
-        )
-    )
-
-    script.commands.append(tc.COMMENT(text="Un-stack plates"))
-    for idx in reversed(idxs_in_stack_order):
-        labware_holder = labware_holders[idx]
-        labware_id = labware_ids[idx]
-        script.commands.append(tc.COMMENT(text=f"Unstacking {labware_id} to {labware_holder.name}"))
-        script.commands.append(
-            tc.PICK_UP_LABWARE(
-                robot_id=robot_id, labware_id=labware_id, grasp_type=tc.GraspType.PINCH
-            )
-        )
-        script.commands.append(
-            tc.PUT_DOWN_LABWARE(
-                robot_id=robot_id,
-                holder=labware_holder,
-            )
-        )
+            labware_id=labware_ids[i],
+            storage_holder=lid_holders[i],
+        ),
+        tc.REPLACE_LABWARE_LID(
+            robot_id=robot_id,
+            lid_id=lid_ids[i],
+            labware_id=labware_ids[i],
+        ),
+    ]
 
     script.commands.append(tc.RETURN_TOOL(robot_id=robot_id))
 
