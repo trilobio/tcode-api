@@ -38,8 +38,12 @@ def main(
     A simple script to generate MOVE_TO_LOCATION TCode commands for stress-testing
     the robot performance. It moves the robot within a safe radius below the tool rack.
 
-    This script should only be ran when the robot isn't holding a tool.
+    This script should only be run when the robot isn't holding a tool.
     """
+    input(
+        "Please make sure the robot is not currently holding a tool and remove all tools from the tool rack. Press <Enter> to continue."
+    )
+
     points_per_axis = ceil(number_of_commands ** (1 / 3))
 
     space = []
@@ -61,12 +65,28 @@ def main(
     print(f"Created movement lattice of width {points_per_axis}")
 
     script = tc.TCodeScript.new(
-        name="Stress test",
+        name="Party mode",
     )
     robot_id = generate_id()
 
-    # Resolve robot and pipette
+    # Resolve robot
     script.commands.append(tc.ADD_ROBOT(id=robot_id, descriptor=tc.RobotDescriptor()))
+
+    # Move the robot to a starting safe position for the following direct moves
+    script.commands.append(
+        tc.MOVE_TO_LOCATION(
+            robot_id=robot_id,
+            path_type=tc.PathType.SAFE,
+            location=LocationRelativeToRobot(
+                robot_id=robot_id,
+                matrix=create_transform(
+                    m(0.2),
+                    m(0.2),
+                    m(0.3),
+                ),
+            ),
+        )
+    )
 
     for x, y, z in space:
         script.commands.append(
@@ -88,7 +108,7 @@ def main(
     client = TCodeServicerClient(
         servicer_url=servicer_url,
     )
-    client.run_script(script, batch_process=True)
+    client.run_script(script, batch_process=True, enable_socketio_user_input=False)
 
 
 if __name__ == "__main__":

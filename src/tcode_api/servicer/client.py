@@ -2,8 +2,10 @@
 
 import importlib
 import logging
+import math
 import os
 import time
+from datetime import datetime
 from itertools import batched
 from typing import Any
 
@@ -322,7 +324,7 @@ class TCodeServicerClient:
         )
         rsp.raise_for_status()
 
-    def execute_run_loop(self) -> None:
+    def execute_run_loop(self, display_progress: bool = True) -> None:
         """Run a blocking loop that monitors the servicer's status and exits when the current
             script is complete or an error occurs.
 
@@ -330,6 +332,7 @@ class TCodeServicerClient:
             and exit cleanly.
         """
         self.set_run_state(True)
+        time_start = datetime.now()
         while True:
             try:
                 time.sleep(0.1)
@@ -337,6 +340,8 @@ class TCodeServicerClient:
 
                 if status.operation_count == 0:
                     self.set_run_state(False)
+                    if display_progress:
+                        print("\nTCode script successfully executed")
                     return
 
                 if not status.result.success:
@@ -347,6 +352,13 @@ class TCodeServicerClient:
                     _logger.fatal(msg)
                     self.set_run_state(False)
                     return
+                elapsed = datetime.now() - time_start
+                if display_progress:
+                    print(
+                        f"\rTCode executing: {status.operation_count:< 6} commands remaining. {elapsed.seconds}s elapsed",
+                        end="",
+                        flush=True,
+                    )
 
             except KeyboardInterrupt:
                 self.set_run_state(False)
@@ -360,6 +372,7 @@ class TCodeServicerClient:
         clean_environment: bool = True,
         batch_process: bool = False,
         enable_socketio_user_input: bool = True,
+        display_progress: bool = True,
     ) -> None:
         """Schedule and execute a TCode script on the fleet, starting from an empty state.
 
@@ -399,6 +412,14 @@ class TCodeServicerClient:
                     raise RuntimeError(msg)
         else:
             batch_size = 100
+            scheduled_count = 0
+            command_size_digit_count = math.floor(math.log10(len(script.commands))) + 1
+            if display_progress:
+                print(
+                    f"\rTCode scheduling {scheduled_count:> {command_size_digit_count}}/{len(script.commands)}",
+                    end="",
+                    flush=True,
+                )
 
             for batch_index, command_batch in enumerate(batched(script.commands, batch_size)):
                 commands_list = list(command_batch)
@@ -417,10 +438,17 @@ class TCodeServicerClient:
                         if res.result.details is not None:
                             for line in res.result.details.get("traceback", "").split("\n"):
                                 _logger.debug(line)
+                        print()  # new line
                         raise RuntimeError(msg)
 
+                if display_progress:
+                    print(
+                        f"\rTCode scheduling {scheduled_count:> {command_size_digit_count}}/{len(script.commands)}",
+                        end="",
+                    )
+        print()  # new line
         try:
-            self.execute_run_loop()
+            self.execute_run_loop(display_progress)
         finally:
             try:
                 if sio is not None:
