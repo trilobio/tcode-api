@@ -792,6 +792,76 @@ class TestAddPipetteTipGroupV1ToV2Migration(unittest.TestCase):
             migrate_data_to_latest(data=self._v1_payload(), schema_name="ADD_PIPETTE_TIP_GROUP")
 
 
+class TestLabwarePinchableV3ToV4Migration(unittest.TestCase):
+    """Regression tests for the labware v3->v4 migration adding `pinchable` (tcode-api v1.42.0)."""
+
+    def test_migrate_lid_v3_backfills_pinchable_true(self) -> None:
+        """A v3 Lid payload with no `pinchable` backfills as pinchable=True (lids are pinched)."""
+        data = {"type": "Lid", "schema_version": 3}
+        migrated = migrate_data_to_latest(data=data, schema_name="Lid")
+        self.assertEqual(migrated["schema_version"], 4)
+        self.assertTrue(migrated["pinchable"])
+
+    def test_migrate_lid_v3_preserves_explicit_pinchable(self) -> None:
+        """A v3 Lid payload that already sets `pinchable` keeps that value."""
+        data = {"type": "Lid", "schema_version": 3, "pinchable": False}
+        migrated = migrate_data_to_latest(data=data, schema_name="Lid")
+        self.assertEqual(migrated["schema_version"], 4)
+        self.assertFalse(migrated["pinchable"])
+
+    def test_migrate_well_plate_v3_backfills_pinchable_true(self) -> None:
+        """A v3 WellPlate payload with no `pinchable` backfills as pinchable=True (well plates are
+        pinched)."""
+        data = {"type": "WellPlate", "schema_version": 3}
+        migrated = migrate_data_to_latest(data=data, schema_name="WellPlate")
+        self.assertEqual(migrated["schema_version"], 4)
+        self.assertTrue(migrated["pinchable"])
+
+    def test_migrate_well_plate_v3_migrates_nested_lid(self) -> None:
+        """A v3 WellPlate payload with a nested v3 lid also migrates the nested lid to v4."""
+        data = {
+            "type": "WellPlate",
+            "schema_version": 3,
+            "lid": {"type": "Lid", "schema_version": 3},
+        }
+        migrated = migrate_data_to_latest(data=data, schema_name="WellPlate")
+        self.assertEqual(migrated["schema_version"], 4)
+        self.assertTrue(migrated["pinchable"])
+        self.assertEqual(migrated["lid"]["schema_version"], 4)
+        self.assertTrue(migrated["lid"]["pinchable"])
+
+    def test_migrate_well_plate_v3_without_lid(self) -> None:
+        """A v3 WellPlate payload with no lid migrates without adding one."""
+        data = {"type": "WellPlate", "schema_version": 3, "lid": None}
+        migrated = migrate_data_to_latest(data=data, schema_name="WellPlate")
+        self.assertEqual(migrated["schema_version"], 4)
+        self.assertIsNone(migrated["lid"])
+
+    def test_migrate_trash_v3_backfills_pinchable_false(self) -> None:
+        """A v3 Trash payload with no `pinchable` backfills as pinchable=False (trash bins are
+        lifted)."""
+        data = {"type": "Trash", "schema_version": 3}
+        migrated = migrate_data_to_latest(data=data, schema_name="Trash")
+        self.assertEqual(migrated["schema_version"], 4)
+        self.assertFalse(migrated["pinchable"])
+
+    def test_migrate_tube_holder_v3_backfills_pinchable_false(self) -> None:
+        """A v3 TubeHolder payload with no `pinchable` backfills as pinchable=False (tube holders
+        are lifted)."""
+        data = {"type": "TubeHolder", "schema_version": 3}
+        migrated = migrate_data_to_latest(data=data, schema_name="TubeHolder")
+        self.assertEqual(migrated["schema_version"], 4)
+        self.assertFalse(migrated["pinchable"])
+
+    def test_migrate_pipette_tip_box_v3_backfills_pinchable_false(self) -> None:
+        """A v3 PipetteTipBox payload with no `pinchable` backfills as pinchable=False (pipette
+        tip boxes are lifted)."""
+        data = {"type": "PipetteTipBox", "schema_version": 3}
+        migrated = migrate_data_to_latest(data=data, schema_name="PipetteTipBox")
+        self.assertEqual(migrated["schema_version"], 4)
+        self.assertFalse(migrated["pinchable"])
+
+
 if __name__ == "__main__":
     logging.basicConfig(level=logging.WARNING)
     unittest.main()

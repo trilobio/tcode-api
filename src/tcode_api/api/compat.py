@@ -315,6 +315,16 @@ tcode_api_compat_context = CompatContext(
             "v1.42.0": {
                 "REMOVE_LABWARE_LID": 2,
                 "REPLACE_LABWARE_LID": 2,
+                "LidDescription": 4,
+                "LidDescriptor": 4,
+                "PipetteTipBoxDescription": 4,
+                "PipetteTipBoxDescriptor": 4,
+                "TrashDescription": 4,
+                "TrashDescriptor": 4,
+                "TubeHolderDescription": 4,
+                "TubeHolderDescriptor": 4,
+                "WellPlateDescription": 4,
+                "WellPlateDescriptor": 4,
             },
         },
         migrations={

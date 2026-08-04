@@ -12,6 +12,12 @@ Format: [Semantic Versioning](https://semver.org)
 - New `ResolverCode`s:
    - `DESCRIPTOR_INCOMPATIBLE_WITH_LID`
    - `LID_ID_REQUIRED`
+- `pinchable` field on `Lid`, `WellPlate`, `Trash`, `TubeHolder`, and `PipetteTipBox`
+  descriptions/descriptors (v4), indicating whether the labware can be lifted with a pinch grip.
+  Introduced via new `base/labware_description/v2.py` (`BaseLabwareDescriptionV2`/
+  `BaseLabwareDescriptorV2`) so v1-v3 schemas are untouched; v3->v4 migration backfills
+  `pinchable` per labware kind (`True` for Lid/WellPlate, `False` for
+  Trash/TubeHolder/PipetteTipBox), matching existing pinch-vs-lift behavior in `robot`/`tcode`.
 
 ### Changed
 - `commit-hook` now uses `runner.py`

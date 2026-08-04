@@ -21,7 +21,21 @@ def migrate_v2_to_v3(data: RawData) -> RawData:
     return retval
 
 
+def migrate_v3_to_v4(data: RawData) -> RawData:
+    """Migrate a TubeHolderDescription or TubeHolderDescriptor from schema version 3 to 4."""
+    # v4 adds the required `pinchable` field. Tube holders are lifted (not pinched) when picked
+    # up (see tcode.resolver.create_labware.build_tube_rack_from_description's
+    # pinch_transform=None), so pre-v4 tube holders backfill as pinchable=False.
+    retval = {
+        **data,
+    }
+    retval["schema_version"] = 4
+    retval.setdefault("pinchable", False)
+    return retval
+
+
 MIGRATORS: dict[int, Migrator] = {
     2: migrate_v1_to_v2,
     3: migrate_v2_to_v3,
+    4: migrate_v3_to_v4,
 }
