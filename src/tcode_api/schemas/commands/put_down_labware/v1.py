@@ -4,10 +4,10 @@ from pydantic import Field
 
 from ....types import Matrix, identity_transform
 from ...labware_holder.union import LabwareHolder
-from ..base import BaseRobotSpecificTCodeCommand
+from ..base.robot_specific_tcode_command.v1 import BaseRobotSpecificTCodeCommandV1
 
 
-class PUT_DOWN_LABWARE(BaseRobotSpecificTCodeCommand):
+class PUT_DOWN_LABWARE(BaseRobotSpecificTCodeCommandV1):
     """Put down the currently held labware."""
 
     type: Literal["PUT_DOWN_LABWARE"] = "PUT_DOWN_LABWARE"

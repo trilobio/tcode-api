@@ -2,7 +2,7 @@
 
 from typing import Any, Callable, Mapping, cast
 
-from .base import BaseSchemaVersionedModel
+from .base.schema_versioned_model.v1 import BaseSchemaVersionedModelV1
 
 RegistryKey = str
 
@@ -116,7 +116,7 @@ class MigrationRegistry:
 
 # using Mapping here instead of dict allows builders to accept more flexible dict-like types
 # (e.g. pydantic's BaseModel, which is not a dict but implements Mapping)
-BuilderFunc = Callable[[RawData], BaseSchemaVersionedModel]
+BuilderFunc = Callable[[RawData], BaseSchemaVersionedModelV1]
 
 
 class SchemaRegistry:
@@ -125,7 +125,7 @@ class SchemaRegistry:
     def __init__(
         self,
         _builders_to_preload: (
-            dict[RegistryKey, type[BaseSchemaVersionedModel] | BuilderFunc] | None
+            dict[RegistryKey, type[BaseSchemaVersionedModelV1] | BuilderFunc] | None
         ) = None,
     ) -> None:
         """Initialize the registry with an optional mapping of keys to schema builders.
@@ -142,7 +142,7 @@ class SchemaRegistry:
     def register(
         self,
         key: str,
-        schema: type[BaseSchemaVersionedModel] | BuilderFunc,
+        schema: type[BaseSchemaVersionedModelV1] | BuilderFunc,
         override: bool = False,
     ) -> None:
         """Register a schema builder with the registry.
@@ -167,11 +167,11 @@ class SchemaRegistry:
             )
 
         if isinstance(schema, type):
-            if issubclass(schema, BaseSchemaVersionedModel):
+            if issubclass(schema, BaseSchemaVersionedModelV1):
                 builder: BuilderFunc = cast(BuilderFunc, schema.model_validate)
             else:
                 raise TypeError(
-                    f"Provided schema for {key} is a class but not a subclass of BaseSchemaVersionedModel; got {schema}"
+                    f"Provided schema for {key} is a class but not a subclass of BaseSchemaVersionedModelV1; got {schema}"
                 )
         else:
             builder = schema
@@ -194,7 +194,7 @@ class SchemaRegistry:
                 builder_keys=list(self._builders.keys()),
             ) from err
 
-    def build_instance(self, data: RawData, key: str | None = None) -> BaseSchemaVersionedModel:
+    def build_instance(self, data: RawData, key: str | None = None) -> BaseSchemaVersionedModelV1:
         """Construct a relevant schema instance from the provided data.
 
         :param data: schema-compliant data from some version of the schema.

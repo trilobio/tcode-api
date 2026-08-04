@@ -1,8 +1,8 @@
 from typing import Literal
 
-from ..base import BasePipetteDescriptor
+from ..base.pipette_descriptor.v1 import BasePipetteDescriptorV1
 
 
-class EightChannelPipetteDescriptor(BasePipetteDescriptor):
+class EightChannelPipetteDescriptor(BasePipetteDescriptorV1):
     type: Literal["EightChannelPipette"] = "EightChannelPipette"
     schema_version: Literal[1] = 1

@@ -2,7 +2,7 @@ from typing import Annotated, Literal
 
 from pydantic import Field
 
-from ....base import BaseSchemaVersionedModel
+from ....base.schema_versioned_model.v1 import BaseSchemaVersionedModelV1
 from ....common.value_with_units import ValueWithUnits
 
 DirectionField = Annotated[
@@ -20,7 +20,7 @@ OffsetField = Annotated[
 ]
 
 
-class VBottomDescription(BaseSchemaVersionedModel):
+class VBottomDescription(BaseSchemaVersionedModelV1):
     """Description of a V-bottom well (e.g. trough)."""
 
     type: Literal["V-Shape"] = "V-Shape"
@@ -30,7 +30,7 @@ class VBottomDescription(BaseSchemaVersionedModel):
     offset: OffsetField
 
 
-class VBottomDescriptor(BaseSchemaVersionedModel):
+class VBottomDescriptor(BaseSchemaVersionedModelV1):
     """:class:``VBottomDescription`` with optional parameters."""
 
     type: Literal["V-Shape"] = "V-Shape"

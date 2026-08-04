@@ -4,10 +4,10 @@ from pydantic import Field
 
 from ...location.location_as_labware_index.v1 import LocationAsLabwareIndex
 from ...location.location_relative_to_labware.v1 import LocationRelativeToLabware
-from ..base import BaseRobotSpecificTCodeCommand
+from ..base.robot_specific_tcode_command.v1 import BaseRobotSpecificTCodeCommandV1
 
 
-class CALIBRATE_LABWARE_WELL_DEPTH(BaseRobotSpecificTCodeCommand):
+class CALIBRATE_LABWARE_WELL_DEPTH(BaseRobotSpecificTCodeCommandV1):
     """Tune the depth of a target labware's well by probing."""
 
     type: Literal["CALIBRATE_LABWARE_WELL_DEPTH"] = "CALIBRATE_LABWARE_WELL_DEPTH"

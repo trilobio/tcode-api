@@ -3,10 +3,10 @@ from typing import Literal
 from pydantic import Field
 
 from ...location.location_as_labware_holder.v1 import LocationAsLabwareHolder
-from ..base import BaseRobotSpecificTCodeCommand
+from ..base.robot_specific_tcode_command.v1 import BaseRobotSpecificTCodeCommandV1
 
 
-class CALIBRATE_LABWARE_HOLDER(BaseRobotSpecificTCodeCommand):
+class CALIBRATE_LABWARE_HOLDER(BaseRobotSpecificTCodeCommandV1):
     """Calibrate the position of a target labware holder (deck slot) on the target robot by probing
     or by teaching.
 

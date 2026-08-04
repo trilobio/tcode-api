@@ -2,10 +2,10 @@ from typing import Literal
 
 from pydantic import Field
 
-from ..base import BaseLabwareHolder
+from ..base.labware_holder.v1 import BaseLabwareHolderV1
 
 
-class LabwareId(BaseLabwareHolder):
+class LabwareId(BaseLabwareHolderV1):
     """LabwareHolder specifed by a TCode-assigned labware ID."""
 
     type: Literal["LabwareId"] = "LabwareId"

@@ -1,6 +1,6 @@
 ---
 name: Tcode API Schema Migration
-description: Generates the boilerplate necessary for migration of Tcode API schema(s) between semantic versions. Use whenever the user either a. changes a class in a `base.py` file under tcode_api/schemas, b. adds a new `v#.py` file to an existing schema structure, or c. asks for a change to a schema in the Tcode API.
+description: Generates the boilerplate necessary for migration of Tcode API schema(s) between semantic versions. Use whenever the user either a. changes a class in a `base/<model>/v#.py` file under tcode_api/schemas, b. adds a new `v#.py` file to an existing schema structure, or c. asks for a change to a schema in the Tcode API.
 ---
 
 ## Overview
@@ -58,13 +58,39 @@ Do **not**:
 - Add a required field with no migration entry, on the assumption that callers will "just update".
 - Change `latest.py` without adding the corresponding `vN+1.py` and migrator.
 - Add a new compat entry without bumping `pyproject.toml`, or vice versa.
+- Mutate a shared `base/<model>/vK.py` class in place, for the same reason as mutating a leaf `vN.py` — every leaf schema that inherits from it is affected at once. See "Shared base classes" below.
+- Import a base class via a `latest`-style indirection from inside a frozen `vN.py` file. Always import the exact, hardcoded base version.
 
-### Additions to `BaseTCodeCommand` / shared base classes
+### Shared base classes (`base/`)
 
-A field added to a shared base class (e.g. [src/tcode_api/schemas/commands/base.py](src/tcode_api/schemas/commands/base.py)) affects **every** subclass schema. Treat this as a schema change for each affected subclass:
+Classes like `BaseTCodeCommand` or `BaseLabwareDescription` aren't leaf schemas themselves — they're inherited by many leaf schemas to tie together attributes that represent the same logical concern (e.g. every command has a `type` discriminator; every labware description has `x_length`/`y_length`/`z_length`). They live under a `base/` directory next to the schemas that use them, e.g. [src/tcode_api/schemas/commands/base/](src/tcode_api/schemas/commands/base/), [src/tcode_api/schemas/descriptions/labware/base/](src/tcode_api/schemas/descriptions/labware/base/).
 
-- If the field is optional with a default, you may add it without bumping every subclass, but record the addition in `compat.py` (under a new version key, listing each affected schema at its new version) so the change is traceable.
-- If the field is required, you must add a `vN+1.py` for every affected schema, with migrators, exactly as above. Doing this in a single PR is acceptable and expected.
+**Structure**, mirroring leaf schemas but with two deliberate differences (see below):
+
+```
+commands/base/
+  tcode_command/
+    __init__.py          # empty
+    v1.py                 # class BaseTCodeCommandV1(...)
+  robot_specific_tcode_command/
+    __init__.py
+    v1.py                 # class BaseRobotSpecificTCodeCommandV1(BaseTCodeCommandV1, ...)
+```
+
+- **One subdirectory per independently-versioned model**, named after the class (snake_case, `Base` prefix dropped — e.g. `BaseTCodeCommand` → `tcode_command/`). **Do not bundle unrelated models in one file** just because they happen to live in the same conceptual area (that was the original bug: `BaseConfiguredModel` and `BaseSchemaVersionedModel` shared one file and one version number despite having no reason to change together). **Exception**: a `Description`/`Descriptor` pair for the same entity (e.g. `BaseLabwareDescription` + `BaseLabwareDescriptor`) stays in one model directory and one `vN.py`, since they represent the same entity and always bump in lockstep.
+- **Class names carry the version suffix**: `BaseTCodeCommandV1`, `BaseTCodeCommandV2`, etc. — unlike leaf schemas, which keep the same class name across versions (`FOO`, not `FOO_V2`).
+- **No `latest.py`.** This is the critical difference, not a simplification — see below.
+- **No `migrate.py`, no `compat.py` registration, no `pyproject.toml` bump.** Base classes aren't independently migratable entities; they don't represent a wire payload on their own, only concrete leaf schemas do. Migrating a leaf schema that inherits fields from a base is still driven entirely by that leaf's own `migrate.py`, exactly as in the main pattern above.
+
+**Why no `latest.py`:** the whole point of freezing `vN.py` is that once released, its *entire* class hierarchy is pinned by literal, hardcoded reference — not just its own fields. `latest.py` is a pointer that gets repointed later (that's its job for leaf schemas — `lid/latest.py` moves from `.v1` to `.v3` over time). If a leaf schema's frozen `vN.py` imported a base class via `from ..base.tcode_command.latest import BaseTCodeCommandV2` instead of `from ..base.tcode_command.v2 import BaseTCodeCommandV2`, then the day someone ships `base/tcode_command/v3.py` and repoints `latest.py` at it, every leaf schema that imported through `latest` would silently inherit a different parent shape — the exact bug this skill exists to prevent, just laundered through one more layer of indirection. **Every leaf `vN.py` must import its base class(es) by explicit, hardcoded version, always** (`from ..base.<model>.v1 import <Class>V1`, never `.latest`).
+
+**When a base class needs a new field:**
+
+1. Leave the existing `base/<model>/vK.py` untouched.
+2. Add `base/<model>/vK+1.py` with the new class (`<Class>VK+1`), inheriting from the previous version's class.
+3. Update the specific leaf schemas that need the new field: they get their own new `vN+1.py` (per the main pattern above) that imports and inherits from `base/<model>/vK+1.py` instead of the prior base version. Leaf schemas that don't need the change keep pointing at the old base version — a base version bump does **not** force every consumer to move.
+4. Each affected leaf schema's own migrator, `compat.py` entry, and `pyproject.toml` bump follow the main pattern exactly, as if the field had been added directly to that leaf schema. If the same required field with no universal sensible default is being backfilled across multiple leaf schemas' migrators, check for existing signals elsewhere in the wider codebase (e.g. other repos' construction call sites, docstrings describing real-world behavior) for a *per-schema* default, and confirm with the user before committing to it if it's not unambiguous for every affected schema.
+5. **Check for out-of-band data**, not just wire payloads that flow through `migrate_data_to_latest`. Static fixture data validated directly against `.latest` (e.g. JSON files loaded via `TypeAdapter.validate_python`, with no `schema_version` key and no migration step) will fail validation the moment a leaf's `latest.py` moves past the version they were written against, and needs the new field backfilled by hand, file by file — `uv run runner.py test` will surface these as `pydantic.ValidationError`s if you check test output rather than assuming success.
 
 ## After code changes
 

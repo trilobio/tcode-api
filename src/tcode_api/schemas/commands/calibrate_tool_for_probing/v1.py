@@ -2,10 +2,10 @@ from typing import Literal
 
 from pydantic import Field
 
-from ..base import BaseRobotSpecificTCodeCommand
+from ..base.robot_specific_tcode_command.v1 import BaseRobotSpecificTCodeCommandV1
 
 
-class CALIBRATE_TOOL_FOR_PROBING(BaseRobotSpecificTCodeCommand):
+class CALIBRATE_TOOL_FOR_PROBING(BaseRobotSpecificTCodeCommandV1):
     """Calibrate the target robot's currently held tool for probing."""
 
     type: Literal["CALIBRATE_TOOL_FOR_PROBING"] = "CALIBRATE_TOOL_FOR_PROBING"

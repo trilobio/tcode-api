@@ -1,10 +1,16 @@
+"""BaseLabwareDescription & BaseLabwareDescriptor v1.
+
+:note: Description and Descriptor are versioned together (not split into separate models) since
+    they represent the same logical entity and their versions bump in lockstep.
+"""
+
 from abc import ABC
 from typing import Annotated
 
 from pydantic import Field
 
-from ...common.value_with_units import ValueWithUnits
-from ..base import BaseDescriberWithTags
+from .....common.value_with_units import ValueWithUnits
+from ....base.describer_with_tags.v1 import BaseDescriberWithTagsV1
 
 XLengthField = Annotated[
     ValueWithUnits,
@@ -28,7 +34,7 @@ ZLengthField = Annotated[
 ]
 
 
-class BaseLabwareDescription(BaseDescriberWithTags, ABC):
+class BaseLabwareDescriptionV1(BaseDescriberWithTagsV1, ABC):
     """Base schema shared by all labware in the :class:``Labware`` discriminated union.
 
     :note: Using [x|y|z]_length is intended to avoid the semantic ambiguity of "length" vs "width"
@@ -39,7 +45,7 @@ class BaseLabwareDescription(BaseDescriberWithTags, ABC):
     z_length: ZLengthField
 
 
-class BaseLabwareDescriptor(BaseDescriberWithTags, ABC):
+class BaseLabwareDescriptorV1(BaseDescriberWithTagsV1, ABC):
     """Base schema shared by all labware descriptors in the :class:``LabwareDescriptor`` discriminated union."""
 
     x_length: XLengthField | None = None

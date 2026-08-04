@@ -12,10 +12,10 @@ from ....types import Matrix, identity_transform
 from ...common.docs import LabwareIdField
 from ...common.enums import GraspType
 from ...labware_holder.union import LabwareHolder
-from ..base import BaseRobotSpecificTCodeCommand
+from ..base.robot_specific_tcode_command.v1 import BaseRobotSpecificTCodeCommandV1
 
 
-class REMOVE_LABWARE_LID(BaseRobotSpecificTCodeCommand):
+class REMOVE_LABWARE_LID(BaseRobotSpecificTCodeCommandV1):
     """Remove the lid from the target labware."""
 
     type: Literal["REMOVE_LABWARE_LID"] = "REMOVE_LABWARE_LID"

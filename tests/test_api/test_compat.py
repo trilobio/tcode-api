@@ -20,7 +20,7 @@ from tcode_api.api.compat import (
     resolve_api_profile,
     tcode_api_compat_context,
 )
-from tcode_api.schemas.base import BaseSchemaVersionedModel
+from tcode_api.schemas.base.schema_versioned_model.v1 import BaseSchemaVersionedModelV1
 from tcode_api.schemas.registry import MigrationRegistry, RawData, SchemaRegistry
 
 
@@ -245,14 +245,14 @@ class TestResolveAPIProfile(unittest.TestCase):
         )
 
 
-class TeacupV1(BaseSchemaVersionedModel):
+class TeacupV1(BaseSchemaVersionedModelV1):
     """A test schema for testing the load_api_object function."""
 
     type: Literal["Teacup"] = "Teacup"
     schema_version: Literal[1] = 1
 
 
-class TeacupV2(BaseSchemaVersionedModel):
+class TeacupV2(BaseSchemaVersionedModelV1):
     """A test schema for testing the load_api_object function."""
 
     type: Literal["Teacup"] = "Teacup"
@@ -260,7 +260,7 @@ class TeacupV2(BaseSchemaVersionedModel):
     was_migrated: bool = False
 
 
-class CupV1(BaseSchemaVersionedModel):
+class CupV1(BaseSchemaVersionedModelV1):
     """A test schema for testing the load_api_object function."""
 
     type: Literal["Cup"] = "Cup"
@@ -519,7 +519,7 @@ class TestLoadAPIObject(unittest.TestCase):
     def test_migrate_through_a_replacement(self) -> None:
         """Test that a data packet whose schema is replaced by another is migrated correctly."""
 
-        class VesselV1(BaseSchemaVersionedModel):
+        class VesselV1(BaseSchemaVersionedModelV1):
             type: Literal["Vessel"] = "Vessel"
             schema_version: Literal[1] = 1
             volume: float
@@ -635,7 +635,7 @@ class TestTCodeAPI(unittest.TestCase):
                 f"The following schemas have builders registered in the schema registry but aren't in the API history log: {builders_without_schemas}"
             )
 
-    def _get_tcode_api_versioned_models(self) -> list[tuple[str, type[BaseSchemaVersionedModel]]]:
+    def _get_tcode_api_versioned_models(self) -> list[tuple[str, type[BaseSchemaVersionedModelV1]]]:
         """Dynamically find all of the schema_versioned models in the tcode_api.api package.
 
         :note: Some exposed entities in tcode_api are unversioned and are expected to not be in the
@@ -644,7 +644,7 @@ class TestTCodeAPI(unittest.TestCase):
         tc_classes = inspect.getmembers(tc, inspect.isclass)
         retval = []
         for name, cls in tc_classes:
-            if not issubclass(cls, BaseSchemaVersionedModel):
+            if not issubclass(cls, BaseSchemaVersionedModelV1):
                 continue
             retval.append((name, cls))
         return retval

@@ -1,11 +1,11 @@
-"""Base classes for schemas representing physical locations in a fleet."""
+"""BaseLocation v1."""
 
 from pydantic import Field
 
-from ..base import BaseSchemaVersionedModel
+from ....base.schema_versioned_model.v1 import BaseSchemaVersionedModelV1
 
 
-class BaseLocation(BaseSchemaVersionedModel):
+class BaseLocationV1(BaseSchemaVersionedModelV1):
     """Base schema shared by all locations in the Location discriminated union."""
 
     type: str = Field(

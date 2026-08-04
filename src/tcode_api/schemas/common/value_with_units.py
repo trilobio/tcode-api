@@ -14,10 +14,10 @@ from pint.errors import DimensionalityError
 from tcode_api.error import UnitsError
 from tcode_api.units import Q_
 
-from ..base import BaseConfiguredModel
+from ..base.configured_model.v1 import BaseConfiguredModelV1
 
 
-class ValueWithUnits(BaseConfiguredModel):
+class ValueWithUnits(BaseConfiguredModelV1):
     """A numeric value with associated units.
 
     :note: The following values are all equivalent:

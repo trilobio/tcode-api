@@ -4,7 +4,7 @@ from pydantic import Field
 
 from ...grid.v1 import GridDescription, GridDescriptor
 from ...pipette_tip.v1 import PipetteTipDescription, PipetteTipDescriptor
-from ..base import BaseLabwareDescription, BaseLabwareDescriptor
+from ..base.labware_description.v1 import BaseLabwareDescriptionV1, BaseLabwareDescriptorV1
 
 grid_description = "Layout of the pipette tip box slots. typically an 8*12 grid for a 96 tip box."
 
@@ -24,7 +24,7 @@ FullField = Annotated[
 ]
 
 
-class PipetteTipBoxDescription(BaseLabwareDescription):
+class PipetteTipBoxDescription(BaseLabwareDescriptionV1):
     """Description of a pipette tip box."""
 
     type: Literal["PipetteTipBox"] = "PipetteTipBox"
@@ -39,7 +39,7 @@ class PipetteTipBoxDescription(BaseLabwareDescription):
     full: FullField
 
 
-class PipetteTipBoxDescriptor(BaseLabwareDescriptor):
+class PipetteTipBoxDescriptor(BaseLabwareDescriptorV1):
     """PipetteTipBoxDescription with optional parameters."""
 
     type: Literal["PipetteTipBox"] = "PipetteTipBox"

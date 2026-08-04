@@ -2,10 +2,10 @@ from typing import Literal, Self
 
 from pydantic import Field
 
-from ..base import BaseSchemaVersionedModel
+from ..base.schema_versioned_model.v1 import BaseSchemaVersionedModelV1
 
 
-class PipetteTipLayout(BaseSchemaVersionedModel):
+class PipetteTipLayout(BaseSchemaVersionedModelV1):
     """Data structure representing the layout of pipette tips in a box.
 
     :note: This class is designed to allow non-standard use cases, like adding partially filled

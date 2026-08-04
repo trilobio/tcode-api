@@ -4,7 +4,7 @@ from pydantic import Field
 
 from ...common.docs import MaxVolumeField, MinVolumeField
 from ...common.value_with_units import ValueWithUnits
-from ..base import BaseDescriberWithTags
+from ..base.describer_with_tags.v1 import BaseDescriberWithTagsV1
 
 HasFilterField = Annotated[
     bool,
@@ -32,7 +32,7 @@ FlangeHeightField = Annotated[
 ]
 
 
-class PipetteTipDescription(BaseDescriberWithTags):
+class PipetteTipDescription(BaseDescriberWithTagsV1):
     """Description of a pipette tip."""
 
     type: Literal["PipetteTip"] = "PipetteTip"
@@ -45,7 +45,7 @@ class PipetteTipDescription(BaseDescriberWithTags):
     min_volume: MinVolumeField
 
 
-class PipetteTipDescriptor(BaseDescriberWithTags):
+class PipetteTipDescriptor(BaseDescriberWithTagsV1):
     """:class:``PipetteTipDescription`` with optional parameters."""
 
     type: Literal["PipetteTip"] = "PipetteTip"

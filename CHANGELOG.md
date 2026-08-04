@@ -17,6 +17,10 @@ Format: [Semantic Versioning](https://semver.org)
 - `commit-hook` now uses `runner.py`
 - `migrate.py` files across `tcode_api.schemas` now type their `MIGRATORS` dict values as
   `Migrator` (from `tcode_api.schemas.registry`) instead of `Callable`.
+- Shared base classes (`BaseTCodeCommand`, `BaseLabwareDescription`, etc.) moved from flat
+  `base.py` files into versioned `base/<model>/v1.py` packages, one model per file
+  (`Description`/`Descriptor` pairs kept together), with class names suffixed `V1`. No
+  behavior change; internal-only, not part of the public API.
 
 ---
 

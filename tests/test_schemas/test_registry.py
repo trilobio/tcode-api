@@ -1,7 +1,7 @@
 import unittest
 from typing import Any, Literal
 
-from tcode_api.schemas.base import BaseSchemaVersionedModel
+from tcode_api.schemas.base.schema_versioned_model.v1 import BaseSchemaVersionedModelV1
 from tcode_api.schemas.registry import (
     BuilderExistsError,
     BuilderNotFoundError,
@@ -11,12 +11,12 @@ from tcode_api.schemas.registry import (
 )
 
 
-class AV1(BaseSchemaVersionedModel):
+class AV1(BaseSchemaVersionedModelV1):
     type: Literal["A"] = "A"
     schema_version: Literal[1] = 1
 
 
-class BV1(BaseSchemaVersionedModel):
+class BV1(BaseSchemaVersionedModelV1):
     type: Literal["B"] = "B"
     schema_version: Literal[1] = 1
 
@@ -92,7 +92,7 @@ class TestSchemaRegistry(unittest.TestCase):
         self.assertEqual(registry.build_instance({"type": "B"}, "B"), builder_b({"type": "B"}))
 
     def test_build_instance_from_basemodel_class(self) -> None:
-        """Test that building instance works when registering a BaseSchemaVersionedModel class."""
+        """Test that building instance works when registering a BaseSchemaVersionedModelV1 class."""
         registry = SchemaRegistry()
         registry.register("B", BV1)
 

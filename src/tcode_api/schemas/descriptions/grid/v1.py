@@ -2,7 +2,7 @@ from typing import Annotated, Literal
 
 from pydantic import Field, PositiveInt
 
-from ...base import BaseSchemaVersionedModel
+from ...base.schema_versioned_model.v1 import BaseSchemaVersionedModelV1
 from ...common.value_with_units import ValueWithUnits
 
 RowCountField = Annotated[
@@ -63,7 +63,7 @@ ColumnOffsetField = Annotated[
 ]
 
 
-class GridDescription(BaseSchemaVersionedModel):
+class GridDescription(BaseSchemaVersionedModelV1):
     """Description of a grid layout."""
 
     type: Literal["Grid"] = "Grid"
@@ -77,7 +77,7 @@ class GridDescription(BaseSchemaVersionedModel):
     column_offset: ColumnOffsetField
 
 
-class GridDescriptor(BaseSchemaVersionedModel):
+class GridDescriptor(BaseSchemaVersionedModelV1):
     """:class:``GridDescription`` with optional parameters."""
 
     type: Literal["Grid"] = "Grid"
