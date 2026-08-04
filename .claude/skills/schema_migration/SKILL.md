@@ -1,10 +1,11 @@
-# Agent instructions
+---
+name: Tcode API Schema Migration
+description: Generates the boilerplate necessary for migration of Tcode API schema(s) between semantic versions. Use whenever the user either a. changes a class in a `base.py` file under tcode_api/schemas, b. adds a new `v#.py` file to an existing schema structure, or c. asks for a change to a schema in the Tcode API.
+---
 
-## Schema migrations: how to evolve a versioned schema
+## Overview
 
 Every schema under [src/tcode_api/schemas/](src/tcode_api/schemas/) is **versioned**. Once a `vN.py` file has been released (i.e. it appears in any tagged version of `tcode-api`), its contents are part of the wire format and must be treated as immutable. Do **not** mutate `vN.py` to add, remove, or change the type of fields, change a parent class, or otherwise alter how a payload of that version validates.
-
-The reference implementation for a schema bump is commit [`dbf4732`](https://github.com/trilobio/tcode-api/commit/dbf4732b24014bc2c94c239a0b6061828ba5dc5c) (`Add Speed to MOVE_TO_LOCATION`). Follow exactly the same pattern any time you change the shape of an existing schema.
 
 ### When this applies
 
@@ -24,7 +25,7 @@ Adding a **new optional field with a default** that does not affect validation o
 For a schema named `FOO` currently at `vN`:
 
 1. **Leave [vN.py](src/tcode_api/schemas/.../foo/v1.py) untouched.** Existing serialized payloads must continue to deserialize against the unchanged class.
-2. **Add `vN+1.py`** next to it. Define the new class (same Python class name as the previous version — e.g. `FOO`, not `FOO_V2`) inheriting from the appropriate base, with `schema_version: Literal[N+1] = N+1`.
+2. **Add `vN+1.py`** next to it. The docstring of this file must describe in bullet-points the changes from the `vN.py` file. Define the new class (same Python class name as the previous version — e.g. `FOO`, not `FOO_V2`) inheriting from the appropriate base, with `schema_version: Literal[N+1] = N+1`.
 3. **Re-point `latest.py`** to import from `.vN+1` instead of `.vN`.
 4. **Add a migrator** in `migrate.py`:
 
@@ -35,7 +36,7 @@ For a schema named `FOO` currently at `vN`:
        # set defaults for new fields, or raise if the migration cannot be performed
        return retval
 
-   MIGRATORS: dict[int, Callable] = {2: migrate_v1_to_v2}
+   MIGRATORS: dict[int, Migrator] = {2: migrate_v1_to_v2}
    ```
 
    If the new field is required and has no sensible default, the migrator should `raise` with a clear message rather than silently fabricating a value.
@@ -69,9 +70,8 @@ A field added to a shared base class (e.g. [src/tcode_api/schemas/commands/base.
 
 After finishing a set of edits and before committing or handing off for review:
 
-1. `uv run ruff format`
-2. `uv run ruff check`
-3. `uv run mypy ./`
-4. `uv run pytest`
+1. `uv run runner.py format`
+2. `uv run runner.py lint`
+3. `uv run runner.py test`
 
 If any step fails, fix the reported issues before committing. If a failure is unrelated or blocked, say so explicitly.
