@@ -35,6 +35,9 @@ Format: [Semantic Versioning](https://semver.org)
   its prior signature/return type as a thin wrapper. `scripts/migrate_labware.py` renamed to
   `scripts/migrate_schemas.py` and simplified accordingly.
 
+### Fixed
+- standardize usage of `Field(examples=...)` in `servicer_api` to avoid `pydantic` warnings about `example=...` being deprecated
+
 ---
 
 ## [1.41.0]
