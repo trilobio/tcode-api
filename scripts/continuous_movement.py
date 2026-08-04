@@ -1,6 +1,5 @@
 """Generate a tcode script to move the robot continuously for testing"""
 
-
 from math import ceil
 
 import numpy as np
@@ -24,7 +23,8 @@ from tcode_api.utilities import (
 @plac.annotations(
     servicer_url=servicer_url_annotation,
     number_of_commands=(
-        "Number of TCode commands to generate approximately. Default is 27000. Each line takes approximately 2 seconds to run.",
+        "Number of TCode commands to generate approximately. Default is 27000. Each line takes approximately 2 seconds to run on 1.5 bot "
+        "and 1.4 second to run on 1.6 bot",
         "option",
         "n",
         int,
@@ -55,10 +55,10 @@ def main(
                 continue
             for z in z_range:
                 space.append((x, y, z))
-    print(
-        f"Generated {len(space)} commands. Estimated run time is {round(len(space) * 2 / 60)} minutes"
-    )
+
     np.random.shuffle(space)
+
+    print(f"Created movement lattice of width {points_per_axis}")
 
     script = tc.TCodeScript.new(
         name="Stress test",
@@ -79,6 +79,11 @@ def main(
                 ),
             )
         )
+
+    print(
+        f"Generated {len(space)} commands. Estimated run time is {round(len(space) / 60 / 60 * 2, 1)}h on 1.5 bots and "
+        f"{round(len(space) / 60 / 60 * 1.4, 1)}h on 1.6 bots."
+    )
 
     client = TCodeServicerClient(
         servicer_url=servicer_url,
