@@ -68,15 +68,17 @@ class SchemaIO:
         :return: Resolved pathlib.Path to the schema file.
         """
         if isinstance(file_path, str):
-            file_path = self.schema_dir / f"{file_path}.json"
-            if not file_path.exists():
-                file_path = pathlib.Path(file_path)
+            clean_file_path = self.schema_dir / f"{file_path}.json"
+            if not clean_file_path.exists():
+                clean_file_path = pathlib.Path(file_path)
+        else:
+            clean_file_path = file_path
 
-        if exists is True and not file_path.exists():
-            raise FileNotFoundError(f"Schema file not found: {file_path}")
-        if exists is False and file_path.exists():
-            raise FileExistsError(f"Schema file already exists: {file_path}")
-        return file_path
+        if exists is True and not clean_file_path.exists():
+            raise FileNotFoundError(f"Schema file not found: {clean_file_path}")
+        if exists is False and clean_file_path.exists():
+            raise FileExistsError(f"Schema file already exists: {clean_file_path}")
+        return clean_file_path
 
     def load(self, identifier: str | pathlib.Path) -> BaseSchemaVersionedModelV1:
         """Read a schema instance from a JSON file, migrating it to the current version first.
