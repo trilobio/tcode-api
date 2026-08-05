@@ -1,4 +1,4 @@
-"""config-db runner — developer task CLI.
+"""tcode-api runner — developer task CLI.
 
 Depends only on the Python standard library.
 
@@ -39,7 +39,7 @@ def _run(label: str, *args: str) -> bool:
     if result.returncode == 0:
         print(f"✓ {label} passed\n")
         return True
-    print(f"✗ {label} failed (exit {result.returncode})\b")
+    print(f"✗ {label} failed (exit {result.returncode})\n")
     return False
 
 
