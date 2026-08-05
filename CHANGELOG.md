@@ -40,6 +40,12 @@ Format: [Semantic Versioning](https://semver.org)
 
 ### Fixed
 - standardize usage of `Field(examples=...)` in `servicer_api` to avoid `pydantic` warnings about `example=...` being deprecated
+- All `Description`/`Descriptor` builders (`_build_lid`, `_build_well_plate`, `_build_grid`,
+  etc. -- 15 total) fell back from the strict `Description` to the all-optional `Descriptor`
+  on *any* `ValidationError`, silently masking real validation failures (e.g. a `pinchable=True`
+  labware missing its required `pinch_offset_transform`) as if the data were merely a partial
+  record. New shared `schemas.registry.build_description_or_descriptor` helper narrows the
+  fallback to `ValidationError`s where every reported error is a missing field.
 
 ### Deprecated
 - Dropped support for python 3.11

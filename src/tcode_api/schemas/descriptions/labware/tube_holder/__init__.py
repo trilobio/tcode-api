@@ -1,6 +1,9 @@
-from pydantic import ValidationError
-
-from ....registry import RawData, migration_registry, schema_registry
+from ....registry import (
+    RawData,
+    build_description_or_descriptor,
+    migration_registry,
+    schema_registry,
+)
 from .latest import TubeHolderDescription, TubeHolderDescriptor
 from .migrate import MIGRATORS
 
@@ -14,10 +17,7 @@ for schema_version, migrator in MIGRATORS.items():
 
 def _build_tube_holder(data: RawData) -> TubeHolderDescription | TubeHolderDescriptor:
     """Build a TubeHolderDescription, unless the data is missing fields, in which case build a TubeHolderDescriptor."""
-    try:
-        return TubeHolderDescription.model_validate(data)
-    except ValidationError:
-        return TubeHolderDescriptor.model_validate(data)
+    return build_description_or_descriptor(TubeHolderDescription, TubeHolderDescriptor, data)
 
 
 schema_registry.register("TubeHolder", _build_tube_holder)

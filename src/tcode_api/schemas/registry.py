@@ -1,6 +1,8 @@
 """Registry for schemas and corresponding migration functions."""
 
-from typing import Any, Callable, Mapping, cast
+from typing import Any, Callable, Mapping, TypeVar, cast
+
+from pydantic import ValidationError
 
 from .base.schema_versioned_model.v1 import BaseSchemaVersionedModelV1
 
@@ -8,6 +10,39 @@ RegistryKey = str
 
 RawData = Mapping[str, Any]
 Migrator = Callable[[RawData], RawData]
+
+DescriptionT = TypeVar("DescriptionT", bound=BaseSchemaVersionedModelV1)
+DescriptorT = TypeVar("DescriptorT", bound=BaseSchemaVersionedModelV1)
+
+
+def build_description_or_descriptor(
+    description_type: type[DescriptionT],
+    descriptor_type: type[DescriptorT],
+    data: RawData,
+) -> DescriptionT | DescriptorT:
+    """Build the fully-specified Description, falling back to the all-optional Descriptor.
+
+    The fallback only triggers when ``description_type`` fails validation because required
+    fields are missing from ``data`` -- any other validation failure (e.g. a cross-field
+    validator rejecting an invalid combination of otherwise-present fields) propagates instead
+    of being silently reinterpreted as "this must just be a partial/descriptor-style record".
+
+    :param description_type: The fully-specified schema class to try first.
+    :param descriptor_type: The all-optional schema class to fall back to on missing fields.
+    :param data: Raw data to validate.
+
+    :returns: An instance of ``description_type``, or ``descriptor_type`` if ``data`` is missing
+        fields required by ``description_type``.
+
+    :raises ValidationError: If ``description_type`` fails for any reason other than missing
+        fields.
+    """
+    try:
+        return description_type.model_validate(data)
+    except ValidationError as err:
+        if all(error["type"] == "missing" for error in err.errors()):
+            return descriptor_type.model_validate(data)
+        raise
 
 
 class BuilderNotFoundError(Exception):
