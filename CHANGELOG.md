@@ -5,6 +5,7 @@ Format: [Semantic Versioning](https://semver.org)
 
 ## [Unreleased]
 ### Added
+- pull request template, modeled after that of `aceta`
 - `runner.py` for standardized, easy running of the linting, formatting, and tests.
 - New `ValidatorErrorCode`s:
    - `INCOMPATIBLE_LABWARE`
@@ -18,6 +19,8 @@ Format: [Semantic Versioning](https://semver.org)
   `BaseLabwareDescriptorV2`) so v1-v3 schemas are untouched; v3->v4 migration backfills
   `pinchable` per labware kind (`True` for Lid/WellPlate, `False` for
   Trash/TubeHolder/PipetteTipBox), matching existing pinch-vs-lift behavior in `robot`/`tcode`.
+- `scripts/migrate_schemas.py` tool to migrate tcode_labware automatically.
+- run_tests workflow
 
 ### Changed
 - `commit-hook` now uses `runner.py`
