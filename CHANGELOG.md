@@ -41,6 +41,9 @@ Format: [Semantic Versioning](https://semver.org)
 ### Fixed
 - standardize usage of `Field(examples=...)` in `servicer_api` to avoid `pydantic` warnings about `example=...` being deprecated
 
+### Deprecated
+- Dropped support for python 3.11
+
 ---
 
 ## [1.41.0]
