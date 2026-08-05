@@ -12,7 +12,7 @@ def migrate_v1_to_v2(data: RawData) -> RawData:
     if not "grasp_type" in retval:
         retval["grasp_type"] = GraspType.PINCH.value
     if not "offset_transform" in retval:
-        retval["offset_transform"] = identity_transform
+        retval["offset_transform"] = identity_transform()
     return retval
 
 
