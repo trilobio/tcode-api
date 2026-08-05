@@ -31,6 +31,7 @@ def migrate_v3_to_v4(data: RawData) -> RawData:
     }
     retval["schema_version"] = 4
     retval.setdefault("pinchable", False)
+    retval.setdefault("pinch_offset_transform", None)
     return retval
 
 

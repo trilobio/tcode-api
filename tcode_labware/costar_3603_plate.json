@@ -23,6 +23,32 @@
     "units": "mm"
   },
   "pinchable": true,
+  "pinch_offset_transform": [
+    [
+      1.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      1.0,
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0,
+      1.0,
+      0.01
+    ],
+    [
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ]
+  ],
   "type": "WellPlate",
   "grid": {
     "schema_version": 1,

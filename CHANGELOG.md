@@ -19,6 +19,10 @@ Format: [Semantic Versioning](https://semver.org)
   `BaseLabwareDescriptorV2`) so v1-v3 schemas are untouched; v3->v4 migration backfills
   `pinchable` per labware kind (`True` for Lid/WellPlate, `False` for
   Trash/TubeHolder/PipetteTipBox), matching existing pinch-vs-lift behavior in `robot`/`tcode`.
+- `pinch_offset_transform` field on `BaseLabwareDescriptionV2`/`BaseLabwareDescriptorV2`, required
+  when `pinchable` is `True` (validated) and disallowed otherwise. `Lid`/`WellPlate`'s v3->v4
+  migration backfills it from the historical pinch offsets in `tcode.resolver.create_labware`
+  (2mm/10mm in z respectively).
 - `scripts/migrate_schemas.py` tool to migrate tcode_labware automatically.
 - run_tests workflow
 

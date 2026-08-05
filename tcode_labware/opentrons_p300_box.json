@@ -22,6 +22,7 @@
     "units": "mm"
   },
   "pinchable": false,
+  "pinch_offset_transform": null,
   "type": "PipetteTipBox",
   "grid": {
     "schema_version": 1,

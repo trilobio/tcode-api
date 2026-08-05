@@ -22,6 +22,7 @@
     "units": "mm"
   },
   "pinchable": false,
+  "pinch_offset_transform": null,
   "type": "TubeHolder",
   "grid": {
     "schema_version": 1,

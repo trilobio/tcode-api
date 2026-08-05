@@ -26,6 +26,7 @@
     "units": "mm"
   },
   "pinchable": false,
+  "pinch_offset_transform": null,
   "type": "Trash",
   "well": {
     "schema_version": 1,

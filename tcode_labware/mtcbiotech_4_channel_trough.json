@@ -22,7 +22,8 @@
     "magnitude": 31.4,
     "units": "mm"
   },
-  "pinchable": true,
+  "pinchable": false,
+  "pinch_offset_transform": null,
   "type": "WellPlate",
   "grid": {
     "schema_version": 1,
