@@ -3,7 +3,7 @@
 All notable changes to this project will be documented here.
 Format: [Semantic Versioning](https://semver.org)
 
-## [Unreleased]
+## [v1.42.0]
 ### Added
 - pull request template, modeled after that of `aceta`
 - `runner.py` for standardized, easy running of the linting, formatting, and tests.
