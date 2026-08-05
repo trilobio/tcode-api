@@ -412,6 +412,21 @@ def describe_pipette_tip_group(
     )
 
 
+def format_seconds(seconds: float) -> str:
+    """Format a duration in seconds to human-readable format"""
+    seconds = int(seconds)
+    days, seconds = divmod(seconds, 86_400)
+    hours, seconds = divmod(seconds, 3_600)
+    minutes, seconds = divmod(seconds, 60)
+    time_without_days = f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+    if days == 0:
+        return time_without_days
+    elif days == 1:
+        return f"{days:02d} day, {time_without_days}"
+    else:
+        return f"{days:02d} days, {time_without_days}"
+
+
 describe_pipette_tip_1x1 = functools.partial(
     describe_pipette_tip_group, row_count=1, column_count=1
 )

@@ -8,12 +8,14 @@ import plac  # type: ignore [import-untyped]
 import tcode_api.api as tc
 from tcode_api.cli import (
     DEFAULT_SERVICER_URL,
+    robot_serial_number_annotation,
     servicer_url_annotation,
 )
 from tcode_api.schemas.location.location_relative_to_robot import LocationRelativeToRobot
 from tcode_api.servicer import TCodeServicerClient
 from tcode_api.utilities import (
     create_transform,
+    format_seconds,
     generate_id,
     m,
     rad,
@@ -22,9 +24,10 @@ from tcode_api.utilities import (
 
 @plac.annotations(
     servicer_url=servicer_url_annotation,
+    robot_sn=robot_serial_number_annotation,
     number_of_commands=(
         "Number of TCode commands to generate approximately. Default is 27000. Each line takes approximately 2 seconds to run on 1.5 bot "
-        "and 1.4 second to run on 1.6 bot",
+        "and 1.4 seconds to run on 1.6 bot",
         "option",
         "n",
         int,
@@ -32,6 +35,7 @@ from tcode_api.utilities import (
 )
 def main(
     servicer_url: str = DEFAULT_SERVICER_URL,
+    robot_sn: str | None = None,
     number_of_commands=30**3,
 ) -> None:
     """
@@ -70,7 +74,9 @@ def main(
     robot_id = generate_id()
 
     # Resolve robot
-    script.commands.append(tc.ADD_ROBOT(id=robot_id, descriptor=tc.RobotDescriptor()))
+    script.commands.append(
+        tc.ADD_ROBOT(id=robot_id, descriptor=tc.RobotDescriptor(serial_number=robot_sn))
+    )
 
     # Move the robot to a starting safe position for the following direct moves
     script.commands.append(
@@ -100,9 +106,10 @@ def main(
             )
         )
 
+    movement_command_size = len(space) + 1
     print(
-        f"Generated {len(space)} commands. Estimated run time is {round(len(space) / 60 / 60 * 2, 1)}h on 1.5 bots and "
-        f"{round(len(space) / 60 / 60 * 1.4, 1)}h on 1.6 bots."
+        f"Generated {movement_command_size} commands. Estimated run time is {format_seconds(movement_command_size * 2)} on 1.5 bots and "
+        f"{format_seconds(movement_command_size * 1.4)} on 1.6 bots."
     )
 
     client = TCodeServicerClient(

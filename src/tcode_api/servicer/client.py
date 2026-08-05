@@ -25,7 +25,7 @@ from tcode_api.servicer.servicer_api import (
     SerialNumberLookupResponse,
 )
 from tcode_api.types import Matrix
-from tcode_api.utilities import generate_id, mm, rad
+from tcode_api.utilities import format_seconds, generate_id, mm, rad
 
 _logger = logging.getLogger(__name__)
 
@@ -352,19 +352,22 @@ class TCodeServicerClient:
                     _logger.fatal(msg)
                     self.set_run_state(False)
                     return
-                elapsed = datetime.now() - time_start
+                elapsed = (datetime.now() - time_start).total_seconds()
                 if display_progress:
                     print(
-                        f"\rTCode executing: {status.operation_count:< 6} commands remaining. {elapsed.seconds}s elapsed",
+                        f"\rTCode executing: {status.operation_count:> 6} commands remaining. Time elapsed: {format_seconds(elapsed)}",
                         end="",
                         flush=True,
                     )
-
             except KeyboardInterrupt:
+                print()  # newline
                 self.set_run_state(False)
                 self.clear_tcode_resolution()
                 self.clear_labware()
                 return
+            except:
+                print()  # newline
+                raise
 
     def run_script(
         self,
