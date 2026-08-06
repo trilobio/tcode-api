@@ -89,6 +89,9 @@ class RobotStatusDetail(BaseModel):
     """Per-robot status information."""
 
     robot_id: str
+    # Serial number of the physical robot this tcode robot_id resolved to;
+    # None if resolution hasn't happened yet.
+    serial_number: str | None = None
     command_id: CommandID | None
     queue_depth: int
     run_state: bool
@@ -103,6 +106,12 @@ class GetStatusResponse(BaseModel):
     run_state: bool
     result: Result
     robots: list[RobotStatusDetail] = Field(default_factory=list)
+    # AI(claude-opus-4.7 via VS Code Copilot): True iff the tcode server was
+    # launched with TCODE_MOCK=true. Lets the protocol-designer Fleet tab
+    # detect a mock backend (e.g. to enable the "push mock fleet" workflow
+    # in chunk 7.2). Defaults to False so old servers / clients that don't
+    # populate the field round-trip as live.
+    mock: bool = False
 
 
 class ScheduleCommandRequest(BaseModel):

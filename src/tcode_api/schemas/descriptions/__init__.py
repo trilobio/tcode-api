@@ -11,6 +11,7 @@ from .axis_aligned_rectangle.latest import (
 from .circle.latest import CircleDescription, CircleDescriptor
 from .grid.latest import GridDescription, GridDescriptor
 from .labware.lid.latest import LidDescription, LidDescriptor
+from .labware.module.latest import ModuleDescription, ModuleDescriptor
 from .labware.pipette_tip_box.latest import (
     PipetteTipBoxDescription,
     PipetteTipBoxDescriptor,
@@ -63,6 +64,8 @@ __all__ = [
     "LabwareHolderDescriptor",
     "LidDescription",
     "LidDescriptor",
+    "ModuleDescription",
+    "ModuleDescriptor",
     "PipetteDescriptor",
     "PipetteTipBoxDescription",
     "PipetteTipBoxDescriptor",

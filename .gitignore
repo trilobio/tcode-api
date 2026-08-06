@@ -25,5 +25,7 @@ fp-info-cache
 # Sphinx Documentation
 docs/build
 
+data/*
+
 # Build files
 dist/*

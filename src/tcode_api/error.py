@@ -90,6 +90,7 @@ class SchedulerCode(enum.StrEnum):
 
     SUCCESS = "success"
     NOT_IMPLEMENTED = "not_implemented"
+    INVALID_COMMAND = "invalid_command"
 
 
 class SchedulerError(_TCodeResultReportBase):
