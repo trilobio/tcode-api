@@ -3,10 +3,10 @@ from typing import Literal
 from pydantic import Field
 
 from ...common.value_with_units import ValueWithUnits
-from ..base import BaseRobotSpecificTCodeCommand
+from ..base.robot_specific_tcode_command.v1 import BaseRobotSpecificTCodeCommandV1
 
 
-class ASPIRATE(BaseRobotSpecificTCodeCommand):
+class ASPIRATE(BaseRobotSpecificTCodeCommandV1):
     """Aspirate a given fluid volume at a given speed into the target robot's pipette."""
 
     type: Literal["ASPIRATE"] = "ASPIRATE"

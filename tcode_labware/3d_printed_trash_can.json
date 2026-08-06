@@ -1,4 +1,5 @@
 {
+  "schema_version": 4,
   "tags": [
     "trash_can",
     "dry_waste"
@@ -24,8 +25,13 @@
     "magnitude": 65.0,
     "units": "mm"
   },
+  "pinchable": false,
+  "pinch_offset_transform": null,
   "type": "Trash",
   "well": {
+    "schema_version": 1,
+    "tags": [],
+    "named_tags": {},
     "type": "Well",
     "depth": {
       "type": "ValueWithUnits",
@@ -33,6 +39,7 @@
       "units": "mm"
     },
     "shape": {
+      "schema_version": 1,
       "type": "AxisAlignedRectangle",
       "x_length": {
         "type": "ValueWithUnits",
@@ -46,6 +53,7 @@
       }
     },
     "bottom_shape": {
+      "schema_version": 1,
       "type": "Flat"
     },
     "min_volume": {
@@ -57,8 +65,6 @@
       "type": "ValueWithUnits",
       "magnitude": 597000.0,
       "units": "uL"
-    },
-    "well_tags": [],
-    "well_named_tags": {}
+    }
   }
 }

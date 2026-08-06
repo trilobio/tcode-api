@@ -2,10 +2,10 @@ from typing import Literal
 
 from pydantic import Field
 
-from ..base import BaseLabwareHolder
+from ..base.labware_holder.v1 import BaseLabwareHolderV1
 
 
-class LabwareHolderName(BaseLabwareHolder):
+class LabwareHolderName(BaseLabwareHolderV1):
     """LabwareHolder specified by name and target robot."""
 
     type: Literal["LabwareHolderName"] = "LabwareHolderName"

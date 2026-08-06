@@ -1,4 +1,8 @@
-# Protocol Designer starts the LabwareDescriptorBase at V3, so this increment has no changes.
+"""PipetteTipBoxDescriptor & PipetteTipBoxDescription v3
+
+- No changes; version bump only (Protocol Designer starts labware descriptors at v3).
+"""
+
 from typing import Literal
 
 from pydantic import Field
@@ -6,7 +10,7 @@ from pydantic import Field
 from ....pipette_tip_layout.v1 import PipetteTipLayout
 from ...grid.v1 import GridDescription, GridDescriptor
 from ...pipette_tip.v1 import PipetteTipDescription, PipetteTipDescriptor
-from ..base import BaseLabwareDescription, BaseLabwareDescriptor
+from ..base.labware_description.v1 import BaseLabwareDescriptionV1, BaseLabwareDescriptorV1
 
 grid_description = "Layout of the pipette tip box slots. typically an 8*12 grid for a 96 tip box."
 
@@ -19,7 +23,7 @@ pipette_tip_layout_description = (
 )
 
 
-class PipetteTipBoxDescription(BaseLabwareDescription):
+class PipetteTipBoxDescription(BaseLabwareDescriptionV1):
     """Description of a pipette tip box."""
 
     type: Literal["PipetteTipBox"] = "PipetteTipBox"
@@ -37,7 +41,7 @@ class PipetteTipBoxDescription(BaseLabwareDescription):
     )
 
 
-class PipetteTipBoxDescriptor(BaseLabwareDescriptor):
+class PipetteTipBoxDescriptor(BaseLabwareDescriptorV1):
     """PipetteTipBoxDescription with optional parameters."""
 
     type: Literal["PipetteTipBox"] = "PipetteTipBox"

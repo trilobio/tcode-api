@@ -7,14 +7,14 @@ from typing import Literal, TextIO
 
 from pydantic import Field
 
-from ...base import BaseSchemaVersionedModel
+from ...base.schema_versioned_model.v1 import BaseSchemaVersionedModelV1
 from ...commands.union import TCode
 from ..metadata.v1 import Metadata
 
 _logger = logging.getLogger(__name__)
 
 
-class TCodeScript(BaseSchemaVersionedModel):
+class TCodeScript(BaseSchemaVersionedModelV1):
     """Structure of a TCode script."""
 
     type: Literal["TCodeScript"] = "TCodeScript"

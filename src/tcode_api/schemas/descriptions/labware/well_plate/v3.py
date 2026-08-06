@@ -1,4 +1,8 @@
-# Protocol Designer starts the LabwareDescriptorBase at V3, so this increment has no changes.
+"""WellPlateDescriptor & WellPlateDescription v3
+
+- Increment `lid` attribute to v3.
+"""
+
 from typing import Annotated, Literal
 
 from pydantic import Field
@@ -6,7 +10,7 @@ from pydantic import Field
 from ....common.value_with_units import ValueWithUnits
 from ...grid.v1 import GridDescription, GridDescriptor
 from ...well.v1 import WellDescription, WellDescriptor
-from ..base import BaseLabwareDescription, BaseLabwareDescriptor
+from ..base.labware_description.v1 import BaseLabwareDescriptionV1, BaseLabwareDescriptorV1
 from ..lid.v3 import LidDescription, LidDescriptor
 
 LidOffsetField = Annotated[
@@ -25,7 +29,7 @@ well_description = (
 lid_description = "Description of the lid, or None if the plate is un-liddable."
 
 
-class WellPlateDescription(BaseLabwareDescription):
+class WellPlateDescription(BaseLabwareDescriptionV1):
     """Description of a well plate.
 
     :note: The exception to the 'no optional attributes' rule for ``***Description`` classes
@@ -51,7 +55,7 @@ class WellPlateDescription(BaseLabwareDescription):
     )
 
 
-class WellPlateDescriptor(BaseLabwareDescriptor):
+class WellPlateDescriptor(BaseLabwareDescriptorV1):
     """:class:``WellPlateDescription`` with optional parameters."""
 
     type: Literal["WellPlate"] = "WellPlate"

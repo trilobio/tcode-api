@@ -2,7 +2,7 @@ from typing import Annotated, Literal
 
 from pydantic import Field
 
-from ....base import BaseSchemaVersionedModel
+from ....base.schema_versioned_model.v1 import BaseSchemaVersionedModelV1
 from ....common.value_with_units import ValueWithUnits
 
 OffsetField = Annotated[
@@ -13,7 +13,7 @@ OffsetField = Annotated[
 ]
 
 
-class ConicalBottomDescription(BaseSchemaVersionedModel):
+class ConicalBottomDescription(BaseSchemaVersionedModelV1):
     """Description of a conical bottom well.
 
     :note: It is assumed that the conical portion of the well comes to a point at the bottom of the well
@@ -25,7 +25,7 @@ class ConicalBottomDescription(BaseSchemaVersionedModel):
     offset: OffsetField
 
 
-class ConicalBottomDescriptor(BaseSchemaVersionedModel):
+class ConicalBottomDescriptor(BaseSchemaVersionedModelV1):
     """:class:``ConicalBottomDescription`` with optional parameters."""
 
     type: Literal["Conical"] = "Conical"

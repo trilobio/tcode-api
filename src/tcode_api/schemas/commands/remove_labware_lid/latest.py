@@ -1,1 +1,1 @@
-from .v1 import REMOVE_LABWARE_LID
+from .v2 import REMOVE_LABWARE_LID

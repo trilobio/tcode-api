@@ -1,1 +1,1 @@
-from .v1 import REPLACE_LABWARE_LID
+from .v2 import REPLACE_LABWARE_LID

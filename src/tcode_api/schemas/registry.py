@@ -1,13 +1,48 @@
 """Registry for schemas and corresponding migration functions."""
 
-from typing import Any, Callable, Mapping, cast
+from typing import Any, Callable, Mapping, TypeVar, cast
 
-from .base import BaseSchemaVersionedModel
+from pydantic import ValidationError
+
+from .base.schema_versioned_model.v1 import BaseSchemaVersionedModelV1
 
 RegistryKey = str
 
 RawData = Mapping[str, Any]
 Migrator = Callable[[RawData], RawData]
+
+DescriptionT = TypeVar("DescriptionT", bound=BaseSchemaVersionedModelV1)
+DescriptorT = TypeVar("DescriptorT", bound=BaseSchemaVersionedModelV1)
+
+
+def build_description_or_descriptor(
+    description_type: type[DescriptionT],
+    descriptor_type: type[DescriptorT],
+    data: RawData,
+) -> DescriptionT | DescriptorT:
+    """Build the fully-specified Description, falling back to the all-optional Descriptor.
+
+    The fallback only triggers when ``description_type`` fails validation because required
+    fields are missing from ``data`` -- any other validation failure (e.g. a cross-field
+    validator rejecting an invalid combination of otherwise-present fields) propagates instead
+    of being silently reinterpreted as "this must just be a partial/descriptor-style record".
+
+    :param description_type: The fully-specified schema class to try first.
+    :param descriptor_type: The all-optional schema class to fall back to on missing fields.
+    :param data: Raw data to validate.
+
+    :returns: An instance of ``description_type``, or ``descriptor_type`` if ``data`` is missing
+        fields required by ``description_type``.
+
+    :raises ValidationError: If ``description_type`` fails for any reason other than missing
+        fields.
+    """
+    try:
+        return description_type.model_validate(data)
+    except ValidationError as err:
+        if all(error["type"] == "missing" for error in err.errors()):
+            return descriptor_type.model_validate(data)
+        raise
 
 
 class BuilderNotFoundError(Exception):
@@ -116,7 +151,7 @@ class MigrationRegistry:
 
 # using Mapping here instead of dict allows builders to accept more flexible dict-like types
 # (e.g. pydantic's BaseModel, which is not a dict but implements Mapping)
-BuilderFunc = Callable[[RawData], BaseSchemaVersionedModel]
+BuilderFunc = Callable[[RawData], BaseSchemaVersionedModelV1]
 
 
 class SchemaRegistry:
@@ -125,7 +160,7 @@ class SchemaRegistry:
     def __init__(
         self,
         _builders_to_preload: (
-            dict[RegistryKey, type[BaseSchemaVersionedModel] | BuilderFunc] | None
+            dict[RegistryKey, type[BaseSchemaVersionedModelV1] | BuilderFunc] | None
         ) = None,
     ) -> None:
         """Initialize the registry with an optional mapping of keys to schema builders.
@@ -142,7 +177,7 @@ class SchemaRegistry:
     def register(
         self,
         key: str,
-        schema: type[BaseSchemaVersionedModel] | BuilderFunc,
+        schema: type[BaseSchemaVersionedModelV1] | BuilderFunc,
         override: bool = False,
     ) -> None:
         """Register a schema builder with the registry.
@@ -167,11 +202,11 @@ class SchemaRegistry:
             )
 
         if isinstance(schema, type):
-            if issubclass(schema, BaseSchemaVersionedModel):
+            if issubclass(schema, BaseSchemaVersionedModelV1):
                 builder: BuilderFunc = cast(BuilderFunc, schema.model_validate)
             else:
                 raise TypeError(
-                    f"Provided schema for {key} is a class but not a subclass of BaseSchemaVersionedModel; got {schema}"
+                    f"Provided schema for {key} is a class but not a subclass of BaseSchemaVersionedModelV1; got {schema}"
                 )
         else:
             builder = schema
@@ -194,7 +229,7 @@ class SchemaRegistry:
                 builder_keys=list(self._builders.keys()),
             ) from err
 
-    def build_instance(self, data: RawData, key: str | None = None) -> BaseSchemaVersionedModel:
+    def build_instance(self, data: RawData, key: str | None = None) -> BaseSchemaVersionedModelV1:
         """Construct a relevant schema instance from the provided data.
 
         :param data: schema-compliant data from some version of the schema.

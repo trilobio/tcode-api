@@ -3,10 +3,10 @@ from typing import Literal
 from pydantic import Field
 
 from ...descriptions.tool.union import ToolDescriptor
-from ..base import BaseRobotSpecificTCodeCommand
+from ..base.robot_specific_tcode_command.v1 import BaseRobotSpecificTCodeCommandV1
 
 
-class ADD_TOOL(BaseRobotSpecificTCodeCommand):
+class ADD_TOOL(BaseRobotSpecificTCodeCommandV1):
     """Find a matching tool on the fleet and assign it the given id."""
 
     type: Literal["ADD_TOOL"] = "ADD_TOOL"

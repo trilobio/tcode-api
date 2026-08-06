@@ -2,13 +2,13 @@ from typing import Literal
 
 from pydantic import Field
 
-from ..base import BaseDescriberWithSerialNumber
+from ..base.describer_with_serial_number.v1 import BaseDescriberWithSerialNumberV1
 from ..labware_holder.v1 import LabwareHolderDescriptor
 from ..tool.union import ToolDescriptor
 from ..tool_holder.v1 import ToolHolderDescriptor
 
 
-class RobotDescriptor(BaseDescriberWithSerialNumber):
+class RobotDescriptor(BaseDescriberWithSerialNumberV1):
     """Descriptor for a robot in the fleet."""
 
     type: Literal["Robot"] = "Robot"

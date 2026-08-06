@@ -6,7 +6,7 @@ from pydantic import Field
 
 from ...common.docs import MaxVolumeField, MinVolumeField
 from ...common.value_with_units import ValueWithUnits
-from ..base import BaseDescriberWithTags
+from ..base.describer_with_tags.v1 import BaseDescriberWithTagsV1
 from ..union import WellShapeDescription, WellShapeDescriptor
 from ..well_bottom.union import WellBottomShapeDescription, WellBottomShapeDescriptor
 
@@ -27,7 +27,7 @@ well_shape_field_docstring = (
 bottom_shape_field_docstring = "The geometry of the bottom of the well. "
 
 
-class WellDescription(BaseDescriberWithTags):
+class WellDescription(BaseDescriberWithTagsV1):
     """Description of a well in a labware."""
 
     type: Literal["Well"] = "Well"
@@ -44,7 +44,7 @@ class WellDescription(BaseDescriberWithTags):
     max_volume: MaxVolumeField
 
 
-class WellDescriptor(BaseDescriberWithTags):
+class WellDescriptor(BaseDescriberWithTagsV1):
     """:class:``WellDescription`` with optional parameters."""
 
     type: Literal["Well"] = "Well"

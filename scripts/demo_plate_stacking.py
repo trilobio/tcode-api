@@ -43,11 +43,12 @@ def main(
     plate_count = 3
     script.commands.append(tc.COMMENT(text=f"Create {plate_count} lidded Thermo NUNC plates"))
     labware_ids = [generate_id() for _ in range(plate_count)]
+    lid_ids = [generate_id() for _ in range(plate_count)]
     idxs_in_stack_order = list(range(1, len(labware_ids)))
     labware_holders = [
-        tc.LabwareHolderName(robot_id=robot_id, name=f"DeckSlot_{i}") for i in (8, 9, 12)
+        tc.LabwareHolderName(robot_id=robot_id, name=f"DeckSlot_{i}") for i in (2, 3, 4)
     ]
-    for id, holder in zip(labware_ids, labware_holders):
+    for id, lid_id, holder in zip(labware_ids, lid_ids, labware_holders):
         script.commands.append(
             tc.CREATE_LABWARE(
                 robot_id=robot_id,
@@ -55,7 +56,9 @@ def main(
                 holder=holder,
             ),
         )
-        script.commands.append(tc.ADD_LABWARE(id=id, descriptor=describe_well_plate(has_lid=True)))
+        script.commands.append(
+            tc.ADD_LABWARE(id=id, descriptor=describe_well_plate(has_lid=True), lid_id=lid_id)
+        )
 
     # ACTIONS #
     script.commands.append(tc.SWAP_TO_TOOL(robot_id=robot_id, id=gripper_id))
@@ -75,7 +78,7 @@ def main(
         )
 
     script.commands.append(tc.COMMENT(text="Move plate stack"))
-    deck_slot_name = "DeckSlot_11"
+    deck_slot_name = "DeckSlot_1"
     script.commands.append(tc.COMMENT(text=f"Moving {labware_ids[0]} to {deck_slot_name}"))
     script.commands.append(
         tc.PICK_UP_LABWARE(

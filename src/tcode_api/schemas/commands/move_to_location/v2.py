@@ -1,3 +1,8 @@
+"""MOVE_TO_LOCATION v2
+
+- Add optional `speed` field to override movement speed for this command.
+"""
+
 from typing import Literal
 
 from pydantic import Field
@@ -5,10 +10,10 @@ from pydantic import Field
 from ....types import Matrix, identity_transform
 from ...common.value_with_units import ValueWithUnits
 from ...location.union import Location
-from ..base import BaseRobotSpecificTCodeCommand
+from ..base.robot_specific_tcode_command.v1 import BaseRobotSpecificTCodeCommandV1
 
 
-class MOVE_TO_LOCATION(BaseRobotSpecificTCodeCommand):
+class MOVE_TO_LOCATION(BaseRobotSpecificTCodeCommandV1):
     """Move the robot's control point to a specified location."""
 
     type: Literal["MOVE_TO_LOCATION"] = "MOVE_TO_LOCATION"

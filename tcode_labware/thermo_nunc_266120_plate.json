@@ -1,4 +1,5 @@
 {
+  "schema_version": 4,
   "tags": [],
   "named_tags": {
     "name": "266120_Thermo NUNC_96W_flat",
@@ -21,8 +22,36 @@
     "magnitude": 14.4,
     "units": "mm"
   },
+  "pinchable": true,
+  "pinch_offset_transform": [
+    [
+      1.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      1.0,
+      0.0,
+      0.0
+    ],
+    [
+      0.0,
+      0.0,
+      1.0,
+      0.01
+    ],
+    [
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ]
+  ],
   "type": "WellPlate",
   "grid": {
+    "schema_version": 1,
     "type": "Grid",
     "row_count": 8,
     "column_count": 12,
@@ -48,6 +77,9 @@
     }
   },
   "well": {
+    "schema_version": 1,
+    "tags": [],
+    "named_tags": {},
     "type": "Well",
     "depth": {
       "type": "ValueWithUnits",
@@ -55,6 +87,7 @@
       "units": "mm"
     },
     "shape": {
+      "schema_version": 1,
       "type": "Circle",
       "diameter": {
         "type": "ValueWithUnits",
@@ -63,6 +96,7 @@
       }
     },
     "bottom_shape": {
+      "schema_version": 1,
       "type": "Flat"
     },
     "min_volume": {
@@ -74,9 +108,7 @@
       "type": "ValueWithUnits",
       "magnitude": 250.0,
       "units": "uL"
-    },
-    "well_tags": [],
-    "well_named_tags": {}
+    }
   },
   "lid_offset": {
     "type": "ValueWithUnits",
@@ -84,6 +116,7 @@
     "units": "mm"
   },
   "lid": {
+    "schema_version": 4,
     "tags": [],
     "named_tags": {
       "name": "266120_Thermo NUNC_96W_flat_lid",
@@ -106,6 +139,33 @@
       "magnitude": 8.0,
       "units": "mm"
     },
+    "pinchable": true,
+    "pinch_offset_transform": [
+      [
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0,
+        0.002
+      ],
+      [
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
     "type": "Lid",
     "stackable": true
   }

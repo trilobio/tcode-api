@@ -1,14 +1,18 @@
-# Protocol Designer starts the LabwareDescriptorBase at V3, so this increment has no changes.
+"""CREATE_LABWARE v2
+
+- No changes; version bump only (Protocol Designer starts labware descriptors at v3).
+"""
+
 from typing import Literal
 
 from pydantic import Field
 
 from ...descriptions.labware.union import LabwareDescription
 from ...labware_holder.union import LabwareHolder
-from ..base import BaseRobotSpecificTCodeCommand
+from ..base.robot_specific_tcode_command.v1 import BaseRobotSpecificTCodeCommandV1
 
 
-class CREATE_LABWARE(BaseRobotSpecificTCodeCommand):
+class CREATE_LABWARE(BaseRobotSpecificTCodeCommandV1):
     """Create a new physical labware on the targeted robot's deck."""
 
     type: Literal["CREATE_LABWARE"] = "CREATE_LABWARE"

@@ -1,1 +1,1 @@
-from .v3 import TrashDescription, TrashDescriptor
+from .v4 import TrashDescription, TrashDescriptor

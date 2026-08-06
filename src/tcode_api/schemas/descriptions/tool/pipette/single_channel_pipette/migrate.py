@@ -1,3 +1,3 @@
-from typing import Callable
+from .....registry import Migrator
 
-MIGRATORS: dict[int, Callable] = {}
+MIGRATORS: dict[int, Migrator] = {}

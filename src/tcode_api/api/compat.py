@@ -312,6 +312,20 @@ tcode_api_compat_context = CompatContext(
                 "PAUSE": 2,
                 "ADD_PIPETTE_TIP_GROUP": 2,
             },
+            "v1.42.0": {
+                "REMOVE_LABWARE_LID": 2,
+                "REPLACE_LABWARE_LID": 2,
+                "LidDescription": 4,
+                "LidDescriptor": 4,
+                "PipetteTipBoxDescription": 4,
+                "PipetteTipBoxDescriptor": 4,
+                "TrashDescription": 4,
+                "TrashDescriptor": 4,
+                "TubeHolderDescription": 4,
+                "TubeHolderDescriptor": 4,
+                "WellPlateDescription": 4,
+                "WellPlateDescriptor": 4,
+            },
         },
         migrations={
             "v1.37.0": {
@@ -340,6 +354,7 @@ def migrate_data_to_latest(
     :param context: The targeted compatibility context. Defaults to the tcode-api context.
 
     :returns: The migrated json blob, updated to match the latest version of the schema.
+        If no migrators were found for the given schema, returns the data unchanged.
 
     :raises InvalidDataError: If the schema name or version cannot be inferred from the data and
         not provided as an argument.
@@ -360,7 +375,13 @@ def migrate_data_to_latest(
             data=data,
         ) from err
 
-    migrators = context.migration_registry.get_migrators_for_schema(schema_name)
+    try:
+        migrators = context.migration_registry.get_migrators_for_schema(schema_name)
+    except BuilderNotFoundError:
+        _logger.warning(
+            "No migrators found for schema '%s', returning data unchanged.", schema_name
+        )
+        migrators = {}
     for version in sorted(migrators):
         if version > schema_version:
             data = migrators[version](data)

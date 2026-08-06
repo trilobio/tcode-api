@@ -3,10 +3,10 @@ from typing import Literal
 from pydantic import Field
 
 from ...common.value_with_units import ValueWithUnits
-from ..base import BaseRobotSpecificTCodeCommand
+from ..base.robot_specific_tcode_command.v1 import BaseRobotSpecificTCodeCommandV1
 
 
-class MOVE_GRIPPER(BaseRobotSpecificTCodeCommand):
+class MOVE_GRIPPER(BaseRobotSpecificTCodeCommandV1):
     """Manually drive the target robot's gripper."""
 
     type: Literal["MOVE_GRIPPER"] = "MOVE_GRIPPER"

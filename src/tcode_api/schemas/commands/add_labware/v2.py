@@ -1,13 +1,17 @@
-# Protocol Designer starts the LabwareDescriptorBase at V3, so this increment has no changes.
+"""ADD_LABWARE v2
+
+- No changes; version bump only (Protocol Designer starts labware descriptors at v3).
+"""
+
 from typing import Literal
 
 from pydantic import Field
 
 from ...descriptions.labware.union import LabwareDescriptor
-from ..base import BaseTCodeCommand
+from ..base.tcode_command.v1 import BaseTCodeCommandV1
 
 
-class ADD_LABWARE(BaseTCodeCommand):
+class ADD_LABWARE(BaseTCodeCommandV1):
     """Find a matching labware on the fleet and assign it the given id.
 
     :raises ValidatorError: ``ValidatorErrorCode.ID_EXISTS`` if ``id`` is already registered to

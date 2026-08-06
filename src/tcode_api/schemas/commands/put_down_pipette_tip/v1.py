@@ -3,10 +3,10 @@ from typing import Literal
 from pydantic import Field
 
 from ...location.union import Location
-from ..base import BaseRobotSpecificTCodeCommand
+from ..base.robot_specific_tcode_command.v1 import BaseRobotSpecificTCodeCommandV1
 
 
-class PUT_DOWN_PIPETTE_TIP(BaseRobotSpecificTCodeCommand):
+class PUT_DOWN_PIPETTE_TIP(BaseRobotSpecificTCodeCommandV1):
     """Put down the currently held pipette tip(s)."""
 
     type: Literal["PUT_DOWN_PIPETTE_TIP"] = "PUT_DOWN_PIPETTE_TIP"
