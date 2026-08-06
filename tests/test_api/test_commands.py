@@ -3,6 +3,7 @@
 import datetime
 import logging
 import unittest
+from importlib.metadata import version
 from typing import get_args
 
 # Using the below import style because it's how we expect users to import tcode_api
@@ -26,7 +27,7 @@ class TestTCodeScript(BaseTestCases.TestBaseSchemaVersionedModel):
             metadata=tc.Metadata(
                 name="unittest",
                 timestamp=datetime.datetime.now().isoformat(),
-                tcode_api_version="0.1.0",
+                tcode_api_version=version("tcode_api"),
             ),
         )
 
