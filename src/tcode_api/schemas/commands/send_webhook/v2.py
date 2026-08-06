@@ -1,3 +1,8 @@
+"""SEND_WEBHOOK v2
+
+- add robot_id field
+"""
+
 from typing import Literal
 
 from pydantic import Field
@@ -6,12 +11,7 @@ from ..base.tcode_command.v1 import BaseTCodeCommandV1
 
 
 class SEND_WEBHOOK(BaseTCodeCommandV1):
-    """Send an HTTP webhook request.
-
-    Executed on the targeted robot's queue so the request is ordered against
-    that robot's motions — webhooks drive physical devices on a robot's deck
-    (open/close/heat/...), so they cannot run fleet-level.
-    """
+    """Send an HTTP webhook request."""
 
     type: Literal["SEND_WEBHOOK"] = "SEND_WEBHOOK"
     schema_version: Literal[2] = 2
