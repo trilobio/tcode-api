@@ -15,7 +15,7 @@ import plac  # type: ignore [import-untyped]
 
 import tcode_api.api as tc
 from tcode_api.api import ValueWithUnits
-from tcode_api.schemas.base import BaseSchemaVersionedModel
+from tcode_api.schemas.base.schema_versioned_model.v1 import BaseSchemaVersionedModelV1
 from tcode_api.servicer import TCodeServicerClient
 from tcode_api.types import Matrix
 from tcode_api.utilities import (
@@ -31,7 +31,7 @@ DEFAULT_FILE_PATH = pathlib.Path(__file__).resolve().parent.parent / "data" / "p
 DEFAULT_TCODE_SERVICE_URL = "http://localhost:8002"
 
 
-class Path(BaseSchemaVersionedModel):
+class Path(BaseSchemaVersionedModelV1):
     """List of transforms representing points in space relative to a robot's base coordinate system."""
 
     type: Literal["Path"] = "Path"

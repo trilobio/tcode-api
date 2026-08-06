@@ -3,7 +3,7 @@ from typing import Annotated, Literal
 from pydantic import Field
 
 from ....common.value_with_units import ValueWithUnits
-from ..base import BaseLabwareDescription, BaseLabwareDescriptor
+from ..base.labware_description.v2 import BaseLabwareDescriptionV2, BaseLabwareDescriptorV2
 
 _translation_description = (
     "{axis} translation from the module's base to its labware holder (where a held "
@@ -39,7 +39,7 @@ LiftableField = Annotated[
 ]
 
 
-class ModuleDescription(BaseLabwareDescription):
+class ModuleDescription(BaseLabwareDescriptionV2):
     """Description of a deck-slot module (e.g. a magdeck or riser).
 
     A module sits in a deck slot and holds other labware at an offset pose,
@@ -61,7 +61,7 @@ class ModuleDescription(BaseLabwareDescription):
     liftable: LiftableField = True
 
 
-class ModuleDescriptor(BaseLabwareDescriptor):
+class ModuleDescriptor(BaseLabwareDescriptorV2):
     """:class:``ModuleDescription`` with optional parameters."""
 
     type: Literal["Module"] = "Module"

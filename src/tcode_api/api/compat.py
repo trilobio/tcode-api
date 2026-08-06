@@ -329,8 +329,6 @@ tcode_api_compat_context = CompatContext(
             "v1.43.0": {
                 "ModuleDescription": 1,
                 "ModuleDescriptor": 1,
-            },
-            "v1.43.0": {
                 # v2 adds optional robot_id: webhooks execute on that robot's
                 # queue, ordered against its motions.
                 "SEND_WEBHOOK": 2,

@@ -2,10 +2,10 @@ from typing import Literal
 
 from pydantic import Field
 
-from ..base import BaseTCodeCommand
+from ..base.tcode_command.v1 import BaseTCodeCommandV1
 
 
-class SEND_WEBHOOK(BaseTCodeCommand):
+class SEND_WEBHOOK(BaseTCodeCommandV1):
     """Send an HTTP webhook request.
 
     Executed on the targeted robot's queue so the request is ordered against
