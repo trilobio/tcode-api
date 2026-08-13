@@ -36,6 +36,7 @@ For a schema named `FOO` currently at `vN`:
        # set defaults for new fields, or raise if the migration cannot be performed
        return retval
 
+
    MIGRATORS: dict[int, Migrator] = {2: migrate_v1_to_v2}
    ```
 
