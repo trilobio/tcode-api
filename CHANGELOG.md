@@ -3,6 +3,17 @@
 All notable changes to this project will be documented here.
 Format: [Semantic Versioning](https://semver.org)
 
+
+## [1.42.1]
+## Added
+- Added party mode script
+- Default progress display for `TCodeServicerClient.run_script()`
+
+## Fixed
+- Fixed mismatching batch scheduling type between TCode server and client
+
+---
+
 ## [v1.42.0]
 ### Added
 - pull request template, modeled after that of `aceta`
@@ -62,8 +73,6 @@ Format: [Semantic Versioning](https://semver.org)
     robot in preparation for supporting single-robot targeting within fleets.
 - Integrate robot targeting by serial number into all tcode_api scripts.
 - Update demo plate walkthrough to include pipette volume parametrically
-
----
 
 ## [1.40.1]
 ## Fixed
