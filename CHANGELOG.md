@@ -3,6 +3,17 @@
 All notable changes to this project will be documented here.
 Format: [Semantic Versioning](https://semver.org)
 
+
+## [1.42.1]
+## Added
+- Added party mode script
+- Default progress display for `TCodeServicerClient.run_script()`
+
+## Fixed
+- Fixed mismatching batch scheduling type between TCode server and client
+
+---
+
 ## [v1.42.0]
 ### Added
 - pull request template, modeled after that of `aceta`
@@ -55,15 +66,6 @@ Format: [Semantic Versioning](https://semver.org)
 - Dropped support for python 3.11
 
 ---
-
-## [1.41.1]
-## Added
-- Added party mode script
-- Default progress display for `TCodeServicerClient.run_script()`
-
-## Fixed
-- Fixed mismatching batch scheduling type between TCode server and client
-
 
 ## [1.41.0]
 ## Added
