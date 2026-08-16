@@ -15,6 +15,7 @@ from .calibrate_labware_well_depth.latest import CALIBRATE_LABWARE_WELL_DEPTH
 from .calibrate_tool.latest import CALIBRATE_TOOL
 from .canmera_connect_wifi.latest import CANMERA_CONNECT_WIFI
 from .canmera_net_status.latest import CANMERA_NET_STATUS
+from .canmera_status.latest import CANMERA_STATUS
 from .comment.latest import COMMENT
 from .create_labware.latest import CREATE_LABWARE
 from .delete_labware.latest import DELETE_LABWARE
@@ -51,6 +52,7 @@ __all__ = [
     "CALIBRATE_TOOL",
     "CANMERA_CONNECT_WIFI",
     "CANMERA_NET_STATUS",
+    "CANMERA_STATUS",
     "COMMENT",
     "CREATE_LABWARE",
     "DELETE_LABWARE",

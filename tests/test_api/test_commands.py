@@ -174,6 +174,7 @@ class TestCanmeraCommands(unittest.TestCase):
             commands=[
                 tc.CANMERA_CONNECT_WIFI(robot_id="robot-a", ssid="lab", password="hunter22"),
                 tc.CANMERA_NET_STATUS(robot_id="robot-a"),
+                tc.CANMERA_STATUS(robot_id="robot-a"),
             ],
         )
         restored = tc.TCodeScript.model_validate_json(script.model_dump_json())

@@ -6,7 +6,7 @@ Format: [Semantic Versioning](https://semver.org)
 
 ## [1.43.0]
 ### Added
-- `CANMERA_CONNECT_WIFI`, `CANMERA_NET_STATUS` commands for the CAN-only canmera
+- `CANMERA_CONNECT_WIFI`, `CANMERA_NET_STATUS`, `CANMERA_STATUS` commands for the CAN-only canmera
     interactions; everything HTTP-reachable on the node is driven via `SEND_WEBHOOK`.
 
 ---

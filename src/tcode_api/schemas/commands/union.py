@@ -25,6 +25,9 @@ from .canmera_connect_wifi.latest import (
 from .canmera_net_status.latest import (
     CANMERA_NET_STATUS,
 )
+from .canmera_status.latest import (
+    CANMERA_STATUS,
+)
 from .comment.latest import COMMENT
 from .create_labware.latest import CREATE_LABWARE
 from .delete_labware.latest import DELETE_LABWARE
@@ -66,6 +69,7 @@ TCode = Annotated[
     | CALIBRATE_TOOL
     | CANMERA_CONNECT_WIFI
     | CANMERA_NET_STATUS
+    | CANMERA_STATUS
     | COMMENT
     | CREATE_LABWARE
     | DELETE_LABWARE

@@ -329,6 +329,7 @@ tcode_api_compat_context = CompatContext(
             "v1.43.0": {
                 "CANMERA_CONNECT_WIFI": 1,
                 "CANMERA_NET_STATUS": 1,
+                "CANMERA_STATUS": 1,
             },
         },
         migrations={
