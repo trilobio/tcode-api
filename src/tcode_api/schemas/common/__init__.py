@@ -5,10 +5,18 @@
 # to support Sphinx automodule autodoc generation for the tcode_api documentation.
 
 from .docs import NamedTags, Tags
-from .enums import GraspType, GripperStateType, PathType, TrajectoryType, WellPartType
+from .enums import (
+    CameraName,
+    GraspType,
+    GripperStateType,
+    PathType,
+    TrajectoryType,
+    WellPartType,
+)
 from .value_with_units import ValueWithUnits
 
 __all__ = [
+    "CameraName",
     "GraspType",
     "GripperStateType",
     "NamedTags",

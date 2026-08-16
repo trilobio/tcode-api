@@ -326,6 +326,13 @@ tcode_api_compat_context = CompatContext(
                 "WellPlateDescription": 4,
                 "WellPlateDescriptor": 4,
             },
+            "v1.44.0": {
+                "CAMERA_CONFIGURE": 1,
+                "CAMERA_SET_ENABLED": 1,
+                "CAMERA_START_RECORDING": 1,
+                "CAMERA_STOP_RECORDING": 1,
+                "CAMERA_TAKE_PICTURE": 1,
+            },
         },
         migrations={
             "v1.37.0": {

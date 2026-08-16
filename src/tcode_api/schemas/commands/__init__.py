@@ -13,6 +13,11 @@ from .calibrate_labware_height.latest import CALIBRATE_LABWARE_HEIGHT
 from .calibrate_labware_holder.latest import CALIBRATE_LABWARE_HOLDER
 from .calibrate_labware_well_depth.latest import CALIBRATE_LABWARE_WELL_DEPTH
 from .calibrate_tool.latest import CALIBRATE_TOOL
+from .camera_configure.latest import CAMERA_CONFIGURE
+from .camera_set_enabled.latest import CAMERA_SET_ENABLED
+from .camera_start_recording.latest import CAMERA_START_RECORDING
+from .camera_stop_recording.latest import CAMERA_STOP_RECORDING
+from .camera_take_picture.latest import CAMERA_TAKE_PICTURE
 from .comment.latest import COMMENT
 from .create_labware.latest import CREATE_LABWARE
 from .delete_labware.latest import DELETE_LABWARE
@@ -47,6 +52,11 @@ __all__ = [
     "CALIBRATE_LABWARE_HOLDER",
     "CALIBRATE_LABWARE_WELL_DEPTH",
     "CALIBRATE_TOOL",
+    "CAMERA_CONFIGURE",
+    "CAMERA_SET_ENABLED",
+    "CAMERA_START_RECORDING",
+    "CAMERA_STOP_RECORDING",
+    "CAMERA_TAKE_PICTURE",
     "COMMENT",
     "CREATE_LABWARE",
     "DELETE_LABWARE",

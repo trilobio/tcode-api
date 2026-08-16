@@ -156,3 +156,77 @@ class TestScheduleCommandRequestSyncFields(unittest.TestCase):
         restored = ScheduleCommandsRequest.model_validate_json(bulk.model_dump_json())
         self.assertEqual(restored.commands[0].depends_on, [])
         self.assertEqual(restored.commands[1].depends_on, ["a"])
+
+
+class TestCameraCommands(unittest.TestCase):
+    """Unittests for the robot USB camera (trilo-cam) commands."""
+
+    def _make_commands(self) -> list:
+        return [
+            tc.CAMERA_SET_ENABLED(
+                robot_id="robot-a", camera_name=tc.CameraName.CAM_POS_X.value, enabled=True
+            ),
+            tc.CAMERA_CONFIGURE(
+                robot_id="robot-a",
+                camera_name=tc.CameraName.CAM_POS_X.value,
+                resolution=[1920, 1080],
+                framerate=30,
+                controls={"brightness": 12},
+            ),
+            tc.CAMERA_TAKE_PICTURE(
+                robot_id="robot-a",
+                camera_name=tc.CameraName.CAM_POS_X.value,
+                save_directory="/tmp/captures",
+            ),
+            tc.CAMERA_START_RECORDING(
+                robot_id="robot-a",
+                camera_name=tc.CameraName.CAM_POS_X.value,
+                max_duration=tc.ValueWithUnits(magnitude=10, units="min"),
+            ),
+            tc.CAMERA_STOP_RECORDING(robot_id="robot-a", camera_name=tc.CameraName.CAM_POS_X.value),
+        ]
+
+    def test_defaults(self) -> None:
+        """Optional fields default to service-side behavior."""
+        picture = tc.CAMERA_TAKE_PICTURE(
+            robot_id="robot-a", camera_name=tc.CameraName.CAM_POS_X.value
+        )
+        self.assertIsNone(picture.save_directory)
+        recording = tc.CAMERA_START_RECORDING(
+            robot_id="robot-a", camera_name=tc.CameraName.CAM_POS_X.value
+        )
+        self.assertIsNone(recording.max_duration)
+        configure = tc.CAMERA_CONFIGURE(
+            robot_id="robot-a", camera_name=tc.CameraName.CAM_POS_X.value
+        )
+        self.assertIsNone(configure.resolution)
+        self.assertIsNone(configure.framerate)
+        self.assertIsNone(configure.controls)
+
+    def test_camera_names_match_trilo_cam_contract(self) -> None:
+        """CameraName values mirror the trilo-cam service camera names."""
+        self.assertEqual([name.value for name in tc.CameraName], ["CAM_POS_X", "CAM_NEG_X"])
+
+    def test_configure_resolution_length(self) -> None:
+        """CAMERA_CONFIGURE resolution must be exactly [width, height]."""
+        with self.assertRaises(ValueError):
+            tc.CAMERA_CONFIGURE(
+                robot_id="robot-a", camera_name=tc.CameraName.CAM_POS_X.value, resolution=[1920]
+            )
+        with self.assertRaises(ValueError):
+            tc.CAMERA_CONFIGURE(
+                robot_id="robot-a", camera_name=tc.CameraName.CAM_POS_X.value, resolution=[1, 2, 3]
+            )
+
+    def test_script_round_trip(self) -> None:
+        """Camera commands survive TCodeScript serialize -> deserialize via the union."""
+        script = tc.TCodeScript(
+            metadata=tc.Metadata(
+                name="unittest",
+                timestamp=datetime.datetime.now().isoformat(),
+                tcode_api_version="0.1.0",
+            ),
+            commands=self._make_commands(),
+        )
+        restored = tc.TCodeScript.model_validate_json(script.model_dump_json())
+        self.assertEqual(restored, script)

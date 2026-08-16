@@ -8,6 +8,16 @@ As such, when you change an enum, make sure to bump the schema-version of all of
 from enum import Enum
 
 
+class CameraName(str, Enum):
+    """Names of the robot's USB cameras (trilo-cam service), by deck position."""
+
+    CAM_POS_X = "CAM_POS_X"
+    """Camera at the +X deck position."""
+
+    CAM_NEG_X = "CAM_NEG_X"
+    """Camera at the -X deck position."""
+
+
 class PathType(int, Enum):
     """Options for how the robot should move to a target location."""
 

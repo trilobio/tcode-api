@@ -67,6 +67,14 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
+## [1.44.0]
+### Added
+- `CAMERA_TAKE_PICTURE`, `CAMERA_START_RECORDING`, `CAMERA_STOP_RECORDING`, `CAMERA_SET_ENABLED`,
+    `CAMERA_CONFIGURE` commands targeting the robot's USB cameras (trilo-cam service),
+    selected by name via the `CameraName` enum (`CAM_POS_X` / `CAM_NEG_X`).
+
+---
+
 ## [1.41.0]
 ## Added
 - `tcode_api.cli.robot_serial_number_annotation` plac canned annotation for providing a target
