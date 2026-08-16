@@ -7,6 +7,8 @@ from importlib.metadata import version
 from typing import get_args
 
 # Using the below import style because it's how we expect users to import tcode_api
+import pydantic
+
 import tcode_api.api as tc
 from tcode_api.schemas.commands.base.robot_specific_tcode_command.v1 import (
     BaseRobotSpecificTCodeCommandV1,
@@ -156,3 +158,28 @@ class TestScheduleCommandRequestSyncFields(unittest.TestCase):
         restored = ScheduleCommandsRequest.model_validate_json(bulk.model_dump_json())
         self.assertEqual(restored.commands[0].depends_on, [])
         self.assertEqual(restored.commands[1].depends_on, ["a"])
+
+
+class TestCanmeraCommands(unittest.TestCase):
+    """Unittests for the CAN bus camera (canmera) commands."""
+
+    def test_script_round_trip(self) -> None:
+        """Canmera commands survive TCodeScript serialize -> deserialize via the union."""
+        script = tc.TCodeScript(
+            metadata=tc.Metadata(
+                name="unittest",
+                timestamp=datetime.datetime.now().isoformat(),
+                tcode_api_version="0.1.0",
+            ),
+            commands=[
+                tc.CANMERA_CONNECT_WIFI(robot_id="robot-a", ssid="lab", password="hunter22"),
+                tc.CANMERA_NET_STATUS(robot_id="robot-a"),
+            ],
+        )
+        restored = tc.TCodeScript.model_validate_json(script.model_dump_json())
+        self.assertEqual(restored, script)
+
+    def test_short_password_rejected(self) -> None:
+        """Passwords below the WPA2 minimum are rejected at the schema level."""
+        with self.assertRaises(pydantic.ValidationError):
+            tc.CANMERA_CONNECT_WIFI(robot_id="robot-a", ssid="lab", password="short")
