@@ -9,7 +9,8 @@ class CAMERA_CONFIGURE(BaseRobotSpecificTCodeCommandV1):
     """Apply capture settings to one of the target robot's USB cameras.
 
     Only the provided fields are changed. Resolution and framerate changes are
-    rejected by the trilo-cam service while the camera is recording.
+    rejected by the trilo-cam service while the camera is recording, and briefly
+    restart the camera's live stream when applied.
     """
 
     type: Literal["CAMERA_CONFIGURE"] = "CAMERA_CONFIGURE"

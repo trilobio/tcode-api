@@ -26,3 +26,12 @@ class CAMERA_TAKE_PICTURE(BaseRobotSpecificTCodeCommandV1):
             "the image is only stored on the robot."
         ),
     )
+
+    label: str | None = Field(
+        default=None,
+        pattern=r"^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$",
+        description=(
+            "Optional label recorded into the image filename on the robot; media can later "
+            "be filtered by label. Must be filesystem-safe."
+        ),
+    )

@@ -28,3 +28,12 @@ class CAMERA_START_RECORDING(BaseRobotSpecificTCodeCommandV1):
             "service default applies. The service clamps this to its hard maximum."
         ),
     )
+
+    label: str | None = Field(
+        default=None,
+        pattern=r"^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$",
+        description=(
+            "Optional label recorded into the recording filename on the robot; media can "
+            "later be filtered by label. Must be filesystem-safe."
+        ),
+    )
