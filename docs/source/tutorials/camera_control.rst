@@ -125,7 +125,7 @@ Arm camera (canmera, port 8081)
 -------------------------------
 
 The arm camera must already be on WiFi; joining it to the network and learning
-its address is part of robot bring-up. Base URL: ``http://<canmera-ip>:8081``.
+its address is part of robot deployment. Base URL: ``http://<canmera-ip>:8081``.
 
 .. list-table::
    :header-rows: 1
