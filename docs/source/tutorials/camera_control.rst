@@ -44,10 +44,12 @@ Things to know:
   usable from a script; use the camera's console or plain HTTP for those.
 - **Responses are discarded.** A webhook triggers a side effect; nothing comes
   back into the script.
-- **Failures are silent unless you opt in.** With ``pause_execution=False`` a
-  failed call is logged and the script keeps running. With ``pause_execution=True``
-  a failure fails the command — and on success the run *pauses* until resumed, so
-  reserve it for wait-for-operator flows.
+- **Check your failure handling.** With ``pause_execution=True`` a failed call
+  fails the command — and a successful one *pauses* the run until resumed, so
+  reserve it for wait-for-operator flows. With ``pause_execution=False`` the
+  script keeps running regardless of the call's outcome; as of this writing the
+  executor does not act on ``ignore_external_error``, so don't rely on that flag
+  to surface camera errors.
 
 Frame cameras (trilo-cam, port 8095)
 ------------------------------------
@@ -143,8 +145,9 @@ from ``http://<canmera-ip>:8081/`` or the node's console.
 .. note::
 
    Parameterized calls (``/api/control``, custom recording modes/durations) need a
-   canmera build that unwraps the webhook envelope (canmera#12); earlier builds
-   only handle parameterless webhooks.
+   canmera build that unwraps the webhook envelope
+   (`trilobio/canmera#12 <https://github.com/trilobio/canmera/pull/12>`_); earlier
+   builds only handle parameterless webhooks.
 
 Example — bump the gain, then take a still:
 
