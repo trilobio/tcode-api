@@ -51,6 +51,16 @@ Things to know:
   executor does not act on ``ignore_external_error``, so don't rely on that flag
   to surface camera errors.
 
+Exploring the APIs
+------------------
+
+Both camera services are FastAPI apps and serve their own interactive API
+reference (Swagger UI) at ``/docs`` — ``http://<robot-host>:8095/docs`` for the
+frame cameras, ``http://<canmera-ip>:8081/docs`` for the arm camera — covering
+every endpoint, including the ones a webhook can't reach. Each also serves a
+browser console at ``/console`` for controlling the cameras interactively
+(live view, captures, recordings, settings).
+
 Frame cameras (trilo-cam, port 8095)
 ------------------------------------
 
