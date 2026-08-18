@@ -14,10 +14,7 @@ A Trilobot carries two camera systems, both HTTP services on the robot network:
   port ``8081`` once it is on the network.
 
 T-code has no per-action camera commands: camera work is scripted with the generic
-``SEND_WEBHOOK`` command. The only camera-specific commands are the arm camera's
-CAN-only bring-up (``CANMERA_CONNECT_WIFI``, ``CANMERA_NET_STATUS``,
-``CANMERA_STATUS``), which exist because a node that isn't on WiFi yet can't
-receive HTTP.
+``SEND_WEBHOOK`` command.
 
 How ``SEND_WEBHOOK`` reaches a camera
 -------------------------------------
@@ -127,8 +124,8 @@ Example — enable a camera, take a labeled still, then film a stretch of the ru
 Arm camera (canmera, port 8081)
 -------------------------------
 
-Join the node to WiFi first (``CANMERA_CONNECT_WIFI``) and learn its address
-(``CANMERA_NET_STATUS``). Base URL: ``http://<canmera-ip>:8081``.
+The arm camera must already be on WiFi; joining it to the network and learning
+its address is part of robot bring-up. Base URL: ``http://<canmera-ip>:8081``.
 
 .. list-table::
    :header-rows: 1
@@ -175,5 +172,5 @@ Example — bump the gain, then take a still:
        ),
    ]
 
-Scheduling and running these commands works like any other script — see
-:doc:`connect_to_fleet`.
+Scheduling and running these commands works like any other script — see the
+example scripts in the repository's ``scripts/`` directory.
