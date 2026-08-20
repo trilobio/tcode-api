@@ -63,6 +63,57 @@ class Result(BaseModel):
         return serialized_details
 
 
+class CanmeraConnectWifiRequest(BaseModel):
+    """Request to provision a robot's CAN bus camera (canmera) WiFi and connect it.
+
+    Runs over the CAN bus, so it works before the camera node has any network access.
+
+    :param robot_id: target robot ID
+    """
+
+    robot_id: str
+    ssid: str = Field(min_length=1, description="WiFi network name to join.")
+    password: str = Field(min_length=8, description="WiFi password (WPA2 minimum length).")
+
+
+class CanmeraConnectWifiResponse(BaseModel):
+    """Response from connecting a canmera to WiFi.
+
+    :param ip: IP address the camera node reported after joining, when successful
+    :param result: Response metadata
+    """
+
+    ip: str | None = None
+    result: Result
+
+
+class CanmeraStatusRequest(BaseModel):
+    """Request for a robot's CAN bus camera (canmera) health flags and network status.
+
+    :param robot_id: target robot ID
+    """
+
+    robot_id: str
+
+
+class CanmeraStatusResponse(BaseModel):
+    """Response with a canmera's health flags and network status.
+
+    Queried over the CAN bus, so it works before the camera node has any network
+    access. The network fields are null until the node has joined WiFi.
+    """
+
+    camera_ok: bool = False
+    streaming: bool = False
+    wifi_connected: bool = False
+    robot_name_set: bool = False
+    recording: bool = False
+    ssid: str | None = None
+    hostname: str | None = None
+    ip: str | None = None
+    result: Result
+
+
 class ClearScheduleResponse(BaseModel):
     """Response object for clear_schedule endpoint."""
 

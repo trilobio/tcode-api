@@ -6,6 +6,8 @@ import unittest
 from typing import get_args
 
 # Using the below import style because it's how we expect users to import tcode_api
+import pydantic
+
 import tcode_api.api as tc
 from tcode_api.schemas.commands.base import (
     BaseRobotSpecificTCodeCommand,
@@ -154,3 +156,33 @@ class TestScheduleCommandRequestSyncFields(unittest.TestCase):
         restored = ScheduleCommandsRequest.model_validate_json(bulk.model_dump_json())
         self.assertEqual(restored.commands[0].depends_on, [])
         self.assertEqual(restored.commands[1].depends_on, ["a"])
+
+
+class TestCanmeraServicerModels(unittest.TestCase):
+    """Unittests for the canmera servicer request/response models."""
+
+    def test_round_trip(self) -> None:
+        """Canmera servicer models survive serialize -> deserialize."""
+        from tcode_api.servicer.servicer_api import (  # noqa: PLC0415
+            CanmeraConnectWifiRequest,
+            CanmeraStatusResponse,
+            Result,
+        )
+
+        request = CanmeraConnectWifiRequest(robot_id="robot-a", ssid="lab", password="hunter22")
+        self.assertEqual(
+            CanmeraConnectWifiRequest.model_validate_json(request.model_dump_json()), request
+        )
+        response = CanmeraStatusResponse(
+            camera_ok=True, ip="192.168.0.42", result=Result(success=True, code="success")
+        )
+        self.assertEqual(
+            CanmeraStatusResponse.model_validate_json(response.model_dump_json()), response
+        )
+
+    def test_short_password_rejected(self) -> None:
+        """Passwords below the WPA2 minimum are rejected at the schema level."""
+        from tcode_api.servicer.servicer_api import CanmeraConnectWifiRequest  # noqa: PLC0415
+
+        with self.assertRaises(pydantic.ValidationError):
+            CanmeraConnectWifiRequest(robot_id="robot-a", ssid="lab", password="short")
