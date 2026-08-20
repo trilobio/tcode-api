@@ -14,6 +14,10 @@ import requests
 import tcode_api.api as tc
 from tcode_api.servicer.keyboard_input import get_key
 from tcode_api.servicer.servicer_api import (
+    CanmeraConnectWifiRequest,
+    CanmeraConnectWifiResponse,
+    CanmeraStatusRequest,
+    CanmeraStatusResponse,
     ClearScheduleResponse,
     EnterTeachModeRequest,
     ExitTeachModeRequest,
@@ -316,6 +320,43 @@ class TCodeServicerClient:
             "teach_point() managed to fail calling teach_node endpoint(s) without raising an error?"
         )
         return transform
+
+    def canmera_connect_wifi(
+        self, robot_id: str, ssid: str, password: str
+    ) -> CanmeraConnectWifiResponse:
+        """Provision a robot's CAN bus camera (canmera) WiFi and connect it.
+
+        :param robot_id: The TCode id of the robot carrying the camera.
+        :param ssid: WiFi network name to join.
+        :param password: WiFi password (>= 8 characters).
+
+        :returns: The connect result, including the IP the node reported.
+        """
+        rsp = requests.post(
+            f"{self.servicer_url}/{self.tcode_api_version}/canmera_connect_wifi",
+            json=CanmeraConnectWifiRequest(
+                robot_id=robot_id, ssid=ssid, password=password
+            ).model_dump(),
+            # joining WiFi from scratch can take the node well over a minute
+            timeout=180,
+        )
+        rsp.raise_for_status()
+        return CanmeraConnectWifiResponse.model_validate_json(rsp.text)
+
+    def canmera_status(self, robot_id: str) -> CanmeraStatusResponse:
+        """Query a robot's CAN bus camera (canmera) health flags and network status.
+
+        :param robot_id: The TCode id of the robot carrying the camera.
+
+        :returns: The camera's health flags and network status.
+        """
+        rsp = requests.post(
+            f"{self.servicer_url}/{self.tcode_api_version}/canmera_status",
+            json=CanmeraStatusRequest(robot_id=robot_id).model_dump(),
+            timeout=self.timeout,
+        )
+        rsp.raise_for_status()
+        return CanmeraStatusResponse.model_validate_json(rsp.text)
 
     def discover_fleet(self) -> None:
         """Scan the fleet for new robots, and update all robot states. Useful if you swapped tools manually as a developer."""

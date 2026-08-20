@@ -2,6 +2,10 @@
 
 from tcode_api.servicer.client import TCodeServicerClient
 from tcode_api.servicer.servicer_api import (
+    CanmeraConnectWifiRequest,
+    CanmeraConnectWifiResponse,
+    CanmeraStatusRequest,
+    CanmeraStatusResponse,
     ClearScheduleResponse,
     DiscoverFleetRequest,
     DiscoverFleetResponse,
@@ -23,6 +27,10 @@ from tcode_api.servicer.servicer_api import (
 )
 
 __all__ = [
+    "CanmeraConnectWifiRequest",
+    "CanmeraConnectWifiResponse",
+    "CanmeraStatusRequest",
+    "CanmeraStatusResponse",
     "ClearScheduleResponse",
     "DiscoverFleetRequest",
     "DiscoverFleetResponse",

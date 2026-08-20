@@ -4,6 +4,14 @@ All notable changes to this project will be documented here.
 Format: [Semantic Versioning](https://semver.org)
 
 
+## [1.43.0]
+### Added
+- `canmera_connect_wifi` / `canmera_status` servicer endpoints (request/response models +
+    `TCodeServicerClient` methods) for the CAN-only canmera interactions; everything
+    HTTP-reachable on the node is driven via `SEND_WEBHOOK`.
+
+---
+
 ## [1.42.1]
 ## Added
 - Added party mode script
