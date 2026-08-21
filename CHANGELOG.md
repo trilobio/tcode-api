@@ -66,16 +66,20 @@ Format: [Semantic Versioning](https://semver.org)
 - Dropped support for python 3.11
 
 ---
+## [1.42.0]
+### Added
+- tip pickup retry tracking on demo plate walkthrough
+- deck slot re-cal loop based on tip pickup retries
 
 ## [1.41.0]
-## Added
+### Added
 - `tcode_api.cli.robot_serial_number_annotation` plac canned annotation for providing a target
     robot in preparation for supporting single-robot targeting within fleets.
 - Integrate robot targeting by serial number into all tcode_api scripts.
 - Update demo plate walkthrough to include pipette volume parametrically
 
 ## [1.40.1]
-## Fixed
+### Fixed
 - Fix `TCodeServicerClient` requests call to tcode servicer `serial_number_lookup` endpoint
 
 ---
