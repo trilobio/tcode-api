@@ -25,11 +25,12 @@ _logger = logging.getLogger(__name__)
 _filename = pathlib.Path(__file__).stem
 
 
-_tool_options: tuple[Literal["pipette", "probe"], ...] = ("pipette", "probe")
-_tool_menu = "\n".join([f"{i}. {name}" for i, name in enumerate(("pipette", "probe"), start=1)])
+ToolOptions = Literal["pipette", "probe", "gripper"]
+_tool_options: tuple[ToolOptions, ...] = ("pipette", "probe", "gripper")
+_tool_menu = "\n".join([f"{i}. {name}" for i, name in enumerate(_tool_options, start=1)])
 
 
-def prompt_probeable_tool_kind() -> Literal["pipette", "probe"]:
+def prompt_probeable_tool_kind() -> ToolOptions:
     """Prompt user for a kind of tool that can be used for probing.
 
     Returns:
@@ -149,50 +150,65 @@ def yes_no_prompt(question: str) -> bool:
     output_file_path=output_file_path_annotation,
     robot_sn=robot_serial_number_annotation,
     z_only=plac.Annotation("If set, only calibrate the Z axis (no XY)", kind="flag", abbrev="z"),
+    xy=plac.Annotation("If set, calibrate the XY axis and Z axes", kind="flag", abbrev="xy"),
 )
 def main(
     servicer_url: str = DEFAULT_SERVICER_URL,
     output_file_path: pathlib.Path | None = None,
     robot_sn: str | None = None,
     z_only: bool = False,
+    xy: bool = False,
 ) -> None:
     """Generate TCode script to calibrate a tool in z or xy+z. Can calibrate probes, pipette manifolds, or pipette tips."""
+    no_axis_input = not z_only and not xy
+    if z_only and xy:
+        raise RuntimeError("-z and -xy are mutually exclusive flags")
     tool_kind = prompt_probeable_tool_kind()
     calibrate_pipette_tip = False
     channel_count: int | None = None
     pipette_tip_volume: tc.ValueWithUnits | None = None
-    if tool_kind == "probe":
-        name = "Calibrate Probe"
-        descriptor: tc.ToolDescriptor = tc.ProbeDescriptor()
+    match tool_kind:
+        case "probe":
+            name = "Calibrate Probe"
+            descriptor: tc.ToolDescriptor = tc.ProbeDescriptor()
+            z_only = False if no_axis_input else z_only
 
-    elif tool_kind == "pipette":
-        pipette_volume = prompt_pipette_volume((20, 300, 1000))
-        channel_count = prompt_channel_count((1, 8))
-        calibrate_pipette_tip = yes_no_prompt("Calibrate pipette tip overlap?")
-        if calibrate_pipette_tip:
-            if pipette_volume == ul(20):
-                pipette_tip_volume = ul(20)
-            elif pipette_volume == ul(300):
-                pipette_tip_volume = prompt_pipette_tip_volume((100, 200, 250, 300))
-            elif pipette_volume == ul(1000):
-                pipette_tip_volume = ul(1000)
+        case "gripper":
+            name = "Calibrate Gripper"
+            descriptor = tc.GripperDescriptor()
+            z_only = True if no_axis_input else z_only
+
+        case "pipette":
+            pipette_volume = prompt_pipette_volume((20, 300, 1000))
+            channel_count = prompt_channel_count((1, 8))
+            calibrate_pipette_tip = yes_no_prompt("Calibrate pipette tip overlap?")
+            if not calibrate_pipette_tip:
+                z_only = False if no_axis_input else z_only
             else:
-                raise AssertionError(
-                    f"unhandled pipette volume {pipette_volume} for selecting pipette tip volume"
-                )
+                z_only = True if no_axis_input else z_only
+                if pipette_volume == ul(20):
+                    pipette_tip_volume = ul(20)
+                elif pipette_volume == ul(300):
+                    pipette_tip_volume = prompt_pipette_tip_volume((100, 200, 250, 300))
+                elif pipette_volume == ul(1000):
+                    pipette_tip_volume = ul(1000)
+                else:
+                    raise AssertionError(
+                        f"unhandled pipette volume {pipette_volume} for selecting pipette tip volume"
+                    )
 
-        name = f"Calibrate C{channel_count}P{pipette_volume.magnitude} Pipette"
-        if calibrate_pipette_tip:
-            name += " Tip"
+            name = f"Calibrate C{channel_count}P{pipette_volume.magnitude} Pipette"
+            if calibrate_pipette_tip:
+                name += " Tip"
 
-        descriptor_constructor = (
-            tc.EightChannelPipetteDescriptor
-            if channel_count == 8
-            else tc.SingleChannelPipetteDescriptor
-        )
-        descriptor = descriptor_constructor(max_volume=pipette_volume)
-    else:
-        raise AssertionError(f"unhandled tool kind {tool_kind}")
+            descriptor_constructor = (
+                tc.EightChannelPipetteDescriptor
+                if channel_count == 8
+                else tc.SingleChannelPipetteDescriptor
+            )
+            descriptor = descriptor_constructor(max_volume=pipette_volume)
+        case _:
+            raise NotImplementedError(f"unhandled tool kind {tool_kind}")
 
     script = tc.TCodeScript.new(name=name, description=__doc__)
 
