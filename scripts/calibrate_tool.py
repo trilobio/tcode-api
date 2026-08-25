@@ -148,6 +148,7 @@ def yes_no_prompt(question: str) -> bool:
 @plac.annotations(
     servicer_url=servicer_url_annotation,
     output_file_path=output_file_path_annotation,
+    deck_slot_name=plac.Annotation("Deck slot name for pipette tip box", kind="option", abbrev="d"),
     robot_sn=robot_serial_number_annotation,
     z_only=plac.Annotation("If set, only calibrate the Z axis (no XY)", kind="flag", abbrev="z"),
     xy=plac.Annotation("If set, calibrate the XY axis and Z axes", kind="flag", abbrev="xy"),
@@ -155,11 +156,24 @@ def yes_no_prompt(question: str) -> bool:
 def main(
     servicer_url: str = DEFAULT_SERVICER_URL,
     output_file_path: pathlib.Path | None = None,
+    deck_slot_name: str = "DeckSlot_8",
     robot_sn: str | None = None,
     z_only: bool = False,
     xy: bool = False,
 ) -> None:
-    """Generate TCode script to calibrate a tool in z or xy+z. Can calibrate probes, pipette manifolds, or pipette tips."""
+    """Run a tool calibration procedure through TCode. The script first prompts you to select a
+    tool to calibrate, then runs the appropriate procedure on the target fleet and robot.
+
+    If neither -z nor -xy is specified, the script selects 'xy+z' for all calibrations unless the
+    tool doesn't support it, in which case it selects 'z' only.
+
+    *-------- Supported tools ----*
+    |            Probe | [z|xy+z] |
+    |          Gripper | [z]      |
+    | Pipette Manifold | [z|xy+z] |
+    |      Pipette Tip | [z]      | (note: also requires appropriate pipette tip box on deck)
+    *-----------------------------*
+    """
     no_axis_input = not z_only and not xy
     if z_only and xy:
         raise RuntimeError("-z and -xy are mutually exclusive flags")
@@ -248,7 +262,7 @@ def main(
             tc.CREATE_LABWARE(
                 robot_id=robot_id,
                 description=load_labware(tip_box_name),
-                holder=tc.LabwareHolderName(robot_id=robot_id, name="DeckSlot_8"),
+                holder=tc.LabwareHolderName(robot_id=robot_id, name=deck_slot_name),
             )
         )
         script.commands.append(tc.ADD_LABWARE(id=tip_box_id, descriptor=describe_pipette_tip_box()))
