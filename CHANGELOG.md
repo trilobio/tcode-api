@@ -3,6 +3,16 @@
 All notable changes to this project will be documented here.
 Format: [Semantic Versioning](https://semver.org)
 
+---
+
+## [Unreleased]
+### Changed
+#### `scripts/calibrate_tool.py`
+- Added option to change targeted deck slot for tip box
+- Added gripper as calibration option
+- Added "smart" selection of -z vs -xy when no flag provided
+
+---
 
 ## [1.42.1]
 ## Added
