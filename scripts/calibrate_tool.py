@@ -224,7 +224,7 @@ def main(
         case _:
             raise NotImplementedError(f"unhandled tool kind {tool_kind}")
 
-    script = tc.TCodeScript.new(name=name, description=__doc__)
+    script = tc.TCodeScript.new(name=name, description=main.__doc__)
 
     # FLEET
     (
