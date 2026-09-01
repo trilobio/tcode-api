@@ -1,6 +1,6 @@
-from ....registry import Migrator, RawData
+from ....registry import Migrator, RawData, is_description_or_descriptor
 from ...liddability import LiddabilityDescription, LiddabilityDescriptor
-from ..lid import LidDescription
+from ..lid import LidDescription, LidDescriptor
 from ..lid.migrate import migrate_v3_to_v4 as migrate_lid_v3_to_v4
 
 
@@ -78,14 +78,18 @@ def migrate_v4_to_v5(data: RawData) -> RawData:
         lid_offset = retval.get("lid_offset", None)
         lid = retval.get("lid", None)
         supports_lid = not (lid_offset is None and lid is None)
-        try:
+        if is_description_or_descriptor(
+            LidDescription,
+            LidDescriptor,
+            retval,
+        )[0]:
             LidDescription.model_validate(lid)
             retval["liddability"] = LiddabilityDescription(
                 supports_lid=supports_lid,
                 lid_offset=lid_offset,
                 lid=lid,
             ).model_dump()
-        except Exception:  # Assume that LidDescription didn't work
+        else:
             retval["liddability"] = LiddabilityDescriptor(
                 supports_lid=supports_lid,
                 lid_offset=lid_offset,
