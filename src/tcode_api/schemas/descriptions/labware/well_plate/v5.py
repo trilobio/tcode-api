@@ -1,6 +1,5 @@
 """WellPlateDescriptor & WellPlateDescription v5
 
-- Increment `lid` attribute to v5.
 - Bundle lid-related attributes into `LiddabilityDescription` and `LiddabilityDescriptor`.
 """
 

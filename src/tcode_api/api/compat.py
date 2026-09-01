@@ -350,7 +350,7 @@ def migrate_data_to_latest(
     schema_version: int | None = None,
     context: CompatContext = tcode_api_compat_context,
 ) -> RawData:
-    """Migrate a given json blob to the latest version of it's schema.
+    """Migrate a given json blob to the latest version of its schema.
 
     :param data: The json blob to migrate.
     :param schema_name: The name of the schema to migrate. If not provided, will attempt to infer

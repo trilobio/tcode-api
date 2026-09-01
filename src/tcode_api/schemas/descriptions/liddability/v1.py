@@ -23,7 +23,7 @@ supports_lid_description = (
 
 
 class LiddabilityDescription(BaseSchemaVersionedModelV1):
-    """Description of a grid layout."""
+    """Description of whether and how a labware supports a lid."""
 
     type: Literal["Liddability"] = "Liddability"
     schema_version: Literal[1] = 1
