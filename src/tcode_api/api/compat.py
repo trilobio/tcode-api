@@ -418,18 +418,33 @@ def migrate_data_to_version(
             data=data,
         ) from err
 
-    if target_version is not None and target_version < schema_version:
-        raise InvalidDataError(
-            msg=f"Cannot migrate from version '{schema_version}' to version '{target_version}' for schema '{schema_name}' because the target version is older than the current version.",
-            data=data,
-        )
+    # Validate target version against current version
+    if target_version is not None:
+        if target_version == schema_version:
+            return data  # No migration needed
+        if target_version < schema_version:
+            raise InvalidDataError(
+                msg=f"Cannot migrate from version '{schema_version}' to version '{target_version}' for schema '{schema_name}' because the target version is older than the current version.",
+                data=data,
+            )
     try:
         migrators = context.migration_registry.get_migrators_for_schema(schema_name)
     except BuilderNotFoundError:
-        _logger.warning(
-            "No migrators found for schema '%s', returning data unchanged.", schema_name
+        # No-op or error if no migrators
+        if target_version is not None and target_version != schema_version:
+            raise InvalidDataError(
+                msg=f"Cannot migrate from version '{schema_version}' to version '{target_version}' for schema '{schema_name}' because there are no registered migrators for this schema.",
+                data=data,
+            )
+        return data
+
+    # Validate target version against available migrators
+    if target_version is not None and target_version not in migrators:
+        raise InvalidDataError(
+            msg=f"Cannot migrate from version '{schema_version}' to version '{target_version}' for schema '{schema_name}' because there is no registered migrator for the target version.",
+            data=data,
         )
-        migrators = {}
+
     sorted_migrators = sorted(migrators)
     if target_version is not None and sorted_migrators[-1] < target_version:
         raise InvalidDataError(
