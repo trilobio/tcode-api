@@ -1,5 +1,5 @@
 {
-  "schema_version": 4,
+  "schema_version": 5,
   "tags": [],
   "named_tags": {
     "name": "266120_Thermo NUNC_96W_flat",
@@ -110,63 +110,68 @@
       "units": "uL"
     }
   },
-  "lid_offset": {
-    "type": "ValueWithUnits",
-    "magnitude": 9.3,
-    "units": "mm"
-  },
-  "lid": {
-    "schema_version": 4,
-    "tags": [],
-    "named_tags": {
-      "name": "266120_Thermo NUNC_96W_flat_lid",
-      "brand": "thermofisher-scientific",
-      "model": "nunc_omnitray_lid.obj",
-      "kind": "LID"
-    },
-    "x_length": {
+  "liddability": {
+    "schema_version": 1,
+    "type": "Liddability",
+    "supports_lid": true,
+    "lid_offset": {
       "type": "ValueWithUnits",
-      "magnitude": 127.35,
+      "magnitude": 9.3,
       "units": "mm"
     },
-    "y_length": {
-      "type": "ValueWithUnits",
-      "magnitude": 85.4,
-      "units": "mm"
-    },
-    "z_length": {
-      "type": "ValueWithUnits",
-      "magnitude": 8.0,
-      "units": "mm"
-    },
-    "pinchable": true,
-    "pinch_offset_transform": [
-      [
-        1.0,
-        0.0,
-        0.0,
-        0.0
+    "lid": {
+      "schema_version": 4,
+      "tags": [],
+      "named_tags": {
+        "name": "266120_Thermo NUNC_96W_flat_lid",
+        "brand": "thermofisher-scientific",
+        "model": "nunc_omnitray_lid.obj",
+        "kind": "LID"
+      },
+      "x_length": {
+        "type": "ValueWithUnits",
+        "magnitude": 127.35,
+        "units": "mm"
+      },
+      "y_length": {
+        "type": "ValueWithUnits",
+        "magnitude": 85.4,
+        "units": "mm"
+      },
+      "z_length": {
+        "type": "ValueWithUnits",
+        "magnitude": 8.0,
+        "units": "mm"
+      },
+      "pinchable": true,
+      "pinch_offset_transform": [
+        [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          1.0,
+          0.0,
+          0.0
+        ],
+        [
+          0.0,
+          0.0,
+          1.0,
+          0.002
+        ],
+        [
+          0.0,
+          0.0,
+          0.0,
+          1.0
+        ]
       ],
-      [
-        0.0,
-        1.0,
-        0.0,
-        0.0
-      ],
-      [
-        0.0,
-        0.0,
-        1.0,
-        0.002
-      ],
-      [
-        0.0,
-        0.0,
-        0.0,
-        1.0
-      ]
-    ],
-    "type": "Lid",
-    "stackable": true
+      "type": "Lid",
+      "stackable": true
+    }
   }
 }
