@@ -321,6 +321,7 @@ def describe_well_plate(
     row_pitch: float = 0.009,
     column_pitch: float = 0.009,
     has_lid: bool = False,
+    supports_lid: bool = False,
 ) -> tc.WellPlateDescriptor:
     """tc.WellPlateDescriptor constructor with nice defaults.
 
@@ -331,9 +332,15 @@ def describe_well_plate(
     :param row_pitch: Pitch between rows in meters. Defaults to 0.009 m.
     :param column_pitch: Pitch between columns in meters. Defaults to 0.009 m.
     :param has_lid: Whether the well plate has a lid. Defaults to False.
+    :param supports_lid: Whether the well plate supports a lid. Defaults to False.
 
     :return: tc.WellPlateDescriptor constructed with the specified parameters.
+    :raise ValueError: If has_lid is True and supports_lid is False, as this is an invalid configuration.
     """
+    if has_lid and not supports_lid:
+        raise ValueError(
+            "Invalid configuration: has_lid is True but supports_lid is False. A well plate cannot have a lid if it does not support one."
+        )
     tags = [] if tags is None else tags
     named_tags = {} if named_tags is None else named_tags
     grid_descriptor = tc.GridDescriptor(
@@ -342,12 +349,13 @@ def describe_well_plate(
         row_pitch=m(row_pitch),
         column_pitch=m(column_pitch),
     )
-    lid_descriptor = tc.LidDescriptor() if has_lid else None
     return tc.WellPlateDescriptor(
         tags=tags,
         named_tags=named_tags,
         grid=grid_descriptor,
-        lid=lid_descriptor,
+        liddability=tc.LiddabilityDescriptor(
+            supports_lid=supports_lid, lid=tc.LidDescriptor() if has_lid else None
+        ),
     )
 
 

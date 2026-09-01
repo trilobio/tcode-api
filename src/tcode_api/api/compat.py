@@ -326,6 +326,12 @@ tcode_api_compat_context = CompatContext(
                 "WellPlateDescription": 4,
                 "WellPlateDescriptor": 4,
             },
+            "v1.43.0": {
+                "LiddabilityDescription": 1,
+                "LiddabilityDescriptor": 1,
+                "WellPlateDescription": 5,
+                "WellPlateDescriptor": 5,
+            },
         },
         migrations={
             "v1.37.0": {

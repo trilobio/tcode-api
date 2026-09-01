@@ -1,4 +1,5 @@
 from ....registry import Migrator, RawData
+from ...liddability import LiddabilityDescription
 from ..lid.migrate import migrate_v3_to_v4 as migrate_lid_v3_to_v4
 
 
@@ -53,8 +54,44 @@ def migrate_v3_to_v4(data: RawData) -> RawData:
     return retval
 
 
+def migrate_v4_to_v5(data: RawData) -> RawData:
+    """Migrate a WellPlateDescription or WellPlateDescriptor from schema version 4 to 5.
+
+    Note that NO descriptor migrates to "i don't care if a plate is liddable or not" (i.e.
+    liddability.is_liddable=None). This drawback is because this function is unably to cheaply tell
+    if incoming data is a Description or Descriptor, and so assumes it MUST provide a Liddability
+    field.
+
+    Migration logic assumes the following:
+    - If a labware has a lid OR a lid_offset, it should have a populated liddability field.
+    - If a labware has neither lid nor lid_offset, liddability.is_lidabble is False.
+    """
+    retval = {
+        **data,
+    }
+    retval["schema_version"] = 5
+    if "liddability" in retval:
+        # If the liddability field is already present, we don't need to backfill it.
+        pass
+    else:
+        lid_offset = retval.get("lid_offset", None)
+        lid = retval.get("lid", None)
+        supports_lid = not (lid_offset is None and lid is None)
+        retval["liddability"] = LiddabilityDescription(
+            supports_lid=supports_lid,
+            lid_offset=lid_offset,
+            lid=lid,
+        ).model_dump()
+
+    # Remove deprecated keys
+    del retval["lid_offset"]
+    del retval["lid"]
+    return retval
+
+
 MIGRATORS: dict[int, Migrator] = {
     2: migrate_v1_to_v2,
     3: migrate_v2_to_v3,
     4: migrate_v3_to_v4,
+    5: migrate_v4_to_v5,
 }

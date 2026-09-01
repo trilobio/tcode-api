@@ -54,7 +54,7 @@ def main(
 
     description = cast(tc.WellPlateDescription, load_labware("thermo_nunc_266120_plate"))
     lid_description = cast(tc.LidDescription, load_labware("thermo_nunc_266120_lid"))
-    description.lid = lid_description
+    description.liddability.lid = lid_description
     for id, lid_id, holder in zip(labware_ids, lid_ids, labware_holders):
         script.commands.append(
             tc.CREATE_LABWARE(
