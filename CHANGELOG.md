@@ -9,6 +9,8 @@ Format: [Semantic Versioning](https://semver.org)
 ## Added
 - `tcode_api.api.LiddabilityDescript[ion|or]` schemas to marshall all data regarding the
     liddability of a labware: can it be lidded, where does the lid go, and what kind of lid iis it.
+- `supports_lid` argument to `describe_well_plate` that allows the easy creation of an unlidded
+    lid-supporting labware while maintaining backward-compatible scripts.
 
 ## Changed
 - `tcode_api.api.WellPlateDescript[ion|or]` schemas migrated to v4 to include `Liddability` schema.

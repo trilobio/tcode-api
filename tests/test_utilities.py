@@ -56,6 +56,18 @@ class TestDescribeEntityFunctions(unittest.TestCase):
             ):
                 self._test_describe_entity_function(test.function, test.description)
 
+    def test_describe_well_plate_regression(self) -> None:
+        """Adding supports_lid arg to describe_well_plate should not break existing code."""
+        plate_with_lid = describe_well_plate(has_lid=True)
+        assert plate_with_lid.liddability is not None  # mypy type narrowing
+        self.assertTrue(plate_with_lid.liddability.supports_lid)
+        self.assertIsNotNone(plate_with_lid.liddability.lid)
+
+        plate_without_lid = describe_well_plate()
+        assert plate_without_lid.liddability is not None  # mypy type narrowing
+        self.assertFalse(plate_without_lid.liddability.supports_lid)
+        self.assertIsNone(plate_without_lid.liddability.lid)
+
 
 class TestWellAddressToIndex(unittest.TestCase):
     """Test the well_address_to_index utility function."""
