@@ -1,7 +1,9 @@
 from ....registry import Migrator, RawData, is_description_or_descriptor
-from ...liddability import LiddabilityDescription, LiddabilityDescriptor
-from ..lid import LidDescription, LidDescriptor
+
+# The schema imports below are pinned toi not let future release changed old migrators.
+from ...liddability.v1 import LiddabilityDescription, LiddabilityDescriptor
 from ..lid.migrate import migrate_v3_to_v4 as migrate_lid_v3_to_v4
+from ..lid.v4 import LidDescription, LidDescriptor
 
 
 def migrate_v1_to_v2(data: RawData) -> RawData:
