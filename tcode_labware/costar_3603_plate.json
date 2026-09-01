@@ -1,5 +1,5 @@
 {
-  "schema_version": 4,
+  "schema_version": 5,
   "tags": [],
   "named_tags": {
     "name": "costar_3603",
@@ -110,10 +110,15 @@
       "units": "uL"
     }
   },
-  "lid_offset": {
-    "type": "ValueWithUnits",
-    "magnitude": 7.33,
-    "units": "mm"
-  },
-  "lid": null
+  "liddability": {
+    "schema_version": 1,
+    "type": "Liddability",
+    "supports_lid": true,
+    "lid_offset": {
+      "type": "ValueWithUnits",
+      "magnitude": 7.33,
+      "units": "mm"
+    },
+    "lid": null
+  }
 }

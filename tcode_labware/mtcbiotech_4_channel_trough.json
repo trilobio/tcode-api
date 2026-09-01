@@ -1,5 +1,5 @@
 {
-  "schema_version": 4,
+  "schema_version": 5,
   "tags": [],
   "named_tags": {
     "name": "mtcbiotech_4_channel_trough",
@@ -96,6 +96,11 @@
       "units": "uL"
     }
   },
-  "lid_offset": null,
-  "lid": null
+  "liddability": {
+    "schema_version": 1,
+    "type": "Liddability",
+    "supports_lid": false,
+    "lid_offset": null,
+    "lid": null
+  }
 }
