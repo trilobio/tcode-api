@@ -269,6 +269,14 @@ class TeacupV3(BaseSchemaVersionedModelV1):
     was_migrated: bool = False
 
 
+class TeacupV4(BaseSchemaVersionedModelV1):
+    """A test schema for testing the load_api_object function."""
+
+    type: Literal["Teacup"] = "Teacup"
+    schema_version: Literal[4] = 4
+    was_migrated: bool = False
+
+
 class CupV1(BaseSchemaVersionedModelV1):
     """A test schema for testing the load_api_object function."""
 
@@ -291,6 +299,15 @@ def migrate_teacup_v2_to_teacup_v3(data: RawData) -> RawData:
     return {
         "type": "Teacup",
         "schema_version": 3,
+        "was_migrated": True,
+    }
+
+
+def migrate_teacup_v2_to_teacup_v4(data: RawData) -> RawData:
+    """A simple migration function to migrate from TeacupV2 to TeacupV4."""
+    return {
+        "type": "Teacup",
+        "schema_version": 4,
         "was_migrated": True,
     }
 
@@ -774,6 +791,8 @@ class TestMigrateDataToVersion(unittest.TestCase):
 
     def setUp(self) -> None:
         """Shared context for all tests in this class."""
+
+        #: Teacup model context with v1, v2, v3, and relevant migrators
         self.context = CompatContext(
             migration_registry=MigrationRegistry(
                 _migrators_to_preload={
@@ -798,38 +817,95 @@ class TestMigrateDataToVersion(unittest.TestCase):
             ),
         )
 
-    def test_identical_version(self) -> None:
-        """Running migrate_data_to_version with the input schema's version should return the input data unchanged."""
+        # Teacup model context with v1 and no migrators
+        self.context_wo_migrators = CompatContext(
+            migration_registry=MigrationRegistry(),
+            schema_registry=SchemaRegistry(
+                _builders_to_preload={
+                    "Teacup": TeacupV1,
+                },
+            ),
+            api_history_log=APIHistoryLog(
+                name="test_no_migrators",
+                increments={
+                    "v0.1.0": {"Teacup": 1},
+                },
+            ),
+        )
+
+        # Teacup model context with v1, v2, v4, and relevant migrators (no v3)
+        self.context_wo_v3 = CompatContext(
+            migration_registry=MigrationRegistry(
+                _migrators_to_preload={
+                    "Teacup": {
+                        2: migrate_teacup_v1_to_teacup_v2,
+                        4: migrate_teacup_v2_to_teacup_v4,
+                    }
+                },
+            ),
+            schema_registry=SchemaRegistry(
+                _builders_to_preload={
+                    "Teacup": TeacupV4,
+                },
+            ),
+            api_history_log=APIHistoryLog(
+                name="test_no_v3",
+                increments={
+                    "v0.1.0": {"Teacup": 1},
+                    "v0.2.0": {"Teacup": 2},
+                    "v0.4.0": {"Teacup": 4},
+                },
+            ),
+        )
+
+    def test_no_migrators(self) -> None:
+        """Running migrate_data_to_version with no migrators should return the input data unchanged."""
         data = {"type": "Teacup", "schema_version": 1}
         migrated_data = migrate_data_to_version(
             data=data,
             schema_name="Teacup",
             target_version=1,
-            context=self.context,
         )
         self.assertEqual(migrated_data, data)
+
+    def test_identical_version(self) -> None:
+        """Running migrate_data_to_version with the input schema's version should return the input data unchanged."""
+        data = {"type": "Teacup", "schema_version": 1}
+        for context in [self.context, self.context_wo_migrators, self.context_wo_v3]:
+            with self.subTest(context=context):
+                migrated_data = migrate_data_to_version(
+                    data=data,
+                    schema_name="Teacup",
+                    target_version=1,
+                    context=self.context,
+                )
+                self.assertEqual(migrated_data, data)
 
     def test_previous_version(self) -> None:
         """Running migrate_data_to_version with a target version lower than the input schema's version should raise an error."""
         data = {"type": "Teacup", "schema_version": 2}
-        with self.assertRaises(InvalidDataError):
-            migrate_data_to_version(
-                data=data,
-                schema_name="Teacup",
-                target_version=1,
-                context=self.context,
-            )
+        for context in [self.context, self.context_wo_migrators, self.context_wo_v3]:
+            with self.subTest(context=context):
+                with self.assertRaises(InvalidDataError):
+                    migrate_data_to_version(
+                        data=data,
+                        schema_name="Teacup",
+                        target_version=1,
+                        context=self.context,
+                    )
 
     def test_future_not_latest_version(self) -> None:
         """Running migrate_data_to_version with input_data_version < target_version < latest_version should migrate the data to the target version."""
         data = {"type": "Teacup", "schema_version": 1}
-        migrated_data = migrate_data_to_version(
-            data=data,
-            schema_name="Teacup",
-            target_version=2,
-            context=self.context,
-        )
-        self.assertEqual(migrated_data["schema_version"], 2)
+        for context in [self.context, self.context_wo_v3]:
+            with self.subTest(context=context):
+                migrated_data = migrate_data_to_version(
+                    data=data,
+                    schema_name="Teacup",
+                    target_version=2,
+                    context=self.context,
+                )
+                self.assertEqual(migrated_data["schema_version"], 2)
 
     def test_future_latest_version(self) -> None:
         """Running migrate_data_to_version with input_data_version < target_version == latest_version should migrate the data to the target version."""
@@ -845,12 +921,25 @@ class TestMigrateDataToVersion(unittest.TestCase):
     def test_nonexistent_future_version(self) -> None:
         """Running migrate_data_to_version with input_data_version < target_version > latest_version should raise an error."""
         data = {"type": "Teacup", "schema_version": 1}
+        for context in [self.context, self.context_wo_migrators, self.context_wo_v3]:
+            with self.subTest(context=context):
+                with self.assertRaises(InvalidDataError):
+                    migrate_data_to_version(
+                        data=data,
+                        schema_name="Teacup",
+                        target_version=5,
+                        context=self.context,
+                    )
+
+    def test_nonexistent_intermediate_version(self) -> None:
+        """Running migrate_data_to_version with input_data_version < target_version < latest_version but no migrator for the intermediate version should raise an error."""
+        data = {"type": "Teacup", "schema_version": 1}
         with self.assertRaises(InvalidDataError):
             migrate_data_to_version(
                 data=data,
                 schema_name="Teacup",
-                target_version=4,
-                context=self.context,
+                target_version=3,
+                context=self.context_wo_v3,
             )
 
 
