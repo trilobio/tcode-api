@@ -5,6 +5,8 @@ Format: [Semantic Versioning](https://semver.org)
 
 ## [v1.43.0]
 ## Added
+- Expose lower-level `migrate_data_to_version` to target specific versions and make unittests more
+    portable (they don't break when registering to the latest version automatically).
 - `tcode_api.api.LiddabilityDescript[ion|or]` schemas to marshall all data regarding the
     liddability of a labware: can it be lidded, where does the lid go, and what kind of lid iis it.
 

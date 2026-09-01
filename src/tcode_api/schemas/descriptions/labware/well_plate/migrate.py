@@ -1,5 +1,6 @@
 from ....registry import Migrator, RawData
-from ...liddability import LiddabilityDescription
+from ...liddability import LiddabilityDescription, LiddabilityDescriptor
+from ..lid import LidDescription
 from ..lid.migrate import migrate_v3_to_v4 as migrate_lid_v3_to_v4
 
 
@@ -77,15 +78,23 @@ def migrate_v4_to_v5(data: RawData) -> RawData:
         lid_offset = retval.get("lid_offset", None)
         lid = retval.get("lid", None)
         supports_lid = not (lid_offset is None and lid is None)
-        retval["liddability"] = LiddabilityDescription(
-            supports_lid=supports_lid,
-            lid_offset=lid_offset,
-            lid=lid,
-        ).model_dump()
+        try:
+            LidDescription.model_validate(lid)
+            retval["liddability"] = LiddabilityDescription(
+                supports_lid=supports_lid,
+                lid_offset=lid_offset,
+                lid=lid,
+            ).model_dump()
+        except Exception:  # Assume that LidDescription didn't work
+            retval["liddability"] = LiddabilityDescriptor(
+                supports_lid=supports_lid,
+                lid_offset=lid_offset,
+                lid=lid,
+            ).model_dump()
 
     # Remove deprecated keys
-    del retval["lid_offset"]
-    del retval["lid"]
+    retval.pop("lid_offset", None)
+    retval.pop("lid", None)
     return retval
 
 

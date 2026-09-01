@@ -365,6 +365,43 @@ def migrate_data_to_latest(
     :raises InvalidDataError: If the schema name or version cannot be inferred from the data and
         not provided as an argument.
     """
+    return migrate_data_to_version(
+        data=data,
+        target_version=None,
+        schema_name=schema_name,
+        schema_version=schema_version,
+        context=context,
+    )
+
+
+def migrate_data_to_version(
+    data: RawData,
+    target_version: int | None,
+    schema_name: str | None = None,
+    schema_version: int | None = None,
+    context: CompatContext = tcode_api_compat_context,
+) -> RawData:
+    """Migrate a given json blob to the specified version of it's schema.
+
+    :param data: The json blob to migrate.
+    :param version: The target version of the schema to migrate to. If not provided, will migrate to
+        the latest version.
+    :param schema_name: The name of the schema to migrate. If not provided, will attempt to infer
+        from the 'type' key in the data.
+    :param schema_version: The version of the schema to migrate. If not provided, will attempt to
+        infer from the 'schema_version' key in the data.
+    :param context: The targeted compatibility context. Defaults to the tcode-api context.
+
+    :returns: The migrated json blob, updated to match the specified version of the schema.
+        If no migrators were found for the given schema, returns the data unchanged.
+
+    :raises InvalidDataError: If any of the following are true:
+        * the schema name or version cannot be inferred from the data and not provided as an
+            argument.
+        * the target version is older than the current version of the schema.
+        * the target version has no registered migrator.
+
+    """
     try:
         schema_name = schema_name or data["type"]
     except KeyError as err:
@@ -381,6 +418,11 @@ def migrate_data_to_latest(
             data=data,
         ) from err
 
+    if target_version is not None and target_version < schema_version:
+        raise InvalidDataError(
+            msg=f"Cannot migrate from version '{schema_version}' to version '{target_version}' for schema '{schema_name}' because the target version is older than the current version.",
+            data=data,
+        )
     try:
         migrators = context.migration_registry.get_migrators_for_schema(schema_name)
     except BuilderNotFoundError:
@@ -388,9 +430,20 @@ def migrate_data_to_latest(
             "No migrators found for schema '%s', returning data unchanged.", schema_name
         )
         migrators = {}
-    for version in sorted(migrators):
-        if version > schema_version:
-            data = migrators[version](data)
+    sorted_migrators = sorted(migrators)
+    if target_version is not None and sorted_migrators[-1] < target_version:
+        raise InvalidDataError(
+            msg=f"Cannot migrate from version '{schema_version}' to version '{target_version}' for schema '{schema_name}' because the target_version is newer than the latest migrator.",
+            data=data,
+        )
+
+    for migrator_version in sorted_migrators:
+        if target_version is not None and migrator_version > target_version:
+            break  # Stop if we've reached the target version
+
+        # We haven't reached the target version yet
+        if migrator_version > schema_version:
+            data = migrators[migrator_version](data)
 
     return data
 
