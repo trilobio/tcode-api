@@ -5,6 +5,16 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
+## [v1.46.0]
+## Added
+- `tcode_api.api.LiddabilityDescript[ion|or]` schemas to marshall all data regarding the
+    liddability of a labware: can it be lidded, where does the lid go, and what kind of lid iis it.
+
+## Changed
+- `tcode_api.api.WellPlateDescript[ion|or]` schemas migrated to v4 to include `Liddability` schema.
+
+---
+
 ## [v1.45.0]
 ### Changed
 - Expose lower-level `is_description_or_descriptor` to allow external code that doesn't need the
