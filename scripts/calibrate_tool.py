@@ -149,12 +149,14 @@ def yes_no_prompt(question: str) -> bool:
     output_file_path=output_file_path_annotation,
     robot_sn=robot_serial_number_annotation,
     z_only=plac.Annotation("If set, only calibrate the Z axis (no XY)", kind="flag", abbrev="z"),
+    deck_slot_name=plac.Annotation("Deck slot to put the pipette tips in, if calibrating tip overlap", kind="option", abbrev="ds"),
 )
 def main(
     servicer_url: str = DEFAULT_SERVICER_URL,
     output_file_path: pathlib.Path | None = None,
     robot_sn: str | None = None,
     z_only: bool = False,
+    deck_slot_name: str = "DeckSlot_1",
 ) -> None:
     """Generate TCode script to calibrate a tool in z or xy+z. Can calibrate probes, pipette manifolds, or pipette tips."""
     tool_kind = prompt_probeable_tool_kind()
@@ -232,7 +234,7 @@ def main(
             tc.CREATE_LABWARE(
                 robot_id=robot_id,
                 description=load_labware(tip_box_name),
-                holder=tc.LabwareHolderName(robot_id=robot_id, name="DeckSlot_8"),
+                holder=tc.LabwareHolderName(robot_id=robot_id, name=deck_slot_name),
             )
         )
         script.commands.append(tc.ADD_LABWARE(id=tip_box_id, descriptor=describe_pipette_tip_box()))
