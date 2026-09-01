@@ -5,6 +5,8 @@ Format: [Semantic Versioning](https://semver.org)
 
 ## [v1.43.0]
 ## Added
+- Expose lower-level `is_description_or_descriptor` to allow external code that doesn't need the
+    schema to check if a dict is a description or descriptor.
 - Expose lower-level `migrate_data_to_version` to target specific versions and make unittests more
     portable (they don't break when registering to the latest version automatically).
 - `tcode_api.api.LiddabilityDescript[ion|or]` schemas to marshall all data regarding the
