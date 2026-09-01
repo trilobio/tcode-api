@@ -1,9 +1,9 @@
 from ....registry import Migrator, RawData, is_description_or_descriptor
 
-# The schema imports below are pinned toi not let future release changed old migrators.
+# The schema imports below are pinned to not let future release changed old migrators.
 from ...liddability.v1 import LiddabilityDescription, LiddabilityDescriptor
 from ..lid.migrate import migrate_v3_to_v4 as migrate_lid_v3_to_v4
-from ..lid.v4 import LidDescription, LidDescriptor
+from .v4 import WellPlateDescription, WellPlateDescriptor
 
 
 def migrate_v1_to_v2(data: RawData) -> RawData:
@@ -60,13 +60,13 @@ def migrate_v3_to_v4(data: RawData) -> RawData:
 def migrate_v4_to_v5(data: RawData) -> RawData:
     """Migrate a WellPlateDescription or WellPlateDescriptor from schema version 4 to 5.
 
-    Note that NO descriptor migrates to "i don't care if a plate is liddable or not" (i.e.
+    Note that NO descriptor migrates to "I don't care if a plate is liddable or not" (i.e.
     liddability.is_liddable=None). This drawback is because this function is unably to cheaply tell
     if incoming data is a Description or Descriptor, and so assumes it MUST provide a Liddability
     field.
 
     Migration logic assumes the following:
-    - If a labware has a lid OR a lid_offset, it should have a populated liddability field.
+    - If a WellPlateDescription has a lid OR a lid_offset, it should have a populated liddability field.
     - If a labware has neither lid nor lid_offset, liddability.is_lidabble is False.
     """
     retval = {
@@ -81,11 +81,10 @@ def migrate_v4_to_v5(data: RawData) -> RawData:
         lid = retval.get("lid", None)
         all_lid_fields_are_none = lid_offset is None and lid is None
         if is_description_or_descriptor(
-            LidDescription,
-            LidDescriptor,
+            WellPlateDescription,
+            WellPlateDescriptor,
             retval,
         )[0]:
-            LidDescription.model_validate(lid)
             retval["liddability"] = LiddabilityDescription(
                 supports_lid=not all_lid_fields_are_none,
                 lid_offset=lid_offset,
