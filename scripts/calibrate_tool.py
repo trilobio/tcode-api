@@ -148,7 +148,7 @@ def yes_no_prompt(question: str) -> bool:
 @plac.annotations(
     servicer_url=servicer_url_annotation,
     output_file_path=output_file_path_annotation,
-    deck_slot_name=plac.Annotation("Deck slot name for pipette tip box", kind="option", abbrev="d"),
+    deck_slot_name=plac.Annotation("Deck slot to hold pipette tip box if calibrating tip overlap", kind="option", abbrev="d"),
     robot_sn=robot_serial_number_annotation,
     z_only=plac.Annotation("If set, only calibrate the Z axis (no XY)", kind="flag", abbrev="z"),
     xy=plac.Annotation("If set, calibrate the XY axis and Z axes", kind="flag", abbrev="xy"),
