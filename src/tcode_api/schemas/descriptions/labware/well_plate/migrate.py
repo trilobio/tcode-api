@@ -77,7 +77,7 @@ def migrate_v4_to_v5(data: RawData) -> RawData:
     else:
         lid_offset = retval.get("lid_offset", None)
         lid = retval.get("lid", None)
-        supports_lid = not (lid_offset is None and lid is None)
+        all_lid_fields_are_none = lid_offset is None and lid is None
         if is_description_or_descriptor(
             LidDescription,
             LidDescriptor,
@@ -85,13 +85,13 @@ def migrate_v4_to_v5(data: RawData) -> RawData:
         )[0]:
             LidDescription.model_validate(lid)
             retval["liddability"] = LiddabilityDescription(
-                supports_lid=supports_lid,
+                supports_lid=not all_lid_fields_are_none,
                 lid_offset=lid_offset,
                 lid=lid,
             ).model_dump()
         else:
             retval["liddability"] = LiddabilityDescriptor(
-                supports_lid=supports_lid,
+                supports_lid=None if all_lid_fields_are_none else True,
                 lid_offset=lid_offset,
                 lid=lid,
             ).model_dump()
