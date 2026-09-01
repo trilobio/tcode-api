@@ -10,6 +10,7 @@ from typing import cast
 
 import numpy as np
 from scipy.spatial.transform import Rotation  # type: ignore[import-untyped]
+from typing_extensions import Sentinel
 
 import tcode_api.api as tc
 from tcode_api.api.compat import migrate_data_to_latest
@@ -313,6 +314,9 @@ def location_as_labware_index(
     )
 
 
+_UNSET = Sentinel("UNSET")
+
+
 def describe_well_plate(
     tags: tc.Tags | None = None,
     named_tags: tc.NamedTags | None = None,
@@ -321,7 +325,7 @@ def describe_well_plate(
     row_pitch: float = 0.009,
     column_pitch: float = 0.009,
     has_lid: bool = False,
-    supports_lid: bool = False,
+    supports_lid: bool | Sentinel = _UNSET,
 ) -> tc.WellPlateDescriptor:
     """tc.WellPlateDescriptor constructor with nice defaults.
 
@@ -332,11 +336,14 @@ def describe_well_plate(
     :param row_pitch: Pitch between rows in meters. Defaults to 0.009 m.
     :param column_pitch: Pitch between columns in meters. Defaults to 0.009 m.
     :param has_lid: Whether the well plate has a lid. Defaults to False.
-    :param supports_lid: Whether the well plate supports a lid. Defaults to False.
+    :param supports_lid: Whether the well plate supports a lid. If not specified, defaults to the value of has_lid.
 
     :return: tc.WellPlateDescriptor constructed with the specified parameters.
     :raise ValueError: If has_lid is True and supports_lid is False, as this is an invalid configuration.
     """
+    if isinstance(supports_lid, Sentinel):
+        supports_lid = has_lid
+
     if has_lid and not supports_lid:
         raise ValueError(
             "Invalid configuration: has_lid is True but supports_lid is False. A well plate cannot have a lid if it does not support one."
