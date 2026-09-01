@@ -17,6 +17,7 @@ from tcode_api.api.compat import (
     TargetSchemaNotFoundError,
     load_api_object,
     migrate_data_to_latest,
+    migrate_data_to_version,
     resolve_api_profile,
     tcode_api_compat_context,
 )
@@ -260,6 +261,14 @@ class TeacupV2(BaseSchemaVersionedModelV1):
     was_migrated: bool = False
 
 
+class TeacupV3(BaseSchemaVersionedModelV1):
+    """A test schema for testing the load_api_object function."""
+
+    type: Literal["Teacup"] = "Teacup"
+    schema_version: Literal[3] = 3
+    was_migrated: bool = False
+
+
 class CupV1(BaseSchemaVersionedModelV1):
     """A test schema for testing the load_api_object function."""
 
@@ -273,6 +282,15 @@ def migrate_teacup_v1_to_teacup_v2(data: RawData) -> RawData:
     return {
         "type": "Teacup",
         "schema_version": 2,
+        "was_migrated": True,
+    }
+
+
+def migrate_teacup_v2_to_teacup_v3(data: RawData) -> RawData:
+    """A simple migration function to migrate from TeacupV2 to TeacupV3."""
+    return {
+        "type": "Teacup",
+        "schema_version": 3,
         "was_migrated": True,
     }
 
@@ -751,6 +769,91 @@ class TestMigrateDataToLatest(unittest.TestCase):
         self.assertEqual(migrated_data["schema_version"], 2)
 
 
+class TestMigrateDataToVersion(unittest.TestCase):
+    """Tests for the ``migrate_data_to_version`` function."""
+
+    def setUp(self) -> None:
+        """Shared context for all tests in this class."""
+        self.context = CompatContext(
+            migration_registry=MigrationRegistry(
+                _migrators_to_preload={
+                    "Teacup": {
+                        2: migrate_teacup_v1_to_teacup_v2,
+                        3: migrate_teacup_v2_to_teacup_v3,
+                    }
+                },
+            ),
+            schema_registry=SchemaRegistry(
+                _builders_to_preload={
+                    "Teacup": TeacupV3,
+                },
+            ),
+            api_history_log=APIHistoryLog(
+                name="test_identical_version",
+                increments={
+                    "v0.1.0": {"Teacup": 1},
+                    "v0.2.0": {"Teacup": 2},
+                    "v0.3.0": {"Teacup": 3},
+                },
+            ),
+        )
+
+    def test_identical_version(self) -> None:
+        """Running migrate_data_to_version with the input schema's version should return the input data unchanged."""
+        data = {"type": "Teacup", "schema_version": 1}
+        migrated_data = migrate_data_to_version(
+            data=data,
+            schema_name="Teacup",
+            target_version=1,
+            context=self.context,
+        )
+        self.assertEqual(migrated_data, data)
+
+    def test_previous_version(self) -> None:
+        """Running migrate_data_to_version with a target version lower than the input schema's version should raise an error."""
+        data = {"type": "Teacup", "schema_version": 2}
+        with self.assertRaises(InvalidDataError):
+            migrate_data_to_version(
+                data=data,
+                schema_name="Teacup",
+                target_version=1,
+                context=self.context,
+            )
+
+    def test_future_not_latest_version(self) -> None:
+        """Running migrate_data_to_version with input_data_version < target_version < latest_version should migrate the data to the target version."""
+        data = {"type": "Teacup", "schema_version": 1}
+        migrated_data = migrate_data_to_version(
+            data=data,
+            schema_name="Teacup",
+            target_version=2,
+            context=self.context,
+        )
+        self.assertEqual(migrated_data["schema_version"], 2)
+
+    def test_future_latest_version(self) -> None:
+        """Running migrate_data_to_version with input_data_version < target_version == latest_version should migrate the data to the target version."""
+        data = {"type": "Teacup", "schema_version": 1}
+        migrated_data = migrate_data_to_version(
+            data=data,
+            schema_name="Teacup",
+            target_version=3,
+            context=self.context,
+        )
+        self.assertEqual(migrated_data["schema_version"], 3)
+
+    def test_nonexistent_future_version(self) -> None:
+        """Running migrate_data_to_version with input_data_version < target_version > latest_version should raise an error."""
+        data = {"type": "Teacup", "schema_version": 1}
+        with self.assertRaises(InvalidDataError):
+            migrate_data_to_version(
+                data=data,
+                schema_name="Teacup",
+                target_version=4,
+                context=self.context,
+            )
+
+
 class TestPauseV1ToV2Migration(unittest.TestCase):
     """Regression tests for the PAUSE v1->v2 migration (added in tcode-api v1.39.0)."""
 
@@ -813,7 +916,7 @@ class TestLabwarePinchableV3ToV4Migration(unittest.TestCase):
         """A v3 WellPlate payload with no `pinchable` backfills as pinchable=True (well plates are
         pinched)."""
         data = {"type": "WellPlate", "schema_version": 3}
-        migrated = migrate_data_to_latest(data=data, schema_name="WellPlate")
+        migrated = migrate_data_to_version(data=data, target_version=4, schema_name="WellPlate")
         self.assertEqual(migrated["schema_version"], 4)
         self.assertTrue(migrated["pinchable"])
 
@@ -824,7 +927,7 @@ class TestLabwarePinchableV3ToV4Migration(unittest.TestCase):
             "schema_version": 3,
             "lid": {"type": "Lid", "schema_version": 3},
         }
-        migrated = migrate_data_to_latest(data=data, schema_name="WellPlate")
+        migrated = migrate_data_to_version(data=data, target_version=4, schema_name="WellPlate")
         self.assertEqual(migrated["schema_version"], 4)
         self.assertTrue(migrated["pinchable"])
         self.assertEqual(migrated["lid"]["schema_version"], 4)
@@ -833,7 +936,7 @@ class TestLabwarePinchableV3ToV4Migration(unittest.TestCase):
     def test_migrate_well_plate_v3_without_lid(self) -> None:
         """A v3 WellPlate payload with no lid migrates without adding one."""
         data = {"type": "WellPlate", "schema_version": 3, "lid": None}
-        migrated = migrate_data_to_latest(data=data, schema_name="WellPlate")
+        migrated = migrate_data_to_version(data=data, target_version=4, schema_name="WellPlate")
         self.assertEqual(migrated["schema_version"], 4)
         self.assertIsNone(migrated["lid"])
 

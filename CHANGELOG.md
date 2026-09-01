@@ -5,6 +5,13 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
+## [v1.45.0]
+## Added
+- Expose lower-level `migrate_data_to_version` to target specific versions and make unittests more
+    portable (they don't break when registering to the latest version automatically).
+
+---
+
 ## [1.44.0]
 ### Added
 - `prompt_accept_deck_layout` utility function to show user the deck layout and prompt acceptance.
