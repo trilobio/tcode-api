@@ -312,6 +312,9 @@ tcode_api_compat_context = CompatContext(
                 "PAUSE": 2,
                 "ADD_PIPETTE_TIP_GROUP": 2,
             },
+            "v1.40.2": {
+                "CALIBRATE_LABWARE_WELL_CENTER": 1,
+            },
         },
         migrations={
             "v1.37.0": {

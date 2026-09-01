@@ -792,6 +792,33 @@ class TestAddPipetteTipGroupV1ToV2Migration(unittest.TestCase):
             migrate_data_to_latest(data=self._v1_payload(), schema_name="ADD_PIPETTE_TIP_GROUP")
 
 
+class TestCalibrateLabwareWellCenterV1(unittest.TestCase):
+    """Regression tests for CALIBRATE_LABWARE_WELL_CENTER v1 (added in tcode-api v1.40.2)."""
+
+    def test_v1_payload_validates_and_is_in_api_profile(self) -> None:
+        """A v1 payload validates against the schema and appears in the API profile."""
+        profile = resolve_api_profile("v1.40.2", tcode_api_compat_context)
+        self.assertEqual(profile["CALIBRATE_LABWARE_WELL_CENTER"], 1)
+        data = {
+            "type": "CALIBRATE_LABWARE_WELL_CENTER",
+            "schema_version": 1,
+            "id": "test-command-id",
+            "robot_id": "test-robot-id",
+            "location": {
+                "type": "LocationAsLabwareIndex",
+                "schema_version": 1,
+                "labware_id": "test-labware-id",
+                "location_index": 0,
+                "well_part": "bottom",
+            },
+            "persistent": False,
+        }
+        command = tc.CALIBRATE_LABWARE_WELL_CENTER.model_validate(data)
+        self.assertTrue(command.modify_all_wells)
+        self.assertIsNone(command.max_probe_distance)
+        self.assertIsNone(command.probe_height_above_bottom)
+
+
 if __name__ == "__main__":
     logging.basicConfig(level=logging.WARNING)
     unittest.main()
