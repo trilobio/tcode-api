@@ -5,7 +5,7 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
-## [Unreleased]
+## [1.43.0]
 ### Changed
 #### `scripts/calibrate_tool.py`
 - Added option to change targeted deck slot for tip box
