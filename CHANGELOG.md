@@ -6,7 +6,7 @@ Format: [Semantic Versioning](https://semver.org)
 ---
 
 ## [v1.45.0]
-## Added
+### Changed
 - Expose lower-level `is_description_or_descriptor` to allow external code that doesn't need the
     schema to check if a dict is a description or descriptor.
 - Expose lower-level `migrate_data_to_version` to target specific versions and make unittests more
@@ -36,11 +36,11 @@ Format: [Semantic Versioning](https://semver.org)
 ---
 
 ## [1.42.1]
-## Added
+### Added
 - Added party mode script
 - Default progress display for `TCodeServicerClient.run_script()`
 
-## Fixed
+### Fixed
 - Fixed mismatching batch scheduling type between TCode server and client
 
 ---
