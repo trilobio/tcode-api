@@ -13,6 +13,7 @@ Format: [Semantic Versioning](https://semver.org)
     lid-supporting labware while maintaining backward-compatible scripts.
 
 ## Changed
+- Thermo NUNC 266120 plate & lid pinch offsets tuned to work for stacking and lidding/delidding.
 - `tcode_api.api.WellPlateDescript[ion|or]` schemas migrated to v5 to include `Liddability` schema.
 
 ---
