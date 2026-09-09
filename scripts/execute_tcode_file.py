@@ -11,7 +11,6 @@ from tcode_api.cli import (
     servicer_url_annotation,
 )
 from tcode_api.servicer import TCodeServicerClient
-from tcode_api.utilities import prompt_accept_deck_layout
 
 
 @plac.annotations(
@@ -32,7 +31,6 @@ def main(file_path: pathlib.Path, servicer_url: str = DEFAULT_SERVICER_URL) -> N
         file_text = io_object.read()
 
     script = TCodeScript.model_validate_json(file_text)
-    prompt_accept_deck_layout(script)
     client = TCodeServicerClient(servicer_url=servicer_url)
     client.run_script(script)
 

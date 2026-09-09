@@ -6,6 +6,14 @@ Format: [Semantic Versioning](https://semver.org)
 ---
 
 ## [Unreleased]
+### Added
+- `prompt_accept_deck_layout` utility function to show user the deck layout and prompt acceptance.
+
+### Changed
+- Additional arg documentation for Tcode Client run_script function
+- Tcode Client run_script function now runs `prompt_accept_deck_layout` by default, can be turned
+    off with a flag arg.
+- `scripts/execute_tcode_file.py` now streams the log messages from the client.
 
 ---
 
