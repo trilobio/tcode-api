@@ -816,7 +816,6 @@ class TestCalibrateLabwareWellCenterV1(unittest.TestCase):
         command = tc.CALIBRATE_LABWARE_WELL_CENTER.model_validate(data)
         self.assertTrue(command.modify_all_wells)
         self.assertIsNone(command.max_probe_distance)
-        self.assertIsNone(command.probe_height_above_bottom)
 
 
 if __name__ == "__main__":

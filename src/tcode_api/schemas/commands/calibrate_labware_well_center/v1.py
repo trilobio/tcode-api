@@ -40,11 +40,3 @@ class CALIBRATE_LABWARE_WELL_CENTER(BaseRobotSpecificTCodeCommand):
             "Defaults to 20 mm; expects length units."
         ),
     )
-
-    probe_height_above_bottom: ValueWithUnits | None = Field(
-        default=None,
-        description=(
-            "Height above the well bottom at which the walls are probed. "
-            "Defaults to 2 mm; expects length units."
-        ),
-    )
