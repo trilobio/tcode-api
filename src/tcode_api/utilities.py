@@ -470,8 +470,7 @@ def prompt_accept_deck_layout(script: tc.TCodeScript) -> None:
     print("Deck Layout: -------------------")
     for layout_cmd in layout_commands:
         holder = layout_cmd.holder
-        if holder.type == "LabwareHolderName":
-            assert isinstance(holder, tc.LabwareHolderName)  # mypy type narrowing
+        if isinstance(holder, tc.LabwareHolderName):
             try:
                 labware_name = layout_cmd.description.named_tags["name"]
             except KeyError:

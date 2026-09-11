@@ -375,8 +375,8 @@ class TCodeServicerClient:
         clean_environment: bool = True,
         batch_process: bool = False,
         enable_socketio_user_input: bool = True,
-        prompt_deck_layout: bool = True,
         display_progress: bool = True,
+        prompt_deck_layout: bool = True,
     ) -> None:
         """Schedule and execute a TCode script on the fleet, starting from an empty state.
 
@@ -390,10 +390,10 @@ class TCodeServicerClient:
             HTTP requests. This is useful for large scripts. Defaults to False
         :param enable_socketio_user_input: If True, connect a Socket.IO client to handle
             user_input_request events. This is useful for teach-mode confirmations.
+        :param display_progress: If True, display progress of scheduling and execution in the console.
         :param prompt_deck_layout: If True, prompt the user to confirm the deck layout before
             running the script. This is useful for ensuring that the physical layout matches the
             expected layout.
-        :param display_progress: If True, display progress of scheduling and execution in the console.
         """
         sio = None
         if enable_socketio_user_input:
