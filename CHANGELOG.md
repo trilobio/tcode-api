@@ -5,7 +5,7 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
-## [Unreleased]
+## [1.44.0]
 ### Added
 - `prompt_accept_deck_layout` utility function to show user the deck layout and prompt acceptance.
 
