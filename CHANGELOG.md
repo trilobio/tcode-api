@@ -5,6 +5,15 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
+## [v1.45.0]
+### Changed
+- Expose lower-level `is_description_or_descriptor` to allow external code that doesn't need the
+    schema to check if a dict is a description or descriptor.
+- Expose lower-level `migrate_data_to_version` to target specific versions and make unittests more
+    portable (they don't break when registering to the latest version automatically).
+
+---
+
 ## [1.44.0]
 ### Added
 - `prompt_accept_deck_layout` utility function to show user the deck layout and prompt acceptance.
@@ -27,11 +36,11 @@ Format: [Semantic Versioning](https://semver.org)
 ---
 
 ## [1.42.1]
-## Added
+### Added
 - Added party mode script
 - Default progress display for `TCodeServicerClient.run_script()`
 
-## Fixed
+### Fixed
 - Fixed mismatching batch scheduling type between TCode server and client
 
 ---

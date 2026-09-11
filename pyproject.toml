@@ -1,6 +1,6 @@
 [project]
 name = "tcode-api"
-version = "1.44.0"
+version = "1.45.0"
 description = "Python implementation of Trilobio's TCode API"
 authors = [{ name = "Trilobio", email = "hello@trilo.bio" }]
 readme = "README.md"
@@ -15,6 +15,7 @@ dependencies = [
     "requests>=2.32.5",
     "scipy>=1.17.0",
     "uvicorn>=0.38.0",
+    "py-organelles",
 ]
 
 [build-system]
@@ -45,6 +46,10 @@ dev = [
     "sphinx-copybutton>=0.5.2",
     "types-requests>=2.32.4.20250913",
 ]
+
+[tool.uv.sources]
+py-organelles = { git = "ssh://git@github.com/trilobio/py-organelles.git", rev = "v2.1.0" }
+# py-organelles = { path = "../py-organelles", editable = true }
 
 [tool.mypy]
 # https://adamj.eu/tech/2021/05/25/python-type-hints-specific-type-ignore/
