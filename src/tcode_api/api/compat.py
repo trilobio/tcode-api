@@ -326,7 +326,7 @@ tcode_api_compat_context = CompatContext(
                 "WellPlateDescription": 4,
                 "WellPlateDescriptor": 4,
             },
-            "v1.43.0": {
+            "v1.46.0": {
                 "LiddabilityDescription": 1,
                 "LiddabilityDescriptor": 1,
                 "WellPlateDescription": 5,
