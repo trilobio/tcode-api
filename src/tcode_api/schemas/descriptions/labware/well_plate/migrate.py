@@ -60,14 +60,9 @@ def migrate_v3_to_v4(data: RawData) -> RawData:
 def migrate_v4_to_v5(data: RawData) -> RawData:
     """Migrate a WellPlateDescription or WellPlateDescriptor from schema version 4 to 5.
 
-    Note that NO descriptor migrates to "I don't care if a plate is liddable or not" (i.e.
-    liddability.is_liddable=None). This drawback is because this function is unably to cheaply tell
-    if incoming data is a Description or Descriptor, and so assumes it MUST provide a Liddability
-    field.
-
-    Migration logic assumes the following:
-    - If a WellPlateDescription has a lid OR a lid_offset, it should have a populated liddability field.
-    - If a labware has neither lid nor lid_offset, liddability.is_lidabble is False.
+    Description payloads with neither a legacy ``lid`` nor ``lid_offset`` migrate to
+    ``supports_lid=False``. Descriptor payloads preserve unspecified liddability as
+    ``supports_lid=None`` unless either legacy field provides a positive signal.
     """
     retval = {
         **data,
@@ -83,7 +78,7 @@ def migrate_v4_to_v5(data: RawData) -> RawData:
         if is_description_or_descriptor(
             WellPlateDescription,
             WellPlateDescriptor,
-            retval,
+            data,
         )[0]:
             retval["liddability"] = LiddabilityDescription(
                 supports_lid=not all_lid_fields_are_none,

@@ -344,10 +344,9 @@ def describe_well_plate(
     :raise ValueError: If has_lid is True and supports_lid is False, as this is an invalid configuration.
     """
     if isinstance(supports_lid, Sentinel):
-        if has_lid is True:
-            supports_lid_desc = True
-        else:
-            supports_lid_desc = None
+        supports_lid_desc = True if has_lid else None
+    else:
+        supports_lid_desc = supports_lid
 
     liddability = tc.LiddabilityDescriptor(
         supports_lid=supports_lid_desc,
