@@ -4,8 +4,9 @@ import dataclasses
 import inspect
 import logging
 import unittest
-from contextlib import contextmanager
-from typing import Iterator, Literal, cast
+from typing import Literal, cast
+
+from py_organelles.log_tools import modify_log_level
 
 import tcode_api.api as tc  # This import allows us to test what a "customer" who imports TCode would see
 from tcode_api.api.compat import (
@@ -23,28 +24,6 @@ from tcode_api.api.compat import (
 )
 from tcode_api.schemas.base.schema_versioned_model.v1 import BaseSchemaVersionedModelV1
 from tcode_api.schemas.registry import MigrationRegistry, RawData, SchemaRegistry
-
-
-# Copied from py_organelles.log_tools.context_managers
-@contextmanager
-def modify_log_level(loggers: logging.Logger | list[logging.Logger], level: int) -> Iterator[None]:
-    """Temporarily modify the log level of one or more loggers.
-
-    :param logger: logger(s) to modify
-    :param level: new log level
-    """
-    loggers = [loggers] if isinstance(loggers, logging.Logger) else loggers
-    # loggers = normalize_logger_list(logger_list)  # Function not defined outside of py-organelles import
-    original_levels = [logger.level for logger in loggers]
-
-    try:
-        for logger in loggers:
-            logger.setLevel(level)
-        yield
-
-    finally:
-        for logger, original_level in zip(loggers, original_levels):
-            logger.setLevel(original_level)
 
 
 class TestResolveAPIProfile(unittest.TestCase):
