@@ -19,14 +19,6 @@ from tcode_api.servicer import TCodeServicerClient
 )
 def main(file_path: pathlib.Path, servicer_url: str = DEFAULT_SERVICER_URL) -> None:
     """Load and execute a .tc file."""
-    logger = logging.getLogger("tcode_api.servicer.client")
-    logger.setLevel(logging.DEBUG)
-    handler = logging.StreamHandler()
-    handler.setLevel(logging.DEBUG)
-    logger.addHandler(handler)
-    formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-    handler.setFormatter(formatter)
-
     with file_path.open() as io_object:
         file_text = io_object.read()
 
@@ -36,4 +28,11 @@ def main(file_path: pathlib.Path, servicer_url: str = DEFAULT_SERVICER_URL) -> N
 
 
 if __name__ == "__main__":
+    logger = logging.getLogger("tcode_api.servicer.client")
+    logger.setLevel(logging.DEBUG)
+    handler = logging.StreamHandler()
+    handler.setLevel(logging.DEBUG)
+    logger.addHandler(handler)
+    formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    handler.setFormatter(formatter)
     plac.call(main)
