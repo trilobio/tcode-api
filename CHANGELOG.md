@@ -5,6 +5,21 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
+## [v1.46.0]
+### Changed
+- Thermo NUNC 266120 plate & lid pinch offsets tuned to work for stacking and lidding/delidding.
+- `tcode_api.api.WellPlateDescript[ion|or]` schemas migrated to v5 to include `Liddability` schema.
+- Removed `ResolverErrorCode` entries `DESCRIPTOR_INCOMPATIBVLE_WITH_LID`, `ID_EXISTS`, and `LID_ID_REQUIRED` 
+    in favor of the `ValidatorErrorCode` entries of the same.
+- Modify `describe_well_plate` implementation to not specify liddability unless explicitly told to
+    in the arguments.
+- `tcode_api.api.LiddabilityDescript[ion|or]` schemas to marshal all data regarding the
+    liddability of a labware: can it be lidded, where does the lid go, and what kind of lid is it.
+- `supports_lid` argument to `describe_well_plate` that allows the easy creation of an unlidded
+    lid-supporting labware while maintaining backward-compatible scripts.
+
+---
+
 ## [v1.45.0]
 ### Changed
 - Expose lower-level `is_description_or_descriptor` to allow external code that doesn't need the
