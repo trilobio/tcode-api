@@ -1,5 +1,6 @@
 """CLI tool to execute TCode in a .tc file."""
 
+import logging
 import pathlib
 
 import plac  # type: ignore [import-untyped]
@@ -27,4 +28,11 @@ def main(file_path: pathlib.Path, servicer_url: str = DEFAULT_SERVICER_URL) -> N
 
 
 if __name__ == "__main__":
+    logger = logging.getLogger("tcode_api.servicer.client")
+    logger.setLevel(logging.DEBUG)
+    handler = logging.StreamHandler()
+    handler.setLevel(logging.DEBUG)
+    logger.addHandler(handler)
+    formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    handler.setFormatter(formatter)
     plac.call(main)

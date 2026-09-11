@@ -5,6 +5,7 @@ import functools
 import json
 import pathlib
 import site
+import sys
 import uuid
 from typing import cast
 
@@ -449,3 +450,44 @@ describe_pipette_tip_1x8.__doc__ = (
     "param named_tags: Dictionary of named tags applied to the pipette tip. Defaults to an empty dictionary.\n\n"
     "return: tc.PipetteTipGroup with 1 row and 8 columns."
 )
+
+
+def prompt_accept_deck_layout(script: tc.TCodeScript) -> None:
+    """Display deck layout and required tools from provided script and prompt user to accept before proceeding."""
+    # Read deck layout
+    layout_commands: list[tc.CREATE_LABWARE] = [
+        cmd for cmd in script.commands if isinstance(cmd, tc.CREATE_LABWARE)
+    ]
+    tool_commands: list[tc.ADD_TOOL] = [
+        cmd for cmd in script.commands if isinstance(cmd, tc.ADD_TOOL)
+    ]
+    print("The script requires the following:")
+    print("Tools: -------------------")
+    for tool_cmd in tool_commands:
+        print(
+            f"\t{tool_cmd.descriptor.type}: max_volume={getattr(tool_cmd.descriptor, 'max_volume', 'N/A')}"
+        )
+    print("Deck Layout: -------------------")
+    for layout_cmd in layout_commands:
+        holder = layout_cmd.holder
+        if isinstance(holder, tc.LabwareHolderName):
+            try:
+                labware_name = layout_cmd.description.named_tags["name"]
+            except KeyError:
+                labware_name = "<no name>"
+            try:
+                model_name = layout_cmd.description.named_tags["model"]
+            except KeyError:
+                model_name = "<no model>"
+            print(
+                f"\t{holder.name} | {layout_cmd.description.type:18} | {model_name:30} | {labware_name}"
+            )
+
+    while True:
+        ans = input("Continue? [Y|n]: ").lower()
+        if ans in ["n", "no", "q", "quit", "stop", "exit"]:
+            sys.exit(0)
+        elif ans in ["", "y", "yes", "continue"]:
+            return
+        else:
+            print(f"Bad entry {ans} not in ['y', 'n']")

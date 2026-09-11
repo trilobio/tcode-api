@@ -25,7 +25,7 @@ from tcode_api.servicer.servicer_api import (
     SerialNumberLookupResponse,
 )
 from tcode_api.types import Matrix
-from tcode_api.utilities import format_seconds, generate_id, mm, rad
+from tcode_api.utilities import format_seconds, generate_id, mm, prompt_accept_deck_layout, rad
 
 _logger = logging.getLogger(__name__)
 
@@ -376,6 +376,7 @@ class TCodeServicerClient:
         batch_process: bool = False,
         enable_socketio_user_input: bool = True,
         display_progress: bool = True,
+        prompt_deck_layout: bool = True,
     ) -> None:
         """Schedule and execute a TCode script on the fleet, starting from an empty state.
 
@@ -383,6 +384,16 @@ class TCodeServicerClient:
         into a single call.
 
         :param script: The TCode script to run.
+        :param clean_environment: If True, clear the current schedule, labware, and TCode resolution
+            before running the script.
+        :param batch_process: If True, schedule commands in batches of 100 to reduce the number of
+            HTTP requests. This is useful for large scripts. Defaults to False
+        :param enable_socketio_user_input: If True, connect a Socket.IO client to handle
+            user_input_request events. This is useful for teach-mode confirmations.
+        :param display_progress: If True, display progress of scheduling and execution in the console.
+        :param prompt_deck_layout: If True, prompt the user to confirm the deck layout before
+            running the script. This is useful for ensuring that the physical layout matches the
+            expected layout.
         """
         sio = None
         if enable_socketio_user_input:
@@ -400,6 +411,9 @@ class TCodeServicerClient:
             self.clear_tcode_resolution()
             self.clear_tf_tree_history()
             self.discover_fleet()
+
+        if prompt_deck_layout:
+            prompt_accept_deck_layout(script)
 
         total_commands = len(script.commands)
 
