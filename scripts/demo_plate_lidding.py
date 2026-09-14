@@ -32,12 +32,15 @@ def main(
     )
 
     # FLEET
-    robot_id, gripper_id = [generate_id() for _ in range(2)]
     script.commands.append(
-        tc.ADD_ROBOT(id=robot_id, descriptor=tc.RobotDescriptor(serial_number=robot_sn))
+        tc.ADD_ROBOT(
+            id=(robot_id := generate_id()), descriptor=tc.RobotDescriptor(serial_number=robot_sn)
+        )
     )
     script.commands.append(
-        tc.ADD_TOOL(robot_id=robot_id, id=gripper_id, descriptor=tc.GripperDescriptor())
+        tc.ADD_TOOL(
+            robot_id=robot_id, id=(gripper_id := generate_id()), descriptor=tc.GripperDescriptor()
+        )
     )
 
     # LABWARE
@@ -54,7 +57,7 @@ def main(
 
     description = cast(tc.WellPlateDescription, load_labware("thermo_nunc_266120_plate"))
     lid_description = cast(tc.LidDescription, load_labware("thermo_nunc_266120_lid"))
-    description.lid = lid_description
+    description.liddability.lid = lid_description
     for id, lid_id, holder in zip(labware_ids, lid_ids, labware_holders):
         script.commands.append(
             tc.CREATE_LABWARE(

@@ -74,6 +74,14 @@ class ValidatorErrorCode(enum.StrEnum):
     #: labware.
     HOLDER_OCCUPIED = "holder_occupied"
 
+    #: Returned when a lid_id is provided to ADD_LABWARE, but the provided labware descriptor does
+    #: not support lids.
+    DESCRIPTOR_INCOMPATIBLE_WITH_LID = "descriptor_incompatible_with_lid"
+
+    #: Returned when a labware descriptor with a lid is provided to ADD_LABWARE, but no lid_id is
+    #: provided.
+    LID_ID_REQUIRED = "lid_id_required"
+
 
 class ValidatorError(_TCodeResultReportBase):
     """Base class for all tcode.validator errors."""
@@ -109,7 +117,6 @@ class ResolverCode(str, enum.Enum):
     resolution debugging info to the user.
     """
 
-    ID_EXISTS = "id_exists"
     HOLDER_NOT_FOUND = "holder_not_found"
     MULTIPLE_MATCHING_ENTITIES = "multiple_entities"
     NO_DISCOVERED_ENTITIES = "no_discovered_entities"
@@ -123,14 +130,6 @@ class ResolverCode(str, enum.Enum):
     LABWARE_HOLDER_NOT_EMPTY = "labware_holder_occupied"
     LABWARE_HOLDER_EMPTY = "labware_holder_empty"
     PLATE_NOT_STACKABLE = "plate_not_stackable"
-
-    #: Returned when a lid_id is provided to ADD_LABWARE, but the provided labware descriptor does
-    #: not support lids.
-    DESCRIPTOR_INCOMPATIBLE_WITH_LID = "descriptor_incompatible_with_lid"
-
-    #: Returned when a labware descriptor with a lid is provided to ADD_LABWARE, but no lid_id is
-    #: provided.
-    LID_ID_REQUIRED = "lid_id_required"
 
 
 class ResolverResult(_TCodeResultReportBase):

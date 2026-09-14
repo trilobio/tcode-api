@@ -99,6 +99,7 @@ from ..schemas.descriptions import (
     WellShapeDescription,
     WellShapeDescriptor,
 )
+from ..schemas.descriptions.liddability import LiddabilityDescription, LiddabilityDescriptor
 from ..schemas.labware_holder import LabwareHolder, LabwareHolderName, LabwareId
 from ..schemas.location import (
     Location,
@@ -167,6 +168,8 @@ __all__ = [
     "LabwareId",
     "LidDescription",
     "LidDescriptor",
+    "LiddabilityDescription",
+    "LiddabilityDescriptor",
     "Location",
     "LocationAsLabwareHolder",
     "LocationAsLabwareIndex",

@@ -11,6 +11,7 @@ from typing import cast
 
 import numpy as np
 from scipy.spatial.transform import Rotation  # type: ignore[import-untyped]
+from typing_extensions import Sentinel
 
 import tcode_api.api as tc
 from tcode_api.api.compat import migrate_data_to_latest
@@ -314,6 +315,9 @@ def location_as_labware_index(
     )
 
 
+_UNSET = Sentinel("UNSET")
+
+
 def describe_well_plate(
     tags: tc.Tags | None = None,
     named_tags: tc.NamedTags | None = None,
@@ -322,6 +326,7 @@ def describe_well_plate(
     row_pitch: float = 0.009,
     column_pitch: float = 0.009,
     has_lid: bool = False,
+    supports_lid: bool | Sentinel = _UNSET,
 ) -> tc.WellPlateDescriptor:
     """tc.WellPlateDescriptor constructor with nice defaults.
 
@@ -331,10 +336,27 @@ def describe_well_plate(
     :param column_count: Number of columns in the well plate. Defaults to 12.
     :param row_pitch: Pitch between rows in meters. Defaults to 0.009 m.
     :param column_pitch: Pitch between columns in meters. Defaults to 0.009 m.
-    :param has_lid: Whether the well plate has a lid. Defaults to False.
+    :param has_lid: Whether the well plate has a lid. If not given, no liddability is specified.
+    :param supports_lid: Whether the well plate supports a lid. If not specified, set to True if
+        has_lid is True, else None.
 
     :return: tc.WellPlateDescriptor constructed with the specified parameters.
+    :raise ValueError: If has_lid is True and supports_lid is False, as this is an invalid configuration.
     """
+    if isinstance(supports_lid, Sentinel):
+        supports_lid_desc = True if has_lid else None
+    else:
+        supports_lid_desc = supports_lid
+
+    liddability = tc.LiddabilityDescriptor(
+        supports_lid=supports_lid_desc,
+        lid=tc.LidDescriptor() if has_lid is True else None,
+    )
+    if liddability.lid is not None and liddability.supports_lid is False:
+        raise ValueError(
+            "Invalid configuration: has_lid is True but supports_lid is False. A well plate cannot have a lid if it does not support one."
+        )
+
     tags = [] if tags is None else tags
     named_tags = {} if named_tags is None else named_tags
     grid_descriptor = tc.GridDescriptor(
@@ -343,12 +365,11 @@ def describe_well_plate(
         row_pitch=m(row_pitch),
         column_pitch=m(column_pitch),
     )
-    lid_descriptor = tc.LidDescriptor() if has_lid else None
     return tc.WellPlateDescriptor(
         tags=tags,
         named_tags=named_tags,
         grid=grid_descriptor,
-        lid=lid_descriptor,
+        liddability=liddability,
     )
 
 
