@@ -5,7 +5,7 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
-## [v1.46.0]
+## [v1.45.0]
 ### Changed
 - Thermo NUNC 266120 plate & lid pinch offsets tuned to work for stacking and lidding/delidding.
 - `tcode_api.api.WellPlateDescript[ion|or]` schemas migrated to v5 to include `Liddability` schema.
@@ -17,15 +17,6 @@ Format: [Semantic Versioning](https://semver.org)
     liddability of a labware: can it be lidded, where does the lid go, and what kind of lid is it.
 - `supports_lid` argument to `describe_well_plate` that allows the easy creation of an unlidded
     lid-supporting labware while maintaining backward-compatible scripts.
-
----
-
-## [v1.45.0]
-### Changed
-- Expose lower-level `is_description_or_descriptor` to allow external code that doesn't need the
-    schema to check if a dict is a description or descriptor.
-- Expose lower-level `migrate_data_to_version` to target specific versions and make unittests more
-    portable (they don't break when registering to the latest version automatically).
 
 ---
 
