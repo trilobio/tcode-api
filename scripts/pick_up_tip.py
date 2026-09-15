@@ -258,7 +258,6 @@ def main(
                 robot_id=robot_id,
                 id=tip_group_id,
                 descriptor=tip_group_descriptor,
-                pipette_tip_locations=None,
             )
         )
 

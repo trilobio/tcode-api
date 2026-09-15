@@ -115,7 +115,6 @@ def main(
                 row_count=channel_count,
                 column_count=1,
             ),
-            pipette_tip_locations=None,
         )
     )
     #  Actions

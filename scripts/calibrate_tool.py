@@ -274,7 +274,6 @@ def main(
                     row_count=1,
                     column_count=channel_count,
                 ),
-                pipette_tip_locations=None,
             )
         )
 

@@ -47,4 +47,5 @@ class ADD_PIPETTE_TIP_GROUP(BaseRobotSpecificTCodeCommandV1):
             "Locations of tips making up the desired pipette tip group, or None if `descriptor` is "
             "provided instead."
         ),
+        default=None,
     )
