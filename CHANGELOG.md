@@ -5,6 +5,15 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
+## [v.1.46.0]
+### Added
+- Add `ADD_PIPETTE_TIP_GROUP.pipette_tip_locations` value to enable users to explicitly specify where to resolve a given pipette tip group.
+
+### Fixed
+- tcode_api.api.compat move lidding change registry from v1.46.0 to v1.45.0
+
+---
+
 ## [v1.45.0]
 ### Changed
 - Thermo NUNC 266120 plate & lid pinch offsets tuned to work for stacking and lidding/delidding.

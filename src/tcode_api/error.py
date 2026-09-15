@@ -82,6 +82,14 @@ class ValidatorErrorCode(enum.StrEnum):
     #: provided.
     LID_ID_REQUIRED = "lid_id_required"
 
+    #: Returned when a list of pipette tip locations doesn't make a valid pipette tip group shape,
+    #: e.g. any shape that isn't rectangular and continuous, like [A1, A2, A4] or [A1, A2, B3].
+    INVALID_PIPETTE_TIP_GROUP_SHAPE = "invalid_pipette_tip_group_shape"
+
+    #: Returned when a command with either-or parameters is provided with both or neither parameter
+    #: ex. ADD_PIPETTE_TIP_GROUP with both descriptor and pipette_tip_locations provided, or neither
+    INVALID_EITHER_OR_PARAMETERS = "invalid_either_or_parameters"
+
 
 class ValidatorError(_TCodeResultReportBase):
     """Base class for all tcode.validator errors."""

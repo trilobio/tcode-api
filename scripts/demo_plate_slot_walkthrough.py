@@ -105,6 +105,7 @@ def main(
                     row_count=1,
                     column_count=1,
                 ),
+                pipette_tip_locations=None,
             )
         )
 

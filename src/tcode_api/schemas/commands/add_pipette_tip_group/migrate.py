@@ -17,6 +17,20 @@ def migrate_v1_to_v2(data: RawData) -> RawData:
     return retval
 
 
+def migrate_v2_to_v3(data: RawData) -> RawData:
+    """Migrate an ADD_PIPETTE_TIP_GROUP command from schema version 2 to 3.
+
+    v3 introduces new optional `pipette_tip_locations` field which is set to None during migration.
+    """
+    retval = {**data}
+    retval["schema_version"] = 3
+    if "pipette_tip_locations" not in retval:
+        retval["pipette_tip_locations"] = None
+
+    return retval
+
+
 MIGRATORS: dict[int, Migrator] = {
     2: migrate_v1_to_v2,
+    3: migrate_v2_to_v3,
 }
