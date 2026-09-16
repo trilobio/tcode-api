@@ -9,7 +9,7 @@ from typing import Literal
 from pydantic import Field
 
 from ...descriptions.pipette_tip_group.v1 import PipetteTipGroupDescriptor
-from ...location.union import Location
+from ...location.location_as_labware_index.v1 import LocationAsLabwareIndex
 from ..base.robot_specific_tcode_command.v1 import BaseRobotSpecificTCodeCommandV1
 
 
@@ -42,7 +42,7 @@ class ADD_PIPETTE_TIP_GROUP(BaseRobotSpecificTCodeCommandV1):
             "if `address` is provided instead."
         )
     )
-    pipette_tip_locations: list[Location] | None = Field(
+    pipette_tip_locations: list[LocationAsLabwareIndex] | None = Field(
         description=(
             "Locations of tips making up the desired pipette tip group, or None if `descriptor` is "
             "provided instead."
