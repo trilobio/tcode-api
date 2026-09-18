@@ -40,7 +40,8 @@ class ADD_PIPETTE_TIP_GROUP(BaseRobotSpecificTCodeCommandV1):
         description=(
             "Minimal descriptor of the desired pipette tip group; resolved on the fleet, or None "
             "if `address` is provided instead."
-        )
+        ),
+        default=None,
     )
     pipette_tip_locations: list[LocationAsLabwareIndex] | None = Field(
         description=(
