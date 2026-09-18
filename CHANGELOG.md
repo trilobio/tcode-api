@@ -5,6 +5,14 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
+## [v1.46.0]
+### Fixed
+- `TCodeServicerClient.execute_run_loop` (and so `run_script`) raises `RuntimeError` when the
+    servicer reports a failed command, instead of logging and returning as if the script had
+    completed — callers and CLI exit codes now reflect the failure.
+
+---
+
 ## [v1.45.0]
 ### Changed
 - Thermo NUNC 266120 plate & lid pinch offsets tuned to work for stacking and lidding/delidding.
