@@ -349,6 +349,7 @@ class TCodeServicerClient:
                     if status.result.details is not None:
                         for line in status.result.details.get("traceback", "").split("\n"):
                             _logger.debug(line)
+                    _logger.fatal(msg)
                     self.set_run_state(False)
                     if display_progress:
                         print()  # progress line ends without a newline
