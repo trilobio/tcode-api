@@ -22,11 +22,13 @@ How to perform:
 """
 
 import dataclasses
+import importlib
 import logging
 
 from packaging.version import Version
 from pydantic import ValidationError
 
+from .. import api
 from ..schemas.registry import (
     BuilderNotFoundError,
     MigrationRegistry,
@@ -459,6 +461,32 @@ def migrate_data_to_version(
         # We haven't reached the target version yet
         if migrator_version > schema_version:
             data = migrators[migrator_version](data)
+
+            # Recurse, and migrate nested schemas.
+            data = migrate_nested_schemas(
+                schema_name, schema_version, migrator_version, context, data
+            )
+
+    return data
+
+
+def get_schema_from_name_and_version(schema_name: str, version: int | None = None):
+    """Look up a schema class by its class name, e.g. "WellPlateDescriptor", and optionally
+    version."""
+    cls = getattr(api, schema_name)
+    if version is None:
+        return cls
+    module = cls.__module__.rsplit(".", 1)[0] + f".v{version}"
+    return getattr(importlib.import_module(module), schema_name)
+
+
+def migrate_nested_schemas(schema_name, old_version, new_version, context, data):
+    """Recursively migrate nested schemas, based on _this_ schema's version bump."""
+
+    old_schema = get_schema_from_name_and_version(schema_name, old_version)
+    new_schema = get_schema_from_name_and_version(schema_name, new_version)
+
+    breakpoint()
 
     return data
 
