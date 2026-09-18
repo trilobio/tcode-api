@@ -351,7 +351,11 @@ class TCodeServicerClient:
                             _logger.debug(line)
                     _logger.fatal(msg)
                     self.set_run_state(False)
-                    return
+                    if display_progress:
+                        # Close the \r progress line; flush so the newline
+                        # isn't left buffered when stdout is not a TTY.
+                        print(flush=True)
+                    raise RuntimeError(msg)
                 elapsed = (datetime.now() - time_start).total_seconds()
                 if display_progress:
                     print(
