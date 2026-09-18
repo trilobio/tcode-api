@@ -15,6 +15,7 @@ from tcode_api.api.compat import (
     InvalidDataError,
     SchemaVersionMismatchError,
     TargetSchemaNotFoundError,
+    get_schema_from_name_and_version,
     load_api_object,
     migrate_data_to_latest,
     migrate_data_to_version,
@@ -1052,6 +1053,38 @@ class TestLabwarePinchableV3ToV4Migration(unittest.TestCase):
         migrated = migrate_data_to_latest(data=data, schema_name="PipetteTipBox")
         self.assertEqual(migrated["schema_version"], 4)
         self.assertFalse(migrated["pinchable"])
+
+
+class TestGetSchemaFromNameAndVersion(unittest.TestCase):
+    """Tests for looking up a schema class by name, and optionally by schema_version."""
+
+    def test_no_version_returns_latest(self) -> None:
+        """Omitting ``version`` returns the class re-exported from ``tcode_api.api``."""
+        self.assertIs(
+            get_schema_from_name_and_version("WellPlateDescriptor"), tc.WellPlateDescriptor
+        )
+
+    def test_old_version_returns_that_version(self) -> None:
+        """Requesting an older ``version`` returns that version's class, not the latest."""
+        old = get_schema_from_name_and_version("WellPlateDescriptor", 3)
+        self.assertEqual(old.model_fields["schema_version"].default, 3)
+        self.assertIsNot(old, tc.WellPlateDescriptor)
+
+    def test_old_version_has_its_own_fields(self) -> None:
+        """WellPlate v3 carries the ``lid`` field it had before ``liddability`` replaced it."""
+        fields = get_schema_from_name_and_version("WellPlateDescriptor", 3).model_fields
+        self.assertIn("lid", fields)
+        self.assertNotIn("liddability", fields)
+
+    def test_command_schema(self) -> None:
+        """Commands resolve the same way descriptions do."""
+        old = get_schema_from_name_and_version("ADD_LABWARE", 1)
+        self.assertEqual(old.model_fields["schema_version"].default, 1)
+
+    def test_unknown_name_raises(self) -> None:
+        """An unrecognized schema name raises ``AttributeError``."""
+        with self.assertRaises(AttributeError):
+            get_schema_from_name_and_version("NotASchema")
 
 
 if __name__ == "__main__":
