@@ -21,18 +21,7 @@ def migrate_v2_to_v3(data: RawData) -> RawData:
     return retval
 
 
-def migrate_v3_to_v4(data: RawData) -> RawData:
-    """Migrate a CREATE_LABWARE command from schema version 3 to 4."""
-    # No changes between v3 and v4 other than semver, so we can just return the data unchanged.
-    retval = {
-        **data,
-    }
-    retval["schema_version"] = 4
-    return retval
-
-
 MIGRATORS: dict[int, Migrator] = {
     2: migrate_v1_to_v2,
     3: migrate_v2_to_v3,
-    4: migrate_v3_to_v4,
 }
