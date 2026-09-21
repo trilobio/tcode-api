@@ -429,45 +429,35 @@ def migrate_data_to_version(
                 msg=f"Cannot migrate from version '{schema_version}' to version '{target_version}' for schema '{schema_name}' because the target version is older than the current version.",
                 data=data,
             )
-    try:
-        migrators = context.migration_registry.get_migrators_for_schema(schema_name)
-    except BuilderNotFoundError:
-        # No-op or error if no migrators
-        if target_version is not None and target_version != schema_version:
-            raise InvalidDataError(
-                msg=f"Cannot migrate from version '{schema_version}' to version '{target_version}' for schema '{schema_name}' because there are no registered migrators for this schema.",
-                data=data,
-            )
-        return data
 
-    # Validate target version against available migrators
-    if target_version is not None and target_version not in migrators:
+    try:
+        final_name, migration_steps = _build_migrator_chain(
+            incoming_name=schema_name,
+            incoming_schema_version=schema_version,
+            target_schema_version=target_version,
+            context=context,
+        )
+    except ValueError as err:
+        raise InvalidDataError(
+            msg=f"Invalid migration path for data with type '{schema_name}' and schema_version '{schema_version}'.",
+            data=data,
+        ) from err
+
+    if target_version is not None and target_version not in {v for _, v, _ in migration_steps}:
         raise InvalidDataError(
             msg=f"Cannot migrate from version '{schema_version}' to version '{target_version}' for schema '{schema_name}' because there is no registered migrator for the target version.",
             data=data,
         )
 
-    sorted_migrators = sorted(migrators)
-    if target_version is not None and sorted_migrators[-1] < target_version:
-        raise InvalidDataError(
-            msg=f"Cannot migrate from version '{schema_version}' to version '{target_version}' for schema '{schema_name}' because the target_version is newer than the latest migrator.",
-            data=data,
-        )
+    current_version = schema_version
+    for step_name, step_version, migrator in migration_steps:
+        data = migrator(data)
 
-    for migrator_version in sorted_migrators:
-        if target_version is not None and migrator_version > target_version:
-            break  # Stop if we've reached the target version
+        # Recurse, and migrate nested schemas.
+        data = migrate_nested_schemas(step_name, current_version, step_version, context, data)
+        current_version = step_version
 
-        # We haven't reached the target version yet
-        if migrator_version > schema_version:
-            data = migrators[migrator_version](data)
-
-            # Recurse, and migrate nested schemas.
-            data = migrate_nested_schemas(
-                schema_name, schema_version, migrator_version, context, data
-            )
-
-    return data
+    return {**data, "type": final_name}
 
 
 def get_schema_from_name_and_version(schema_name: str, version: int | None = None):
@@ -481,12 +471,19 @@ def get_schema_from_name_and_version(schema_name: str, version: int | None = Non
 
 
 def migrate_nested_schemas(schema_name, old_version, new_version, context, data):
-    """Recursively migrate nested schemas, based on _this_ schema's version bump."""
+    """Recursively migrate nested schemas, based on _this_ schema's version bump.
+
+    If old_version and new_version are the same, this is a no-op."""
+
+    return data # Disabled for now.
 
     old_schema = get_schema_from_name_and_version(schema_name, old_version)
     new_schema = get_schema_from_name_and_version(schema_name, new_version)
 
     breakpoint()
+
+    # If the schema contains a discriminated union (typing.Annotated), check which it actually
+    # contains, and recurse appropriately.
 
     return data
 
@@ -613,30 +610,18 @@ def load_api_object(
                 expected_schema_version=profile[incoming_name],
             )
 
-    # Migrate data to the most recent accepted schema version for the incoming command
-    try:
-        new_name, migrators = _build_migrator_chain(
-            incoming_name=incoming_name,
-            incoming_schema_version=schema_version,
-            target_schema_version=profile[incoming_name] if api_version is not None else None,
-            context=context,
-        )
-    except ValueError as err:
-        raise InvalidDataError(
-            msg=f"Invalid migration path for data with type '{incoming_name}' and schema_version '{schema_version}'.",
-            data=data,
-        ) from err
-    for migrator in migrators:
-        data = migrator(data)
+    # Migrate data to the most recent accepted schema version for the incoming command.
+    # `migrate_data_to_latest` follows renames and rewrites the "type" key to the final name.
+    data = migrate_data_to_latest(
+        data=data,
+        schema_name=incoming_name,
+        schema_version=schema_version,
+        context=context,
+    )
+    new_name = data["type"]
 
     try:
-        new_data = {}
-        for key, value in data.items():
-            if key == "type":
-                new_data[key] = new_name
-            else:
-                new_data[key] = value
-        return context.schema_registry.build_instance(data=new_data, key=new_name)
+        return context.schema_registry.build_instance(data=data, key=new_name)
     except ValidationError as err:
         raise InvalidDataError(
             msg=f"Data failed validation against schema '{new_name}' version '{schema_version}'.",
@@ -644,12 +629,16 @@ def load_api_object(
         ) from err
 
 
+MigrationStep = tuple[
+    SchemaName, SchemaVersion, Migrator
+]  # (name the migrator belongs to, version it migrates *to*, fn)
+
 def _build_migrator_chain(
     incoming_name: SchemaName,
     incoming_schema_version: SchemaVersion,
     target_schema_version: SchemaVersion | None = None,
     context: CompatContext = tcode_api_compat_context,
-) -> tuple[SchemaName, list[Migrator]]:
+) -> tuple[SchemaName, list[MigrationStep]]:
     """Helper function to fetch all migrators necessary to migrate data from one schema_version to another, handling renames.
 
     :param incoming_name: The original name of the schema to migrate.
@@ -665,7 +654,7 @@ def _build_migrator_chain(
         there is a migrator from v2 to v3).
     :raises DeprecatedSchemaError: If the target schema is deprecated and cannot be migrated to the latest version.
     """
-    migrators_to_apply: list[Migrator] = []
+    migrators_to_apply: list[MigrationStep] = []
 
     current_name = incoming_name
     current_version = incoming_schema_version
@@ -679,6 +668,9 @@ def _build_migrator_chain(
             migrators = {}
 
         for version in sorted(migrators.keys()):
+            if (target_schema_version is not None) and (target_schema_version <= current_version):
+                break
+
             if version - current_version > 1:
                 raise ValueError(
                     f"Cannot migrate from version '{current_version}' to version '{version}' for schema '{current_name}' because there is a gap in the migration path. Missing migrator for version '{current_version + 1}'."
@@ -693,7 +685,7 @@ def _build_migrator_chain(
                 current_version,
                 version,
             )
-            migrators_to_apply.append(migrators[version])
+            migrators_to_apply.append((current_name, version, migrators[version]))
             current_version = version
 
         # Check for renames in the API history log and update the current_name accordingly
