@@ -1,1 +1,1 @@
-from .v2 import ADD_PIPETTE_TIP_GROUP
+from .v3 import ADD_PIPETTE_TIP_GROUP

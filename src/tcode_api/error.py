@@ -63,10 +63,23 @@ class ValidatorErrorCode(enum.StrEnum):
     UNITS_ERROR = "units_error"
     UNNECESSARY = "unnecessary"
     WRONG_TOOL_MOUNTED = "wrong_tool_mounted"
+
+    #: Returned when a LocationAsLabwareIndex is invalid for the referenced labware
+    #: ex. LocationAsLabwareIndex referencing a 96-well plate with index=100
+    #: ex. ADD_PIPETTE_TIP_GROUP.pipette_tip_locations containing duplicate LocationAsLabwareIndex
+    #:    entries
     INVALID_INDEX = "invalid_index"
 
-    #: Returned when a labware and lid are incompatible, e.g. a lid is placed on a labware that it does not fit.
+    #: Returned when a target labware is incompatible with an operation
+    #: ex. a lid is placed on a labware that it does not fit
+    #: ex. a well plate is referenced in a LocationAsLabwareIndex passed to an ADD_PIPETTE_TIP_GROUP
+    #:    command
     INCOMPATIBLE_LABWARE = "incompatible_labware"
+
+    #: Returned when a target labware isn't described enough to perform an operation
+    #: ex. a labware targeted by a location in an ADD_PIPETTE_TIP_GROUP command
+    #:    doesn't specify row_count or column_count in its grid descriptor
+    INSUFFICIENT_LABWARE_DESCRIPTION = "insufficient_labware_description"
 
     #: Returned when a targeted deck slot, tool holder, or other holder is already holding an item,
     #: and the operation requires it to be empty.
@@ -81,6 +94,21 @@ class ValidatorErrorCode(enum.StrEnum):
     #: Returned when a labware descriptor with a lid is provided to ADD_LABWARE, but no lid_id is
     #: provided.
     LID_ID_REQUIRED = "lid_id_required"
+
+    #: Returned when a list of pipette tip locations doesn't make a valid pipette tip group shape,
+    #: e.g. any shape that isn't rectangular and continuous, like [A1, A2, A4] or [A1, A2, B3].
+    INVALID_PIPETTE_TIP_GROUP_SHAPE = "invalid_pipette_tip_group_shape"
+
+    #: Returned when a command with either-or parameters is provided with both or neither parameter
+    #: ex. ADD_PIPETTE_TIP_GROUP with descriptor and pipette_tip_locations both provided
+    #: ex. ADD_PIPETTE_TIP_GROUP with descriptor=None and pipette_tip_locations=None
+    #: ex. ADD_PIPETTE_TIP_GROUP with descriptor=None and pipette_tip_locations=[]
+    INVALID_EITHER_OR_PARAMETERS = "invalid_either_or_parameters"
+
+    #: Returned when a LabwareDescriptor has an internal inconsistency.
+    #: ex. CREATE_LABWARE with a PipetteTipBoxDescriptor whose grid dimensions don't match the
+    #:    pipette_tip_layout dimensions.
+    INVALID_LABWARE_DESCRIPTOR = "invalid_labware_descriptor"
 
 
 class ValidatorError(_TCodeResultReportBase):
