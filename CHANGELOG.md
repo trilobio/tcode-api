@@ -5,6 +5,14 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
+## [v1.47.0]
+### Fixed
+- `TCodeServicerClient.execute_run_loop` (and so `run_script`) raises `RuntimeError` when the
+    servicer reports a failed command, instead of logging and returning as if the script had
+    completed — callers and CLI exit codes now reflect the failure.
+
+---
+
 ## [v1.46.0]
 ### Added
 - Add `ADD_PIPETTE_TIP_GROUP.pipette_tip_locations` value to enable users to explicitly specify where to resolve a given pipette tip group.
