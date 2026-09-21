@@ -77,8 +77,8 @@ class ValidatorErrorCode(enum.StrEnum):
     INCOMPATIBLE_LABWARE = "incompatible_labware"
 
     #: Returned when a target labware isn't described enough to perform an operation
-    #: ex. a labware targeted by a pipette_tip_location in an ADD_PIPETTE_TIP_GROUP command
-    #:    doesn't specify row_count or column_count in it's grid descriptor
+    #: ex. a labware targeted by a location in an ADD_PIPETTE_TIP_GROUP command
+    #:    doesn't specify row_count or column_count in its grid descriptor
     INSUFFICIENT_LABWARE_DESCRIPTION = "insufficient_labware_description"
 
     #: Returned when a targeted deck slot, tool holder, or other holder is already holding an item,
@@ -105,8 +105,8 @@ class ValidatorErrorCode(enum.StrEnum):
     #: ex. ADD_PIPETTE_TIP_GROUP with descriptor=None and pipette_tip_locations=[]
     INVALID_EITHER_OR_PARAMETERS = "invalid_either_or_parameters"
 
-    #: Returned when a LabwareDescriptor is has an internal inconsistency.
-    #: ex. CREATE_LABWARE with a PipetteTipBoxDescriptor whose grid dimensions odn't match the
+    #: Returned when a LabwareDescriptor has an internal inconsistency.
+    #: ex. CREATE_LABWARE with a PipetteTipBoxDescriptor whose grid dimensions don't match the
     #:    pipette_tip_layout dimensions.
     INVALID_LABWARE_DESCRIPTOR = "invalid_labware_descriptor"
 

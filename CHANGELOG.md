@@ -5,13 +5,17 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
-## [v.1.46.0]
+## [v1.46.0]
 ### Added
 - Add `ADD_PIPETTE_TIP_GROUP.pipette_tip_locations` value to enable users to explicitly specify where to resolve a given pipette tip group.
 - Add default of `None` to `ADD_PIPETTE_TIP_GROUP.descriptor`
 - Add the following `ValidationErrorCodes`:
-   - `INSUFFICIENT_LABWARE_DESCRIPTION`
-   - `INVALID_LABWARE_DESCRIPTOR`
+    - `INVALID_INDEX`
+    - `INCOMPATIBLE_LABWARE`
+    - `INSUFFICIENT_LABWARE_DESCRIPTION`
+    - `INVALID_PIPETTE_TIP_GROUP_SHAPE`
+    - `INVALID_EITHER_OR_PARAMETERS`
+    - `INVALID_LABWARE_DESCRIPTOR`
 
 ### Fixed
 - tcode_api.api.compat move lidding change registry from v1.46.0 to v1.45.0
