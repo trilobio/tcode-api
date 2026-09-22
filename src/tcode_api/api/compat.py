@@ -25,9 +25,10 @@ import dataclasses
 import importlib
 import logging
 import typing
+import types
 
 from packaging.version import Version
-from pydantic import ValidationError
+from pydantic import ValidationError, BaseModel
 
 from .. import api
 from ..schemas.registry import (
@@ -352,6 +353,7 @@ def migrate_data_to_latest(
     schema_name: str | None = None,
     schema_version: int | None = None,
     context: CompatContext = tcode_api_compat_context,
+    recurse: bool = True
 ) -> RawData:
     """Migrate a given json blob to the latest version of its schema.
 
@@ -374,6 +376,7 @@ def migrate_data_to_latest(
         schema_name=schema_name,
         schema_version=schema_version,
         context=context,
+        recurse=recurse,
     )
 
 
@@ -383,6 +386,7 @@ def migrate_data_to_version(
     schema_name: str | None = None,
     schema_version: int | None = None,
     context: CompatContext = tcode_api_compat_context,
+    recurse: bool = True,
 ) -> RawData:
     """Migrate a given json blob to the specified version of it's schema.
 
@@ -444,10 +448,6 @@ def migrate_data_to_version(
             data=data,
         ) from err
 
-    # XXX
-    # if schema_name == "CREATE_LABWARE":
-    #     breakpoint()
-
     if target_version is not None and target_version not in {v for _, v, _ in migration_steps}:
         raise InvalidDataError(
             msg=f"Cannot migrate from version '{schema_version}' to version '{target_version}' for schema '{schema_name}' because there is no registered migrator for the target version.",
@@ -462,19 +462,19 @@ def migrate_data_to_version(
 
     # Recurse, and migrate nested schemas.
     # We can only really do this if we're trying to migrate to the latest version.
-    if target_version is None:
-        # data = migrate_nested_schemas_to_latest(context, data)
-        data = migrate_nested_schemas_to_latest(schema_name, current_version, context, data)
-    else:
-        # XXX
-        breakpoint()
+    if recurse:
+        if target_version is None:
+            data = migrate_nested_schemas_to_latest(schema_name, current_version, context, data)
+        else:
+            raise RuntimeError("Can only migrate nested schemas to newest version")
 
     return {**data, "type": final_name}
 
 
-def get_schema_from_name_and_version(schema_name: str, version: int | None = None):
+def get_schema_from_name_and_version(schema_name: str, version: int | None = None, context = None):
     """Look up a schema class by its class name, e.g. "WellPlateDescriptor", and optionally
     version."""
+    # TODO: Actually use context.
     cls = getattr(api, schema_name)
     if version is None:
         return cls
@@ -489,35 +489,18 @@ def migrate_nested_schemas_to_latest(schema_name, new_version, context, data):
     Because we don't reliably track the versions of nested schemas, this just migrates everything to
     the newest version."""
 
-    # return data # Disabled for now.
+    schema = get_schema_from_name_and_version(schema_name, new_version, context)
+    return _migrate_nested_model(schema, data, context)
 
-    # old_schema = get_schema_from_name_and_version(schema_name, old_version)
-    schema = get_schema_from_name_and_version(schema_name, new_version)
-    for field_name, field_info in schema.model_fields.items():
-        if schema_name == "CREATE_LABWARE":
-            print(field_name)
-            breakpoint()
-
-        # If the field is itself a schema, _or_ has any nested 
-
-    if False:
-        if "schema_version" in data:
-            schema_version = data["schema_version"]
-            if "type" in data:
-                schema_name = data["type"]
-            else:
-                # TODO
-                pass
-
-        for key, value in data.items():
-            if isinstance(value, dict):
-                migrate_nested_schemas_to_latest(context, value)
-
-
-    return data
 
 def _unwrap_and_migrate_value(annotation, value, context):
-    """TODO: Docstring"""
+    """TODO: Docstring
+
+    :param annotation: A type annotation, as in "varname: annotation" or "def fn(arg: annotation)".
+    :param value: JSON-like data before validation. pydantic.JsonValue, i.e. one of (dict[str,Any],
+                  list, str, int, float, bool, None).
+
+    """
     # If this is a Pydantic model, i.e. a schema, migrate it (recursively).
     if isinstance(annotation, type) and issubclass(annotation, BaseModel):
         if isinstance(value, dict):
@@ -561,7 +544,7 @@ def _select_union_member(members, value):
     models = [m for m in members if isinstance(m, type) and issubclass(m, BaseModel)]
     if isinstance(value, dict) and "type" in value:
         for m in models:
-            type_field = m.model_fields.get("type")
+            type_field = m.model_fields.get("type") # TODO: Use field_info.discriminator
             if type_field is not None and type_field.default == value["type"]:
                 return m
     # Optional[Model] etc.: only one model candidate
@@ -573,13 +556,32 @@ def _migrate_nested_model(model_cls, value, context):
     """ TODO: Docstring.
 
     Migrate the outer model before inner models."""
-    # TODO: Actual migration.
+
+
+    if "schema_version" in value:
+        print("Migrate:", model_cls) # XXX
+        value = migrate_data_to_latest(
+                data = value,
+                # No schema_name, it should be inferrable. Though maybe we could also get it from
+                # model_cls.
+                schema_version=None,
+                context=context,
+                recurse=False, # We're recursing out here, don't need to do it twice
+            )
+    else:
+        print("No schema_version, not migrating", model_cls) # XXX
+
+    # if "Trash" in str(model_cls):
+    #     breakpoint()
+
 
     # Recurse.
     # TODO: model_cls -> latest_cls once it exists
     for name, field in model_cls.model_fields.items():
         if name in value:
             value[name] = _unwrap_and_migrate_value(field.annotation, value[name], context)
+
+    return value
 
 
 def resolve_api_profile(
