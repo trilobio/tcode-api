@@ -5,6 +5,13 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
+## [v1.48.0]
+### Changed
+- ASPIRATE and DISPENSE incremented to v2, now have `relative_movement_offset` field to allow for
+    moving aspirate and dispense commands.
+
+---
+
 ## [v1.47.0]
 ### Fixed
 - `TCodeServicerClient.execute_run_loop` (and so `run_script`) raises `RuntimeError` when the
