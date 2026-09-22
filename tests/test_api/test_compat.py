@@ -15,7 +15,6 @@ from tcode_api.api.compat import (
     InvalidDataError,
     SchemaVersionMismatchError,
     TargetSchemaNotFoundError,
-    get_schema_from_name_and_version,
     load_api_object,
     migrate_data_to_latest,
     migrate_data_to_version,

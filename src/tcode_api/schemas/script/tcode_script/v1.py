@@ -4,12 +4,14 @@ import datetime
 import importlib.metadata
 import logging
 from typing import Literal, TextIO
+import json
 
 from pydantic import Field
 
 from ...base.schema_versioned_model.v1 import BaseSchemaVersionedModelV1
 from ...commands.union import TCode
 from ..metadata.v1 import Metadata
+from ....api.compat import load_api_object
 
 _logger = logging.getLogger(__name__)
 
@@ -63,3 +65,22 @@ class TCodeScript(BaseSchemaVersionedModelV1):
                 current_version,
             )
         return model
+
+    @classmethod
+    def read_and_migrate_to_latest(cls, file_object: TextIO) -> TCodeScript:
+        """Load a TCode script from a file-like object, and migrate it to the latest schema version.
+
+        :param file_object: A file-like object containing the TCode script.
+
+        :returns: The loaded TCode script.
+        """
+
+        j = json.loads(file_object)
+
+        api_version = j["metadata"]["tcode_api_version"]
+        commands = []
+        for c in j["commands"]:
+            # load_api_object does the work of migration.
+            commands.append(load_api_object(c, api_version=api_version))
+        script = TCodeScript(metadata=Metadata(**j["metadata"]), commands=commands)
+        return script

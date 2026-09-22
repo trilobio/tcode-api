@@ -22,7 +22,7 @@ def main(file_path: pathlib.Path, servicer_url: str = DEFAULT_SERVICER_URL) -> N
     with file_path.open() as io_object:
         file_text = io_object.read()
 
-    script = TCodeScript.model_validate_json(file_text)
+    script = TCodeScript.read_and_migrate_to_latest(file_text)
     client = TCodeServicerClient(servicer_url=servicer_url)
     client.run_script(script)
 

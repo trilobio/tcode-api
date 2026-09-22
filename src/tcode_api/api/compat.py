@@ -467,27 +467,14 @@ def migrate_data_to_version(
     # We can only really do this if we're trying to migrate to the latest version.
     if recurse:
         if target_version is None:
-            data = migrate_nested_schemas_to_latest(context, data)
+            data = migrate_nested_schemas_to_latest(context, data, skip_parent=True)
         else:
             raise RuntimeError("Can only migrate nested schemas to newest version")
 
     return {**data, "type": final_name}
 
 
-def get_schema_from_name_and_version(schema_name: str, version: int | None = None, context = None):
-    """Look up a schema class by its class name, e.g. "WellPlateDescriptor", and optionally
-    version."""
-    raise NotImplementedError
-    # TODO: Actually use context.
-    cls = getattr(api, schema_name)
-    if version is None:
-        return cls
-    module = cls.__module__.rsplit(".", 1)[0] + f".v{version}"
-    return getattr(importlib.import_module(module), schema_name)
-
-
-# def migrate_nested_schemas_to_latest(schema_name, new_version, context, data):
-def migrate_nested_schemas_to_latest(context, data):
+def migrate_nested_schemas_to_latest(context, data, skip_parent=False):
     """Recursively migrate nested schemas.
 
     Because we don't reliably track the versions of nested schemas, this just migrates everything to
@@ -498,111 +485,25 @@ def migrate_nested_schemas_to_latest(context, data):
     if not isinstance(data, dict):
         return data
 
-    if "schema_version" in data and data.get("type") in context.schema_registry.keys:
-        print("Migrate:", data["type"])
-        data = migrate_data_to_latest(
-                data = data,
-                # No schema_name, it should be inferrable.
-                schema_version=None,
-                context=context,
-                recurse=False, # We're recursing out here, don't need to do it twice
-            )
-    else:
-        # print("No schema_version, not migrating", data.get("type", "[no type]"))
-        pass
+    if not skip_parent:
+        if "schema_version" in data:
+            if data.get("type") in context.schema_registry.keys:
+                data = migrate_data_to_latest(
+                        data = data,
+                        # No schema_name, it should be inferrable.
+                        schema_version=None,
+                        context=context,
+                        recurse=False, # We're recursing out here, don't need to do it twice
+                    )
+            else:
+                # We don't yet migrate things that changed name. As of 2026-09-22, I
+                # don't think we need to.
+                _logger.warn("schema_version exists, but type isn't in schema_registry.")
+        else:
+            # It's not a nested schema, it's some other thing.
+            pass
 
     return {k: migrate_nested_schemas_to_latest(context, v) for k, v in data.items()}
-
-
-def _unwrap_and_migrate_value(annotation, value, context):
-    """TODO: Docstring
-
-    :param annotation: A type annotation, as in "varname: annotation" or "def fn(arg: annotation)".
-    :param value: JSON-like data before validation. pydantic.JsonValue, i.e. one of (dict[str,Any],
-                  list, str, int, float, bool, None).
-
-    """
-    # If this is a Pydantic model, i.e. a schema, migrate it (recursively).
-    if isinstance(annotation, type) and issubclass(annotation, BaseModel):
-        if isinstance(value, dict):
-            return _migrate_nested_model(annotation, value, context)
-        else:
-            # E.g. Optional[some pydantic model] that's None
-            # or various failure cases
-            return value
-
-    origin = typing.get_origin(annotation)  # E.g. list[str] -> list
-    args = typing.get_args(annotation)  # E.g. list[str] -> str
-
-    # typing.Annotated's first argument is the "real" type.
-    if origin is typing.Annotated:
-        return _unwrap_and_migrate_value(args[0], value, context)
-
-    # Union -> we need to figure out which element the union actually holds, and recurse.
-    if origin in (typing.Union, types.UnionType):
-        member = _select_union_member(args, value)
-        return (
-            value
-            if member is None
-            else _unwrap_and_migrate_value(member, value, context)
-        )
-
-    # Iterate through lists, tuples, and sets.
-    if origin in (list, tuple, set) and isinstance(value, list):
-        return [_unwrap_and_migrate_value(args[0], v, context) for v in value]
-
-    # Iterate through dicts.
-    if origin is dict and isinstance(value, dict):
-        return {
-            k: _unwrap_and_migrate_value(args[1], v, context) for k, v in value.items()
-        }
-
-    return value  # Literal, primitives, etc.
-
-
-def _select_union_member(members, value):
-    """Pick the union member that matches the data, using the `type` discriminator."""
-    models = [m for m in members if isinstance(m, type) and issubclass(m, BaseModel)]
-    if isinstance(value, dict) and "type" in value:
-        for m in models:
-            type_field = m.model_fields.get("type") # TODO: Use field_info.discriminator
-            if type_field is not None and type_field.default == value["type"]:
-                return m
-    # Optional[Model] etc.: only one model candidate
-    non_none = [m for m in members if m is not type(None)]
-    return non_none[0] if len(non_none) == 1 else None
-
-
-def _migrate_nested_model(model_cls, value, context):
-    """ TODO: Docstring.
-
-    Migrate the outer model before inner models."""
-
-
-    if "schema_version" in value:
-        print("Migrate:", model_cls) # XXX
-        value = migrate_data_to_latest(
-                data = value,
-                # No schema_name, it should be inferrable. Though maybe we could also get it from
-                # model_cls.
-                schema_version=None,
-                context=context,
-                recurse=False, # We're recursing out here, don't need to do it twice
-            )
-    else:
-        print("No schema_version, not migrating", model_cls) # XXX
-
-    # if "Trash" in str(model_cls):
-    #     breakpoint()
-
-
-    # Recurse.
-    # TODO: model_cls -> latest_cls once it exists
-    for name, field in model_cls.model_fields.items():
-        if name in value:
-            value[name] = _unwrap_and_migrate_value(field.annotation, value[name], context)
-
-    return value
 
 
 def resolve_api_profile(
