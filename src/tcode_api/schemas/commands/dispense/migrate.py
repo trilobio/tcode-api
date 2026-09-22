@@ -2,7 +2,7 @@ from ...registry import Migrator, RawData
 
 
 def migrate_v1_to_v2(data: RawData) -> RawData:
-    """Migrate an DISPENSE command from schema version 1 to 2."""
+    """Migrate a DISPENSE command from schema version 1 to 2."""
     retval = {
         **data,
     }

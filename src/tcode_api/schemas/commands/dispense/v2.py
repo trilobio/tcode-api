@@ -1,6 +1,6 @@
 """DISPENSE v2
 
-- Add optional relative_movement_offset parameter for moving aspiration.
+- Add optional relative_movement_offset parameter for moving during dispensing.
 """
 
 from typing import Literal
