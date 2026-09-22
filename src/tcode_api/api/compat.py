@@ -24,6 +24,7 @@ How to perform:
 import dataclasses
 import importlib
 import logging
+import typing
 
 from packaging.version import Version
 from pydantic import ValidationError
@@ -443,6 +444,10 @@ def migrate_data_to_version(
             data=data,
         ) from err
 
+    # XXX
+    # if schema_name == "CREATE_LABWARE":
+    #     breakpoint()
+
     if target_version is not None and target_version not in {v for _, v, _ in migration_steps}:
         raise InvalidDataError(
             msg=f"Cannot migrate from version '{schema_version}' to version '{target_version}' for schema '{schema_name}' because there is no registered migrator for the target version.",
@@ -453,9 +458,16 @@ def migrate_data_to_version(
     for step_name, step_version, migrator in migration_steps:
         data = migrator(data)
 
-        # Recurse, and migrate nested schemas.
-        data = migrate_nested_schemas(step_name, current_version, step_version, context, data)
         current_version = step_version
+
+    # Recurse, and migrate nested schemas.
+    # We can only really do this if we're trying to migrate to the latest version.
+    if target_version is None:
+        # data = migrate_nested_schemas_to_latest(context, data)
+        data = migrate_nested_schemas_to_latest(schema_name, current_version, context, data)
+    else:
+        # XXX
+        breakpoint()
 
     return {**data, "type": final_name}
 
@@ -470,22 +482,104 @@ def get_schema_from_name_and_version(schema_name: str, version: int | None = Non
     return getattr(importlib.import_module(module), schema_name)
 
 
-def migrate_nested_schemas(schema_name, old_version, new_version, context, data):
-    """Recursively migrate nested schemas, based on _this_ schema's version bump.
+def migrate_nested_schemas_to_latest(schema_name, new_version, context, data):
+    # def migrate_nested_schemas_to_latest(context, data):
+    """Recursively migrate nested schemas.
 
-    If old_version and new_version are the same, this is a no-op."""
+    Because we don't reliably track the versions of nested schemas, this just migrates everything to
+    the newest version."""
 
-    return data # Disabled for now.
+    # return data # Disabled for now.
 
-    old_schema = get_schema_from_name_and_version(schema_name, old_version)
-    new_schema = get_schema_from_name_and_version(schema_name, new_version)
+    # old_schema = get_schema_from_name_and_version(schema_name, old_version)
+    schema = get_schema_from_name_and_version(schema_name, new_version)
+    for field_name, field_info in schema.model_fields.items():
+        if schema_name == "CREATE_LABWARE":
+            print(field_name)
+            breakpoint()
 
-    breakpoint()
+        # If the field is itself a schema, _or_ has any nested 
 
-    # If the schema contains a discriminated union (typing.Annotated), check which it actually
-    # contains, and recurse appropriately.
+    if False:
+        if "schema_version" in data:
+            schema_version = data["schema_version"]
+            if "type" in data:
+                schema_name = data["type"]
+            else:
+                # TODO
+                pass
+
+        for key, value in data.items():
+            if isinstance(value, dict):
+                migrate_nested_schemas_to_latest(context, value)
+
 
     return data
+
+def _unwrap_and_migrate_value(annotation, value, context):
+    """TODO: Docstring"""
+    # If this is a Pydantic model, i.e. a schema, migrate it (recursively).
+    if isinstance(annotation, type) and issubclass(annotation, BaseModel):
+        if isinstance(value, dict):
+            return _migrate_nested_model(annotation, value, context)
+        else:
+            # E.g. Optional[some pydantic model] that's None
+            # or various failure cases
+            return value
+
+    origin = typing.get_origin(annotation)  # E.g. list[str] -> list
+    args = typing.get_args(annotation)  # E.g. list[str] -> str
+
+    # typing.Annotated's first argument is the "real" type.
+    if origin is typing.Annotated:
+        return _unwrap_and_migrate_value(args[0], value, context)
+
+    # Union -> we need to figure out which element the union actually holds, and recurse.
+    if origin in (typing.Union, types.UnionType):
+        member = _select_union_member(args, value)
+        return (
+            value
+            if member is None
+            else _unwrap_and_migrate_value(member, value, context)
+        )
+
+    # Iterate through lists, tuples, and sets.
+    if origin in (list, tuple, set) and isinstance(value, list):
+        return [_unwrap_and_migrate_value(args[0], v, context) for v in value]
+
+    # Iterate through dicts.
+    if origin is dict and isinstance(value, dict):
+        return {
+            k: _unwrap_and_migrate_value(args[1], v, context) for k, v in value.items()
+        }
+
+    return value  # Literal, primitives, etc.
+
+
+def _select_union_member(members, value):
+    """Pick the union member that matches the data, using the `type` discriminator."""
+    models = [m for m in members if isinstance(m, type) and issubclass(m, BaseModel)]
+    if isinstance(value, dict) and "type" in value:
+        for m in models:
+            type_field = m.model_fields.get("type")
+            if type_field is not None and type_field.default == value["type"]:
+                return m
+    # Optional[Model] etc.: only one model candidate
+    non_none = [m for m in members if m is not type(None)]
+    return non_none[0] if len(non_none) == 1 else None
+
+
+def _migrate_nested_model(model_cls, value, context):
+    """ TODO: Docstring.
+
+    Migrate the outer model before inner models."""
+    # TODO: Actual migration.
+
+    # Recurse.
+    # TODO: model_cls -> latest_cls once it exists
+    for name, field in model_cls.model_fields.items():
+        if name in value:
+            value[name] = _unwrap_and_migrate_value(field.annotation, value[name], context)
 
 
 def resolve_api_profile(
