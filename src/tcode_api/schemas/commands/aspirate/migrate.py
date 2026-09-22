@@ -1,3 +1,16 @@
-from ...registry import Migrator
+from ...registry import Migrator, RawData
 
-MIGRATORS: dict[int, Migrator] = {}
+
+def migrate_v1_to_v2(data: RawData) -> RawData:
+    """Migrate an ASPIRATE command from schema version 1 to 2."""
+    retval = {
+        **data,
+    }
+    retval["schema_version"] = 2
+    retval.setdefault("relative_movement_offset", None)
+    return retval
+
+
+MIGRATORS: dict[int, Migrator] = {
+    2: migrate_v1_to_v2,
+}

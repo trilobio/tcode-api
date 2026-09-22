@@ -335,6 +335,10 @@ tcode_api_compat_context = CompatContext(
             "v1.46.0": {
                 "ADD_PIPETTE_TIP_GROUP": 3,
             },
+            "v1.48.0": {
+                "ASPIRATE": 2,
+                "DISPENSE": 2,
+            },
         },
         migrations={
             "v1.37.0": {
