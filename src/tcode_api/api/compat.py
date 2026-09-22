@@ -353,7 +353,7 @@ def migrate_data_to_latest(
     schema_name: str | None = None,
     schema_version: int | None = None,
     context: CompatContext = tcode_api_compat_context,
-    recurse: bool = True
+    recurse: bool = True,
 ) -> RawData:
     """Migrate a given json blob to the latest version of its schema.
 
@@ -376,7 +376,7 @@ def migrate_data_to_latest(
         schema_name=schema_name,
         schema_version=schema_version,
         context=context,
-        recurse=recurse,
+        recurse=recurse
     )
 
 
@@ -386,7 +386,7 @@ def migrate_data_to_version(
     schema_name: str | None = None,
     schema_version: int | None = None,
     context: CompatContext = tcode_api_compat_context,
-    recurse: bool = True,
+    recurse: bool | None = None,
 ) -> RawData:
     """Migrate a given json blob to the specified version of it's schema.
 
@@ -409,6 +409,9 @@ def migrate_data_to_version(
         * the target version has no registered migrator.
 
     """
+    if recurse is None:
+        recurse = (target_version is None)
+
     try:
         schema_name = schema_name or data["type"]
     except KeyError as err:
@@ -464,7 +467,7 @@ def migrate_data_to_version(
     # We can only really do this if we're trying to migrate to the latest version.
     if recurse:
         if target_version is None:
-            data = migrate_nested_schemas_to_latest(schema_name, current_version, context, data)
+            data = migrate_nested_schemas_to_latest(context, data)
         else:
             raise RuntimeError("Can only migrate nested schemas to newest version")
 
@@ -474,6 +477,7 @@ def migrate_data_to_version(
 def get_schema_from_name_and_version(schema_name: str, version: int | None = None, context = None):
     """Look up a schema class by its class name, e.g. "WellPlateDescriptor", and optionally
     version."""
+    raise NotImplementedError
     # TODO: Actually use context.
     cls = getattr(api, schema_name)
     if version is None:
@@ -482,15 +486,32 @@ def get_schema_from_name_and_version(schema_name: str, version: int | None = Non
     return getattr(importlib.import_module(module), schema_name)
 
 
-def migrate_nested_schemas_to_latest(schema_name, new_version, context, data):
-    # def migrate_nested_schemas_to_latest(context, data):
+# def migrate_nested_schemas_to_latest(schema_name, new_version, context, data):
+def migrate_nested_schemas_to_latest(context, data):
     """Recursively migrate nested schemas.
 
     Because we don't reliably track the versions of nested schemas, this just migrates everything to
     the newest version."""
 
-    schema = get_schema_from_name_and_version(schema_name, new_version, context)
-    return _migrate_nested_model(schema, data, context)
+    if isinstance(data, list):
+        return [migrate_nested_schemas_to_latest(context, d) for d in data]
+    if not isinstance(data, dict):
+        return data
+
+    if "schema_version" in data and data.get("type") in context.schema_registry.keys:
+        print("Migrate:", data["type"])
+        data = migrate_data_to_latest(
+                data = data,
+                # No schema_name, it should be inferrable.
+                schema_version=None,
+                context=context,
+                recurse=False, # We're recursing out here, don't need to do it twice
+            )
+    else:
+        # print("No schema_version, not migrating", data.get("type", "[no type]"))
+        pass
+
+    return {k: migrate_nested_schemas_to_latest(context, v) for k, v in data.items()}
 
 
 def _unwrap_and_migrate_value(annotation, value, context):
