@@ -1317,12 +1317,8 @@ class TestMigrateNestedSchemas(unittest.TestCase):
             self.assertEqual(migrated["type"], "Platter")
             self.assertEqual(migrated["schema_version"], 3)
 
-    @unittest.expectedFailure
     def test_nested_renamed(self) -> None:
-        """A nested schema that was later renamed is migrated to its new name.
-
-        Known gap: the walk only recognizes nested schemas whose `type` is a current schema name.
-        """
+        """A nested schema that was later renamed is migrated to its new name."""
         context = CompatContext(
             migration_registry=MigrationRegistry(
                 _migrators_to_preload={
@@ -1351,6 +1347,56 @@ class TestMigrateNestedSchemas(unittest.TestCase):
         )
         self.assertEqual(migrated["cup"]["type"], "Cup")
         self.assertEqual(migrated["cup"]["schema_version"], 3)
+
+    def test_nested_renamed_twice(self) -> None:
+        """A nested schema renamed more than once is migrated through every rename."""
+        context = CompatContext(
+            migration_registry=MigrationRegistry(
+                _migrators_to_preload={
+                    "Teacup": {2: migrate_teacup_v1_to_teacup_v2},
+                    "Mug": {3: migrate_teacup_v2_to_cup_v1},
+                },
+            ),
+            schema_registry=SchemaRegistry(
+                _builders_to_preload={
+                    "Cup": CupV1,
+                    "Tray": TrayV2,
+                },
+            ),
+            api_history_log=APIHistoryLog(
+                name="test_nested_renamed_twice",
+                increments={
+                    "v0.1.0": {"Teacup": 1, "Tray": 2},
+                    "v0.2.0": {"Teacup": 2},
+                    "v0.3.0": {"Mug": 3},
+                },
+                migrations={"v0.3.0": {"Teacup": "Mug"}, "v0.4.0": {"Mug": "Cup"}},
+            ),
+        )
+        migrated = migrate_data_to_latest(
+            data={"type": "Tray", "schema_version": 2, "cups": [_teacup(1), _teacup(2)]},
+            context=context,
+        )
+        expected = {"type": "Cup", "schema_version": 3, "was_migrated": True}
+        self.assertEqual(migrated["cups"], [expected, {**expected, "was_migrated": False}])
+
+    def test_nested_deprecated(self) -> None:
+        """A nested schema that was deprecated raises, matching top-level behavior."""
+        context = CompatContext(
+            migration_registry=MigrationRegistry(),
+            schema_registry=SchemaRegistry(
+                _builders_to_preload={"Tray": TrayV2},
+            ),
+            api_history_log=APIHistoryLog(
+                name="test_nested_deprecated",
+                increments={"v0.1.0": {"Teacup": 1, "Tray": 2}},
+                migrations={"v0.2.0": {"Teacup": None}},
+            ),
+        )
+        with self.assertRaises(DeprecatedSchemaError):
+            migrate_data_to_latest(
+                data={"type": "Tray", "schema_version": 2, "cup": _teacup(1)}, context=context
+            )
 
 
 class TestRealNestedMigration(unittest.TestCase):

@@ -475,6 +475,13 @@ def migrate_data_to_version(
     return {**data, "type": final_name}
 
 
+def _known_schema_names(context: CompatContext) -> set[SchemaName]:
+    names = set(context.schema_registry.keys)
+    for renames in context.api_history_log.migrations.values():
+        names.update(renames.keys())
+    return names
+
+
 def migrate_nested_schemas_to_latest(
     context: CompatContext, data: RawData, skip_parent: bool = False
 ) -> RawData:
@@ -497,7 +504,7 @@ def migrate_nested_schemas_to_latest(
 
     if not skip_parent:
         if "schema_version" in data:
-            if data.get("type") in context.schema_registry.keys:
+            if data.get("type") in _known_schema_names(context):
                 data = migrate_data_to_latest(
                     data=data,
                     # No schema_name, it should be inferrable.
