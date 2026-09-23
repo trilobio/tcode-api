@@ -21,6 +21,7 @@ How to perform:
         * Add an entry to API_REMOVALS with the removed command mapped to the APIVersion
 """
 
+import collections.abc
 import dataclasses
 import logging
 
@@ -491,7 +492,7 @@ def migrate_nested_schemas_to_latest(
 
     if isinstance(data, list):
         return [migrate_nested_schemas_to_latest(context, d) for d in data]
-    if not isinstance(data, dict):
+    if not isinstance(data, collections.abc.Mapping):
         return data
 
     if not skip_parent:
