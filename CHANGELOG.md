@@ -5,6 +5,17 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
+## [v1.48.0]
+### Added
+- The code that migrates old schemas to newer versions will recursively migrate
+  nested schemas.
+    - Only works when migrating to the newest known version.
+### Changed
+- `scripts/execute_tcode_file.py` migrates the tcode to the newest API version
+  before running it.
+
+---
+
 ## [v1.47.0]
 ### Fixed
 - `TCodeServicerClient.execute_run_loop` (and so `run_script`) raises `RuntimeError` when the
