@@ -974,7 +974,9 @@ class TestAddPipetteTipGroupV1ToV2Migration(unittest.TestCase):
     def test_migrate_add_pipette_tip_group_v1_with_robot_id(self) -> None:
         """A v1 ADD_PIPETTE_TIP_GROUP payload that already carries a ``robot_id`` migrates to v2."""
         data = {**self._v1_payload(), "robot_id": "robot-a"}
-        migrated = migrate_data_to_latest(data=data, schema_name="ADD_PIPETTE_TIP_GROUP")
+        migrated = migrate_data_to_version(
+            data=data, schema_name="ADD_PIPETTE_TIP_GROUP", target_version=2
+        )
         self.assertEqual(migrated["schema_version"], 2)
         self.assertEqual(migrated["robot_id"], "robot-a")
 
