@@ -22,15 +22,11 @@ How to perform:
 """
 
 import dataclasses
-import importlib
 import logging
-import typing
-import types
 
 from packaging.version import Version
-from pydantic import ValidationError, BaseModel
+from pydantic import ValidationError
 
-from .. import api
 from ..schemas.registry import (
     BuilderNotFoundError,
     MigrationRegistry,
@@ -363,6 +359,7 @@ def migrate_data_to_latest(
     :param schema_version: The version of the schema to migrate. If not provided, will attempt to
         infer from the 'schema_version' key in the data.
     :param context: The targeted compatibility context. Defaults to the tcode-api context.
+    :param recurse: Whether to migrate schemas nested inside this schema. Defaults to True.
 
     :returns: The migrated json blob, updated to match the latest version of the schema.
         If no migrators were found for the given schema, returns the data unchanged.
@@ -376,7 +373,7 @@ def migrate_data_to_latest(
         schema_name=schema_name,
         schema_version=schema_version,
         context=context,
-        recurse=recurse
+        recurse=recurse,
     )
 
 
@@ -398,6 +395,9 @@ def migrate_data_to_version(
     :param schema_version: The version of the schema to migrate. If not provided, will attempt to
         infer from the 'schema_version' key in the data.
     :param context: The targeted compatibility context. Defaults to the tcode-api context.
+    :param recurse: Whether to migrate schemas nested inside this schema. Only possible when
+        we're migrating to the newest version (target_version is None). Defaults to None, which sets
+        it to True iff target_version is None.
 
     :returns: The migrated json blob, updated to match the specified version of the schema.
         If no migrators were found for the given schema, returns the data unchanged.
@@ -410,7 +410,7 @@ def migrate_data_to_version(
 
     """
     if recurse is None:
-        recurse = (target_version is None)
+        recurse = target_version is None
 
     try:
         schema_name = schema_name or data["type"]
@@ -457,11 +457,8 @@ def migrate_data_to_version(
             data=data,
         )
 
-    current_version = schema_version
     for step_name, step_version, migrator in migration_steps:
         data = migrator(data)
-
-        current_version = step_version
 
     # Recurse, and migrate nested schemas.
     # We can only really do this if we're trying to migrate to the latest version.
@@ -474,11 +471,20 @@ def migrate_data_to_version(
     return {**data, "type": final_name}
 
 
-def migrate_nested_schemas_to_latest(context, data, skip_parent=False):
+def migrate_nested_schemas_to_latest(
+    context: CompatContext, data: RawData, skip_parent: bool = False
+) -> RawData:
     """Recursively migrate nested schemas.
 
-    Because we don't reliably track the versions of nested schemas, this just migrates everything to
-    the newest version."""
+    Because we don't reliably track the versions of nested schemas, this just migrates
+    everything to the newest version.
+
+    :param context: The targeted compatibility context.
+    :param data: JSON-like data to migrate.
+    :param skip_parent: Don't migrate this object, only migrate nested ones.
+
+    :returns: Data, migrated to newest versions.
+    """
 
     if isinstance(data, list):
         return [migrate_nested_schemas_to_latest(context, d) for d in data]
@@ -489,12 +495,12 @@ def migrate_nested_schemas_to_latest(context, data, skip_parent=False):
         if "schema_version" in data:
             if data.get("type") in context.schema_registry.keys:
                 data = migrate_data_to_latest(
-                        data = data,
-                        # No schema_name, it should be inferrable.
-                        schema_version=None,
-                        context=context,
-                        recurse=False, # We're recursing out here, don't need to do it twice
-                    )
+                    data=data,
+                    # No schema_name, it should be inferrable.
+                    schema_version=None,
+                    context=context,
+                    recurse=False,  # We're recursing out here, don't need to do it twice
+                )
             else:
                 # We don't yet migrate things that changed name. As of 2026-09-22, I
                 # don't think we need to.
@@ -650,6 +656,7 @@ def load_api_object(
 MigrationStep = tuple[
     SchemaName, SchemaVersion, Migrator
 ]  # (name the migrator belongs to, version it migrates *to*, fn)
+
 
 def _build_migrator_chain(
     incoming_name: SchemaName,
