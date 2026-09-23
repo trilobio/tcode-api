@@ -1254,9 +1254,10 @@ class TestMigrateNestedSchemas(unittest.TestCase):
         self.assertTrue(inst.cup.was_migrated)  # type: ignore [union-attr]
         self.assertTrue(inst.cups[0].was_migrated)
 
-    def test_parent_renamed(self) -> None:
-        """Nested schemas are migrated when the parent is migrated through a rename."""
-        context = CompatContext(
+    @staticmethod
+    def _renamed_parent_context() -> CompatContext:
+        """Context where Tray (v1 -> v2) is renamed to Platter (v3), containing Teacups."""
+        return CompatContext(
             migration_registry=MigrationRegistry(
                 _migrators_to_preload={
                     "Teacup": {
@@ -1283,6 +1284,10 @@ class TestMigrateNestedSchemas(unittest.TestCase):
                 migrations={"v0.3.0": {"Tray": "Platter"}},
             ),
         )
+
+    def test_parent_renamed(self) -> None:
+        """Nested schemas are migrated when the parent is migrated through a rename."""
+        context = self._renamed_parent_context()
         data = {"type": "Tray", "schema_version": 1, "mug": _teacup(1), "cups": [_teacup(1)]}
 
         migrated = migrate_data_to_latest(data=data, context=context)
@@ -1293,6 +1298,22 @@ class TestMigrateNestedSchemas(unittest.TestCase):
 
         inst = load_api_object(data=data, context=context)
         self.assertIsInstance(inst, PlatterV1)
+
+    def test_target_version_before_rename(self) -> None:
+        """Migrating to a target version that predates a rename keeps the old name."""
+        context = self._renamed_parent_context()
+        data = {"type": "Tray", "schema_version": 1, "mug": _teacup(1)}
+
+        with self.subTest(target_version=2):
+            migrated = migrate_data_to_version(data=data, target_version=2, context=context)
+            self.assertEqual(migrated["type"], "Tray")
+            self.assertEqual(migrated["schema_version"], 2)
+            self.assertEqual(migrated["cup"], _teacup(1))
+
+        with self.subTest(target_version=3):
+            migrated = migrate_data_to_version(data=data, target_version=3, context=context)
+            self.assertEqual(migrated["type"], "Platter")
+            self.assertEqual(migrated["schema_version"], 3)
 
     @unittest.expectedFailure
     def test_nested_renamed(self) -> None:

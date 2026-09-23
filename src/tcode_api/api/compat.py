@@ -504,7 +504,7 @@ def migrate_nested_schemas_to_latest(
             else:
                 # We don't yet migrate things that changed name. As of 2026-09-22, I
                 # don't think we need to.
-                _logger.warn("schema_version exists, but type isn't in schema_registry.")
+                _logger.warning("schema_version exists, but type isn't in schema_registry.")
         else:
             # It's not a nested schema, it's some other thing.
             pass
@@ -712,6 +712,9 @@ def _build_migrator_chain(
             )
             migrators_to_apply.append((current_name, version, migrators[version]))
             current_version = version
+
+        if target_schema_version is not None and current_version >= target_schema_version:
+            break  # reached the target; don't follow renames past it
 
         # Check for renames in the API history log and update the current_name accordingly
         continue_traversing = False  # Set back to true if we find a rename

@@ -8,7 +8,6 @@ from typing import Literal, TextIO, cast
 
 from pydantic import Field
 
-from ....api.compat import load_api_object
 from ...base.schema_versioned_model.v1 import BaseSchemaVersionedModelV1
 from ...commands.union import TCode
 from ..metadata.v1 import Metadata
@@ -75,12 +74,23 @@ class TCodeScript(BaseSchemaVersionedModelV1):
         :returns: The loaded TCode script.
         """
 
+        # Import api from in here, to avoid a circular import.
+        from ....api.compat import load_api_object  # noqa: PLC0415
+
         j = json.loads(json_str)
 
         api_version = j["metadata"]["tcode_api_version"]
+        # Older scripts have no `type`/`schema_version` on the script, metadata, or commands, so
+        # we can't migrate the whole script in one go. Instead, load each command individually,
+        # resolving its schema version from the API version.
         commands: list[TCode] = []
         for c in j["commands"]:
             # load_api_object does the work of migration.
             commands.append(cast(TCode, load_api_object(c, api_version=api_version)))
-        script = TCodeScript(metadata=Metadata(**j["metadata"]), commands=commands)
+
+        # Bump the script's overall version, since we've migrated every command in it.
+        metadata = Metadata(**j["metadata"])
+        metadata.tcode_api_version = importlib.metadata.version("tcode_api")
+
+        script = TCodeScript(metadata=metadata, commands=commands)
         return script
