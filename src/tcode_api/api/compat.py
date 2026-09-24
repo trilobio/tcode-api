@@ -2,7 +2,7 @@
 
 Comtains:
     * mapping from tcode-api semantic version (e.g. 'v1.35.1') to individual schema versions (e.g. SEND_WEBHOOK -> v2, WAIT -> v3)
-    * ``resolve_api_profile`` function to navigate the mapping.
+    * ``_resolve_api_profile`` function to navigate the mapping.
 
 How to perform:
     Rename:
@@ -121,6 +121,14 @@ class CompatContext:
 
     schema_registry: SchemaRegistry
     """Registry of builders for schemas represented in the most modern version of the ``api_history_log``."""
+
+    def known_schema_names(self) -> set[SchemaName]:
+        names = set(self.schema_registry.keys)
+        for renames in self.api_history_log.migrations.values():
+            names.update(renames.keys())
+        return names
+
+
 
 
 class TargetSchemaNotFoundError(Exception):
@@ -474,21 +482,14 @@ def migrate_data_to_version(
     # We can only really do this if we're trying to migrate to the latest version.
     if recurse:
         if target_version is None:
-            data = migrate_nested_schemas_to_latest(context, data, skip_parent=True)
+            data = _migrate_nested_schemas_to_latest(context, data, skip_parent=True)
         else:
             raise RuntimeError("Can only migrate nested schemas to newest version")
 
     return {**data, "type": final_name}
 
 
-def _known_schema_names(context: CompatContext) -> set[SchemaName]:
-    names = set(context.schema_registry.keys)
-    for renames in context.api_history_log.migrations.values():
-        names.update(renames.keys())
-    return names
-
-
-def migrate_nested_schemas_to_latest(
+def _migrate_nested_schemas_to_latest(
     context: CompatContext, data: RawData, skip_parent: bool = False
 ) -> RawData:
     """Recursively migrate nested schemas.
@@ -504,13 +505,13 @@ def migrate_nested_schemas_to_latest(
     """
 
     if isinstance(data, list):
-        return [migrate_nested_schemas_to_latest(context, d) for d in data]
+        return [_migrate_nested_schemas_to_latest(context, d) for d in data]
     if not isinstance(data, collections.abc.Mapping):
         return data
 
     if not skip_parent:
         if "schema_version" in data:
-            if data.get("type") in _known_schema_names(context):
+            if data.get("type") in context.known_schema_names():
                 data = migrate_data_to_latest(
                     data=data,
                     # No schema_name, it should be inferrable.
@@ -526,10 +527,10 @@ def migrate_nested_schemas_to_latest(
             # It's not a nested schema, it's some other thing.
             pass
 
-    return {k: migrate_nested_schemas_to_latest(context, v) for k, v in data.items()}
+    return {k: _migrate_nested_schemas_to_latest(context, v) for k, v in data.items()}
 
 
-def resolve_api_profile(
+def _resolve_api_profile(
     api_version: APIVersion,
     context: CompatContext = tcode_api_compat_context,
 ) -> dict[SchemaName, SchemaVersion]:
@@ -628,7 +629,7 @@ def load_api_object(
 
     # If we didn't get a schema_version from the data, look it up with the API version.
     if api_version is not None:
-        profile = resolve_api_profile(api_version, context=context)
+        profile = _resolve_api_profile(api_version, context=context)
         if incoming_name not in profile:
             raise TargetSchemaNotFoundError(
                 msg=f"Schema '{incoming_name}' not valid for API version '{api_version}'.",

@@ -18,7 +18,7 @@ from tcode_api.api.compat import (
     load_api_object,
     migrate_data_to_latest,
     migrate_data_to_version,
-    resolve_api_profile,
+    _resolve_api_profile,
     tcode_api_compat_context,
 )
 from tcode_api.schemas.base.schema_versioned_model.v1 import BaseSchemaVersionedModelV1
@@ -48,7 +48,7 @@ def modify_log_level(loggers: logging.Logger | list[logging.Logger], level: int)
 
 
 class TestResolveAPIProfile(unittest.TestCase):
-    """Tests for the ``resolve_api_profile`` function."""
+    """Tests for the ``_resolve_api_profile`` function."""
 
     def _assert_dicts_equal(self, dict1: dict, dict2: dict) -> None:
         """Helper method to assert that two dicts are equal, ignoring order."""
@@ -91,7 +91,7 @@ class TestResolveAPIProfile(unittest.TestCase):
             ),
         )
 
-        self._assert_dicts_equal({"A": 2, "C": 2}, resolve_api_profile("v0.2.0", context))
+        self._assert_dicts_equal({"A": 2, "C": 2}, _resolve_api_profile("v0.2.0", context))
 
     def test_rename_without_increment(self) -> None:
         """A version with a rename and no increment should resolve correctly."""
@@ -110,7 +110,7 @@ class TestResolveAPIProfile(unittest.TestCase):
             ),
         )
 
-        self._assert_dicts_equal({"A": 2, "C": 2, "D": 1}, resolve_api_profile("v0.2.0", context))
+        self._assert_dicts_equal({"A": 2, "C": 2, "D": 1}, _resolve_api_profile("v0.2.0", context))
 
     def test_increment_after_rename(self) -> None:
         """A schema renamed in a prior version should increment from the pre-renamed version."""
@@ -130,7 +130,7 @@ class TestResolveAPIProfile(unittest.TestCase):
             ),
         )
 
-        self._assert_dicts_equal({"A": 2, "C": 2, "D": 2}, resolve_api_profile("v0.3.0", context))
+        self._assert_dicts_equal({"A": 2, "C": 2, "D": 2}, _resolve_api_profile("v0.3.0", context))
 
     def test_increment_and_rename(self) -> None:
         """A schema that is incremented and renamed in a single version should show the increment with the new name."""
@@ -149,7 +149,7 @@ class TestResolveAPIProfile(unittest.TestCase):
             ),
         )
 
-        self._assert_dicts_equal({"A": 2, "D": 2, "C": 2}, resolve_api_profile("v0.2.0", context))
+        self._assert_dicts_equal({"A": 2, "D": 2, "C": 2}, _resolve_api_profile("v0.2.0", context))
 
     def test_rename_nonexistent(self) -> None:
         """A rename with a non-existent target raises an error."""
@@ -169,7 +169,7 @@ class TestResolveAPIProfile(unittest.TestCase):
         )
 
         with self.assertRaises(TargetSchemaNotFoundError):
-            resolve_api_profile("v0.2.0", context)
+            _resolve_api_profile("v0.2.0", context)
 
     def test_too_early_version(self) -> None:
         """Requesting a version before the first increment should return an empty profile."""
@@ -185,7 +185,7 @@ class TestResolveAPIProfile(unittest.TestCase):
         )
         self._assert_dicts_equal(
             {},
-            resolve_api_profile("v0.0.1", context),
+            _resolve_api_profile("v0.0.1", context),
         )
 
     def test_implied_version(self) -> None:
@@ -203,11 +203,11 @@ class TestResolveAPIProfile(unittest.TestCase):
         )
         self._assert_dicts_equal(
             {"A": 1, "B": 1, "C": 1},
-            resolve_api_profile("v0.1.5", context),
+            _resolve_api_profile("v0.1.5", context),
         )
         self._assert_dicts_equal(
             {"A": 2, "B": 1, "C": 2},
-            resolve_api_profile("v0.2.5", context),
+            _resolve_api_profile("v0.2.5", context),
         )
 
     def test_invalid_version(self) -> None:
@@ -215,7 +215,7 @@ class TestResolveAPIProfile(unittest.TestCase):
         bad_versions = ["invalid_version", "version_0.1.0"]
         for bad_version in bad_versions:
             with self.subTest(bad_version=bad_version), self.assertRaises(ValueError):
-                resolve_api_profile(
+                _resolve_api_profile(
                     bad_version,
                     CompatContext(
                         migration_registry=MigrationRegistry(),
@@ -239,10 +239,10 @@ class TestResolveAPIProfile(unittest.TestCase):
                 },
             ),
         )
-        resolve_api_profile("v0.2.0", context)
+        _resolve_api_profile("v0.2.0", context)
         self._assert_dicts_equal(
             {"B": 1, "C": 1},
-            resolve_api_profile("v0.2.0", context),
+            _resolve_api_profile("v0.2.0", context),
         )
 
 
@@ -643,7 +643,7 @@ class TestTCodeAPI(unittest.TestCase):
     def _get_most_recent_api_profile(self, compat_context: CompatContext) -> dict[str, int]:
         """Helper method to get the most recent API profile from the compat context."""
         api_version_str = compat_context.api_history_log.get_most_recent_version()
-        return resolve_api_profile(api_version_str, compat_context)
+        return _resolve_api_profile(api_version_str, compat_context)
 
     # @connor not running this method yet, mostly a concept that I might get working later.
     def _validate_compat_context(self, compat_context: CompatContext) -> None:
