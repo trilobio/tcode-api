@@ -1180,7 +1180,8 @@ class TestMigrateNestedSchemas(unittest.TestCase):
     def test_nested_unregistered_type_untouched(self) -> None:
         """A nested object whose `type` isn't a registered schema is left alone."""
         saucer = {"type": "Saucer", "schema_version": 1}
-        migrated = self._migrate({"type": "Tray", "schema_version": 2, "saucer": saucer})
+        with modify_log_level(logging.getLogger("tcode_api.api.compat"), logging.ERROR):
+            migrated = self._migrate({"type": "Tray", "schema_version": 2, "saucer": saucer})
         self.assertEqual(migrated["saucer"], saucer)
 
     def test_primitives_untouched(self) -> None:

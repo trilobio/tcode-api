@@ -776,9 +776,14 @@ def read_and_migrate_script(json_str: str) -> TCodeScript:
         # load_api_object does the work of migration.
         commands.append(cast(TCode, load_api_object(c, api_version=api_version)))
 
-    # Bump the script's overall version, since we've migrated every command in it.
     metadata = Metadata(**j["metadata"])
-    metadata.tcode_api_version = importlib.metadata.version("tcode_api")
+    # Bump the script's overall version, since we've migrated every command in it.
+    new_api_version = importlib.metadata.version("tcode_api")
+    if metadata.tcode_api_version != new_api_version:
+        _logger.info(
+            f"Bumping script's tcode API version from {metadata.tcode_api_version} to {new_api_version}"
+        )
+        metadata.tcode_api_version = new_api_version
 
     script = TCodeScript(metadata=metadata, commands=commands)
     return script
