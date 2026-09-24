@@ -295,7 +295,7 @@ def migrate_teacup_v1_to_teacup_v2(data: RawData) -> RawData:
 
 
 def migrate_teacup_v2_to_teacup_v3(data: RawData) -> RawData:
-    """A simple migration function to migrate from TeacupV2 to TeacupV3."""
+    """A simple migration function to migrate from TeacupV2 to TeacupV3()."""
     return {
         "type": "Teacup",
         "schema_version": 3,
@@ -304,7 +304,7 @@ def migrate_teacup_v2_to_teacup_v3(data: RawData) -> RawData:
 
 
 def migrate_teacup_v2_to_teacup_v4(data: RawData) -> RawData:
-    """A simple migration function to migrate from TeacupV2 to TeacupV4."""
+    """A simple migration function to migrate from TeacupV2 to TeacupV4()."""
     return {
         "type": "Teacup",
         "schema_version": 4,
@@ -1085,12 +1085,8 @@ def migrate_tray_v2_to_platter_v1(data: RawData) -> RawData:
     return {**data, "type": "Platter", "schema_version": 3}
 
 
-def _teacup(schema_version: int) -> dict:
-    return {"type": "Teacup", "schema_version": schema_version}
-
-
 #: A migrated-to-latest Teacup, as produced by the Teacup migrators.
-MIGRATED_TEACUP = {"type": "Teacup", "schema_version": 3, "was_migrated": True}
+MIGRATED_TEACUP = TeacupV3(was_migrated=True).model_dump()
 
 
 class TestMigrateNestedSchemas(unittest.TestCase):
@@ -1130,30 +1126,30 @@ class TestMigrateNestedSchemas(unittest.TestCase):
     def test_nested_field(self) -> None:
         """A schema in a field of the parent is migrated, after the parent's own migrator has
         moved it (`mug` -> `cup`)."""
-        migrated = self._migrate({"type": "Tray", "schema_version": 1, "mug": _teacup(1)})
+        migrated = self._migrate({"type": "Tray", "schema_version": 1, "mug": TeacupV1().model_dump()})
         self.assertEqual(migrated["schema_version"], 2)
         self.assertNotIn("mug", migrated)
         self.assertEqual(migrated["cup"], MIGRATED_TEACUP)
 
     def test_parent_already_latest(self) -> None:
         """Children are migrated even when the parent needs no migration itself."""
-        migrated = self._migrate({"type": "Tray", "schema_version": 2, "cup": _teacup(1)})
+        migrated = self._migrate({"type": "Tray", "schema_version": 2, "cup": TeacupV1().model_dump()})
         self.assertEqual(migrated["cup"], MIGRATED_TEACUP)
 
     def test_nested_list(self) -> None:
         """Every schema in a list is migrated, from whatever version it's at."""
         migrated = self._migrate(
-            {"type": "Tray", "schema_version": 2, "cups": [_teacup(1), _teacup(2), _teacup(3)]}
+            {"type": "Tray", "schema_version": 2, "cups": [TeacupV1().model_dump(), TeacupV2().model_dump(), TeacupV3().model_dump()]}
         )
         self.assertEqual(
             migrated["cups"],
-            [MIGRATED_TEACUP, MIGRATED_TEACUP, _teacup(3)],
+            [MIGRATED_TEACUP, MIGRATED_TEACUP, TeacupV3().model_dump()],
         )
 
     def test_nested_dict_values(self) -> None:
         """Schemas stored as values of a plain (non-schema) dict are migrated."""
         migrated = self._migrate(
-            {"type": "Tray", "schema_version": 2, "cups_by_name": {"a": _teacup(1)}}
+            {"type": "Tray", "schema_version": 2, "cups_by_name": {"a": TeacupV1().model_dump()}}
         )
         self.assertEqual(migrated["cups_by_name"], {"a": MIGRATED_TEACUP})
 
@@ -1164,7 +1160,7 @@ class TestMigrateNestedSchemas(unittest.TestCase):
             {
                 "type": "Tray",
                 "schema_version": 2,
-                "stack": {"trays": [{"type": "Tray", "schema_version": 1, "mug": _teacup(1)}]},
+                "stack": {"trays": [{"type": "Tray", "schema_version": 1, "mug": TeacupV1().model_dump()}]},
             }
         )
         inner = migrated["stack"]["trays"][0]
@@ -1203,37 +1199,37 @@ class TestMigrateNestedSchemas(unittest.TestCase):
 
     def test_input_not_mutated(self) -> None:
         """Nested migration returns new data rather than modifying the input."""
-        data = {"type": "Tray", "schema_version": 2, "cup": _teacup(1), "cups": [_teacup(1)]}
+        data = {"type": "Tray", "schema_version": 2, "cup": TeacupV1().model_dump(), "cups": [TeacupV1().model_dump()]}
         self._migrate(data)
         self.assertEqual(
             data,
-            {"type": "Tray", "schema_version": 2, "cup": _teacup(1), "cups": [_teacup(1)]},
+            {"type": "Tray", "schema_version": 2, "cup": TeacupV1().model_dump(), "cups": [TeacupV1().model_dump()]},
         )
 
     def test_recurse_false(self) -> None:
         """With `recurse=False`, only the top-level schema is migrated."""
         migrated = self._migrate(
-            {"type": "Tray", "schema_version": 1, "mug": _teacup(1)}, recurse=False
+            {"type": "Tray", "schema_version": 1, "mug": TeacupV1().model_dump()}, recurse=False
         )
         self.assertEqual(migrated["schema_version"], 2)
-        self.assertEqual(migrated["cup"], _teacup(1))
+        self.assertEqual(migrated["cup"], TeacupV1().model_dump())
 
     def test_target_version_does_not_recurse(self) -> None:
         """Migrating to a specific version doesn't recurse by default, since nested schemas can
         only be migrated to latest."""
         migrated = migrate_data_to_version(
-            data={"type": "Tray", "schema_version": 1, "mug": _teacup(1)},
+            data={"type": "Tray", "schema_version": 1, "mug": TeacupV1().model_dump()},
             target_version=2,
             context=self.context,
         )
         self.assertEqual(migrated["schema_version"], 2)
-        self.assertEqual(migrated["cup"], _teacup(1))
+        self.assertEqual(migrated["cup"], TeacupV1().model_dump())
 
     def test_target_version_with_recurse_raises(self) -> None:
         """Explicitly asking to recurse while migrating to a specific version is an error."""
         with self.assertRaises(RuntimeError):
             migrate_data_to_version(
-                data={"type": "Tray", "schema_version": 1, "mug": _teacup(1)},
+                data={"type": "Tray", "schema_version": 1, "mug": TeacupV1().model_dump()},
                 target_version=2,
                 context=self.context,
                 recurse=True,
@@ -1246,8 +1242,8 @@ class TestMigrateNestedSchemas(unittest.TestCase):
             data={
                 "type": "Tray",
                 "schema_version": 1,
-                "mug": _teacup(1),
-                "cups": [_teacup(2)],
+                "mug": TeacupV1().model_dump(),
+                "cups": [TeacupV2().model_dump()],
             },
             context=self.context,
         )
@@ -1291,7 +1287,7 @@ class TestMigrateNestedSchemas(unittest.TestCase):
     def test_parent_renamed(self) -> None:
         """Nested schemas are migrated when the parent is migrated through a rename."""
         context = self._renamed_parent_context()
-        data = {"type": "Tray", "schema_version": 1, "mug": _teacup(1), "cups": [_teacup(1)]}
+        data = {"type": "Tray", "schema_version": 1, "mug": TeacupV1().model_dump(), "cups": [TeacupV1().model_dump()]}
 
         migrated = migrate_data_to_latest(data=data, context=context)
         self.assertEqual(migrated["type"], "Platter")
@@ -1305,13 +1301,13 @@ class TestMigrateNestedSchemas(unittest.TestCase):
     def test_target_version_before_rename(self) -> None:
         """Migrating to a target version that predates a rename keeps the old name."""
         context = self._renamed_parent_context()
-        data = {"type": "Tray", "schema_version": 1, "mug": _teacup(1)}
+        data = {"type": "Tray", "schema_version": 1, "mug": TeacupV1().model_dump()}
 
         with self.subTest(target_version=2):
             migrated = migrate_data_to_version(data=data, target_version=2, context=context)
             self.assertEqual(migrated["type"], "Tray")
             self.assertEqual(migrated["schema_version"], 2)
-            self.assertEqual(migrated["cup"], _teacup(1))
+            self.assertEqual(migrated["cup"], TeacupV1().model_dump())
 
         with self.subTest(target_version=3):
             migrated = migrate_data_to_version(data=data, target_version=3, context=context)
@@ -1344,7 +1340,7 @@ class TestMigrateNestedSchemas(unittest.TestCase):
             ),
         )
         migrated = migrate_data_to_latest(
-            data={"type": "Tray", "schema_version": 2, "cup": _teacup(1)}, context=context
+            data={"type": "Tray", "schema_version": 2, "cup": TeacupV1().model_dump()}, context=context
         )
         self.assertEqual(migrated["cup"]["type"], "Cup")
         self.assertEqual(migrated["cup"]["schema_version"], 3)
@@ -1375,7 +1371,7 @@ class TestMigrateNestedSchemas(unittest.TestCase):
             ),
         )
         migrated = migrate_data_to_latest(
-            data={"type": "Tray", "schema_version": 2, "cups": [_teacup(1), _teacup(2)]},
+            data={"type": "Tray", "schema_version": 2, "cups": [TeacupV1().model_dump(), TeacupV2().model_dump()]},
             context=context,
         )
         expected = {"type": "Cup", "schema_version": 3, "was_migrated": True}
@@ -1396,7 +1392,7 @@ class TestMigrateNestedSchemas(unittest.TestCase):
         )
         with self.assertRaises(DeprecatedSchemaError):
             migrate_data_to_latest(
-                data={"type": "Tray", "schema_version": 2, "cup": _teacup(1)}, context=context
+                data={"type": "Tray", "schema_version": 2, "cup": TeacupV1().model_dump()}, context=context
             )
 
 
