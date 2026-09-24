@@ -5,6 +5,7 @@ import inspect
 import logging
 import unittest
 from contextlib import contextmanager
+from pathlib import Path
 from typing import Iterator, Literal, cast
 
 import tcode_api.api as tc  # This import allows us to test what a "customer" who imports TCode would see
@@ -15,10 +16,11 @@ from tcode_api.api.compat import (
     InvalidDataError,
     SchemaVersionMismatchError,
     TargetSchemaNotFoundError,
+    _resolve_api_profile,
     load_api_object,
     migrate_data_to_latest,
     migrate_data_to_version,
-    _resolve_api_profile,
+    read_and_migrate_script,
     tcode_api_compat_context,
 )
 from tcode_api.schemas.base.schema_versioned_model.v1 import BaseSchemaVersionedModelV1
@@ -1126,20 +1128,28 @@ class TestMigrateNestedSchemas(unittest.TestCase):
     def test_nested_field(self) -> None:
         """A schema in a field of the parent is migrated, after the parent's own migrator has
         moved it (`mug` -> `cup`)."""
-        migrated = self._migrate({"type": "Tray", "schema_version": 1, "mug": TeacupV1().model_dump()})
+        migrated = self._migrate(
+            {"type": "Tray", "schema_version": 1, "mug": TeacupV1().model_dump()}
+        )
         self.assertEqual(migrated["schema_version"], 2)
         self.assertNotIn("mug", migrated)
         self.assertEqual(migrated["cup"], MIGRATED_TEACUP)
 
     def test_parent_already_latest(self) -> None:
         """Children are migrated even when the parent needs no migration itself."""
-        migrated = self._migrate({"type": "Tray", "schema_version": 2, "cup": TeacupV1().model_dump()})
+        migrated = self._migrate(
+            {"type": "Tray", "schema_version": 2, "cup": TeacupV1().model_dump()}
+        )
         self.assertEqual(migrated["cup"], MIGRATED_TEACUP)
 
     def test_nested_list(self) -> None:
         """Every schema in a list is migrated, from whatever version it's at."""
         migrated = self._migrate(
-            {"type": "Tray", "schema_version": 2, "cups": [TeacupV1().model_dump(), TeacupV2().model_dump(), TeacupV3().model_dump()]}
+            {
+                "type": "Tray",
+                "schema_version": 2,
+                "cups": [TeacupV1().model_dump(), TeacupV2().model_dump(), TeacupV3().model_dump()],
+            }
         )
         self.assertEqual(
             migrated["cups"],
@@ -1160,7 +1170,9 @@ class TestMigrateNestedSchemas(unittest.TestCase):
             {
                 "type": "Tray",
                 "schema_version": 2,
-                "stack": {"trays": [{"type": "Tray", "schema_version": 1, "mug": TeacupV1().model_dump()}]},
+                "stack": {
+                    "trays": [{"type": "Tray", "schema_version": 1, "mug": TeacupV1().model_dump()}]
+                },
             }
         )
         inner = migrated["stack"]["trays"][0]
@@ -1199,11 +1211,21 @@ class TestMigrateNestedSchemas(unittest.TestCase):
 
     def test_input_not_mutated(self) -> None:
         """Nested migration returns new data rather than modifying the input."""
-        data = {"type": "Tray", "schema_version": 2, "cup": TeacupV1().model_dump(), "cups": [TeacupV1().model_dump()]}
+        data = {
+            "type": "Tray",
+            "schema_version": 2,
+            "cup": TeacupV1().model_dump(),
+            "cups": [TeacupV1().model_dump()],
+        }
         self._migrate(data)
         self.assertEqual(
             data,
-            {"type": "Tray", "schema_version": 2, "cup": TeacupV1().model_dump(), "cups": [TeacupV1().model_dump()]},
+            {
+                "type": "Tray",
+                "schema_version": 2,
+                "cup": TeacupV1().model_dump(),
+                "cups": [TeacupV1().model_dump()],
+            },
         )
 
     def test_recurse_false(self) -> None:
@@ -1287,7 +1309,12 @@ class TestMigrateNestedSchemas(unittest.TestCase):
     def test_parent_renamed(self) -> None:
         """Nested schemas are migrated when the parent is migrated through a rename."""
         context = self._renamed_parent_context()
-        data = {"type": "Tray", "schema_version": 1, "mug": TeacupV1().model_dump(), "cups": [TeacupV1().model_dump()]}
+        data = {
+            "type": "Tray",
+            "schema_version": 1,
+            "mug": TeacupV1().model_dump(),
+            "cups": [TeacupV1().model_dump()],
+        }
 
         migrated = migrate_data_to_latest(data=data, context=context)
         self.assertEqual(migrated["type"], "Platter")
@@ -1340,7 +1367,8 @@ class TestMigrateNestedSchemas(unittest.TestCase):
             ),
         )
         migrated = migrate_data_to_latest(
-            data={"type": "Tray", "schema_version": 2, "cup": TeacupV1().model_dump()}, context=context
+            data={"type": "Tray", "schema_version": 2, "cup": TeacupV1().model_dump()},
+            context=context,
         )
         self.assertEqual(migrated["cup"]["type"], "Cup")
         self.assertEqual(migrated["cup"]["schema_version"], 3)
@@ -1371,7 +1399,11 @@ class TestMigrateNestedSchemas(unittest.TestCase):
             ),
         )
         migrated = migrate_data_to_latest(
-            data={"type": "Tray", "schema_version": 2, "cups": [TeacupV1().model_dump(), TeacupV2().model_dump()]},
+            data={
+                "type": "Tray",
+                "schema_version": 2,
+                "cups": [TeacupV1().model_dump(), TeacupV2().model_dump()],
+            },
             context=context,
         )
         expected = {"type": "Cup", "schema_version": 3, "was_migrated": True}
@@ -1392,7 +1424,8 @@ class TestMigrateNestedSchemas(unittest.TestCase):
         )
         with self.assertRaises(DeprecatedSchemaError):
             migrate_data_to_latest(
-                data={"type": "Tray", "schema_version": 2, "cup": TeacupV1().model_dump()}, context=context
+                data={"type": "Tray", "schema_version": 2, "cup": TeacupV1().model_dump()},
+                context=context,
             )
 
 
@@ -1447,8 +1480,26 @@ class TestRealNestedMigration(unittest.TestCase):
         self.assertIsInstance(inst, tc.CREATE_LABWARE)
         description = inst.description  # type: ignore [attr-defined]
         self.assertIsInstance(description, tc.TrashDescription)
-        self.assertEqual(description.schema_version, 4)
+        self.assertEqual(
+            description.schema_version, 4
+        )  # NOTE: Bump this when you bump the schema version of TrashDescription
         self.assertFalse(description.pinchable)
+
+
+class TestReadAndMigrateScript(unittest.TestCase):
+    """Tests for the ``read_and_migrate_script`` function."""
+
+    def test_read_and_migrate_script(self) -> None:
+        """A real script from tcode-api 1.40.0 migrates to the latest version without error.
+
+        We don't inspect the result, other than to check that it's not empty, so that the test will
+        keep working as we bump schemas.
+        """
+        path = Path(__file__).parent / "migrator_test.tc"
+        json_str = path.read_text()
+        script = read_and_migrate_script(json_str)
+        self.assertIsInstance(script, tc.TCodeScript)
+        self.assertGreater(len(script.commands), 0)
 
 
 if __name__ == "__main__":

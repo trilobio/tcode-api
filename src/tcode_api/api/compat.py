@@ -129,8 +129,6 @@ class CompatContext:
         return names
 
 
-
-
 class TargetSchemaNotFoundError(Exception):
     """Exception raised when a targeted schema is not found within in APIHistoryLog."""
 
