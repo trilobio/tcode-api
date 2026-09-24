@@ -495,6 +495,11 @@ def _migrate_nested_schemas_to_latest(
     Because we don't reliably track the versions of nested schemas, this just migrates
     everything to the newest version.
 
+    Also: this currently only reads the schema version embedded in the data as `schema_version`. It
+    doesn't figure out the schema version from the overall API version, as `migrate_data_to_version`
+    does. So if there are old nested schemas that don't have versions, this isn't gonna catch them.
+    This could be fixed, but not sure if worth the added complexity.
+
     :param context: The targeted compatibility context.
     :param data: JSON-like data to migrate.
     :param skip_parent: Don't migrate this object, only migrate nested ones.
