@@ -1,17 +1,21 @@
-# Protocol Designer starts the LabwareDescriptorBase at V3, so this increment has no changes.
+"""TubeHolderDescriptor & TubeHolderDescription v2
+
+- No changes; version bump only (Protocol Designer starts labware descriptors at v3).
+"""
+
 from typing import Literal
 
 from pydantic import Field
 
 from ...grid.v1 import GridDescription, GridDescriptor
 from ...tube.v1 import TubeDescription, TubeDescriptor
-from ..base import BaseLabwareDescription, BaseLabwareDescriptor
+from ..base.labware_description.v1 import BaseLabwareDescriptionV1, BaseLabwareDescriptorV1
 
 grid_description = "Grid defining the layout of tube slots in the tube holder."
 tube_description = "Description of a tube held by the tube holder. All tubes are assumed identical."
 
 
-class TubeHolderDescription(BaseLabwareDescription):
+class TubeHolderDescription(BaseLabwareDescriptionV1):
     """Description of a tube holder."""
 
     type: Literal["TubeHolder"] = "TubeHolder"
@@ -21,7 +25,7 @@ class TubeHolderDescription(BaseLabwareDescription):
     tube: TubeDescription = Field(description=tube_description)
 
 
-class TubeHolderDescriptor(BaseLabwareDescriptor):
+class TubeHolderDescriptor(BaseLabwareDescriptorV1):
     """:class:``TubeHolderDescription`` with optional parameters."""
 
     type: Literal["TubeHolder"] = "TubeHolder"

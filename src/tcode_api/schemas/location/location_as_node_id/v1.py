@@ -2,10 +2,10 @@ from typing import Literal
 
 from pydantic import Field
 
-from ..base import BaseLocation
+from ..base.location.v1 import BaseLocationV1
 
 
-class LocationAsNodeId(BaseLocation):
+class LocationAsNodeId(BaseLocationV1):
     """Location specified by a node ID in the fleet's ``TransformTree``."""
 
     type: Literal["LocationAsNodeId"] = "LocationAsNodeId"

@@ -1,6 +1,9 @@
-from pydantic import ValidationError
-
-from ...registry import RawData, migration_registry, schema_registry
+from ...registry import (
+    RawData,
+    build_description_or_descriptor,
+    migration_registry,
+    schema_registry,
+)
 from .latest import AxisAlignedRectangleDescription, AxisAlignedRectangleDescriptor
 from .migrate import MIGRATORS
 
@@ -16,10 +19,9 @@ def _build_axis_aligned_rectangle(
     data: RawData,
 ) -> AxisAlignedRectangleDescription | AxisAlignedRectangleDescriptor:
     """Build an AxisAlignedRectangleDescription, unless the data is missing fields, in which case build an AxisAlignedRectangleDescriptor."""
-    try:
-        return AxisAlignedRectangleDescription.model_validate(data)
-    except ValidationError:
-        return AxisAlignedRectangleDescriptor.model_validate(data)
+    return build_description_or_descriptor(
+        AxisAlignedRectangleDescription, AxisAlignedRectangleDescriptor, data
+    )
 
 
 schema_registry.register("AxisAlignedRectangle", _build_axis_aligned_rectangle)

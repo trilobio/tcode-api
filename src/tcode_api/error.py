@@ -33,11 +33,17 @@ class ValidatorErrorCode(enum.StrEnum):
     EXTERNAL_SERVICE_UNREACHABLE = "external_service_unreachable"
     SIZE_LIMIT_EXCEEDED = "size_limit_exceeded"
     ID_EXISTS = "id_exists"
+
+    #: Returned when a given id doesn't exist in the tcode service for the given entity type.
+    #: This error could mean the id doesn't exist at all, or that it references an entity of a
+    #: different type than expected, ex. robot_id passed for tool_id.
     ID_NOT_FOUND = "id_not_found"
     INTERNAL_ERROR = "internal_error"
     JOINT_COUNT_MISMATCH = "joint_count_mismatch"
     LID_NOT_FOUND = "lid_not_found"
     TRANSFORM_SIZE_LIMIT_EXCEEDED = "transform_size_limit_exceeded"
+
+    #: Returned when a labware targeted for lidding doesn't support lids
     NO_LID_SUPPORT = "no_lid_support"
     NOT_IMPLEMENTED = "not_implemented"
     PIPETTE_TIP_GROUP_DISCARDED = "pipette_tip_group_discarded"
@@ -48,6 +54,8 @@ class ValidatorErrorCode(enum.StrEnum):
     TRASH_NOT_FOUND = "trash_not_found"
     UNEXPECTED_LABWARE = "unexpected_labware"
     UNEXPECTED_LABWARE_TYPE = "unexpected_labware_type"
+
+    #: Returned when a lid is found on a labware targeted for lidding
     UNEXPECTED_LID = "unexpected_lid"
     UNEXPECTED_PIPETTE_TIP = "unexpected_pipette_tip"
     UNEXPECTED_PIPETTE_TIP_GROUP = "unexpected_pipette_tip_group"
@@ -55,7 +63,52 @@ class ValidatorErrorCode(enum.StrEnum):
     UNITS_ERROR = "units_error"
     UNNECESSARY = "unnecessary"
     WRONG_TOOL_MOUNTED = "wrong_tool_mounted"
+
+    #: Returned when a LocationAsLabwareIndex is invalid for the referenced labware
+    #: ex. LocationAsLabwareIndex referencing a 96-well plate with index=100
+    #: ex. ADD_PIPETTE_TIP_GROUP.pipette_tip_locations containing duplicate LocationAsLabwareIndex
+    #:    entries
     INVALID_INDEX = "invalid_index"
+
+    #: Returned when a target labware is incompatible with an operation
+    #: ex. a lid is placed on a labware that it does not fit
+    #: ex. a well plate is referenced in a LocationAsLabwareIndex passed to an ADD_PIPETTE_TIP_GROUP
+    #:    command
+    INCOMPATIBLE_LABWARE = "incompatible_labware"
+
+    #: Returned when a target labware isn't described enough to perform an operation
+    #: ex. a labware targeted by a location in an ADD_PIPETTE_TIP_GROUP command
+    #:    doesn't specify row_count or column_count in its grid descriptor
+    INSUFFICIENT_LABWARE_DESCRIPTION = "insufficient_labware_description"
+
+    #: Returned when a targeted deck slot, tool holder, or other holder is already holding an item,
+    #: and the operation requires it to be empty.
+    #: ex. tc.REMOVE_LABWARE_LID.storage_holder referencing a deck slot that already contains a
+    #: labware.
+    HOLDER_OCCUPIED = "holder_occupied"
+
+    #: Returned when a lid_id is provided to ADD_LABWARE, but the provided labware descriptor does
+    #: not support lids.
+    DESCRIPTOR_INCOMPATIBLE_WITH_LID = "descriptor_incompatible_with_lid"
+
+    #: Returned when a labware descriptor with a lid is provided to ADD_LABWARE, but no lid_id is
+    #: provided.
+    LID_ID_REQUIRED = "lid_id_required"
+
+    #: Returned when a list of pipette tip locations doesn't make a valid pipette tip group shape,
+    #: e.g. any shape that isn't rectangular and continuous, like [A1, A2, A4] or [A1, A2, B3].
+    INVALID_PIPETTE_TIP_GROUP_SHAPE = "invalid_pipette_tip_group_shape"
+
+    #: Returned when a command with either-or parameters is provided with both or neither parameter
+    #: ex. ADD_PIPETTE_TIP_GROUP with descriptor and pipette_tip_locations both provided
+    #: ex. ADD_PIPETTE_TIP_GROUP with descriptor=None and pipette_tip_locations=None
+    #: ex. ADD_PIPETTE_TIP_GROUP with descriptor=None and pipette_tip_locations=[]
+    INVALID_EITHER_OR_PARAMETERS = "invalid_either_or_parameters"
+
+    #: Returned when a LabwareDescriptor has an internal inconsistency.
+    #: ex. CREATE_LABWARE with a PipetteTipBoxDescriptor whose grid dimensions don't match the
+    #:    pipette_tip_layout dimensions.
+    INVALID_LABWARE_DESCRIPTOR = "invalid_labware_descriptor"
 
 
 class ValidatorError(_TCodeResultReportBase):
@@ -92,7 +145,6 @@ class ResolverCode(str, enum.Enum):
     resolution debugging info to the user.
     """
 
-    ID_EXISTS = "id_exists"
     HOLDER_NOT_FOUND = "holder_not_found"
     MULTIPLE_MATCHING_ENTITIES = "multiple_entities"
     NO_DISCOVERED_ENTITIES = "no_discovered_entities"

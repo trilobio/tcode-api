@@ -3,6 +3,8 @@
 from tcode_api.servicer.client import TCodeServicerClient
 from tcode_api.servicer.servicer_api import (
     ClearScheduleResponse,
+    DiscoverFleetRequest,
+    DiscoverFleetResponse,
     EnterTeachModeRequest,
     EnterTeachModeResponse,
     ExitTeachModeRequest,
@@ -22,6 +24,8 @@ from tcode_api.servicer.servicer_api import (
 
 __all__ = [
     "ClearScheduleResponse",
+    "DiscoverFleetRequest",
+    "DiscoverFleetResponse",
     "EnterTeachModeRequest",
     "EnterTeachModeResponse",
     "ExitTeachModeRequest",

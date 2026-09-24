@@ -1,9 +1,9 @@
 from typing import Literal
 
-from ..base import BaseSchemaVersionedModel
+from ...base.schema_versioned_model.v1 import BaseSchemaVersionedModelV1
 
 
-class LabwareHolderDescriptor(BaseSchemaVersionedModel):
+class LabwareHolderDescriptor(BaseSchemaVersionedModelV1):
     """Descriptor for an entity that can hold labware."""
 
     type: Literal["LabwareHolder"] = "LabwareHolder"

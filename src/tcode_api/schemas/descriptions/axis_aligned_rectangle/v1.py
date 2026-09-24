@@ -2,7 +2,7 @@ from typing import Annotated, Literal
 
 from pydantic import Field
 
-from ...base import BaseSchemaVersionedModel
+from ...base.schema_versioned_model.v1 import BaseSchemaVersionedModelV1
 from ...common import ValueWithUnits
 
 XLengthField = Annotated[
@@ -24,7 +24,7 @@ YLengthField = Annotated[
 ]
 
 
-class AxisAlignedRectangleDescription(BaseSchemaVersionedModel):
+class AxisAlignedRectangleDescription(BaseSchemaVersionedModelV1):
     """Description of an axis-aligned rectangle."""
 
     type: Literal["AxisAlignedRectangle"] = "AxisAlignedRectangle"
@@ -34,7 +34,7 @@ class AxisAlignedRectangleDescription(BaseSchemaVersionedModel):
     y_length: YLengthField
 
 
-class AxisAlignedRectangleDescriptor(BaseSchemaVersionedModel):
+class AxisAlignedRectangleDescriptor(BaseSchemaVersionedModelV1):
     """:class:``AxisAlignedRectangleDescription`` with optional parameters."""
 
     type: Literal["AxisAlignedRectangle"] = "AxisAlignedRectangle"

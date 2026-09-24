@@ -1,6 +1,9 @@
-from pydantic import ValidationError
-
-from ....registry import RawData, migration_registry, schema_registry
+from ....registry import (
+    RawData,
+    build_description_or_descriptor,
+    migration_registry,
+    schema_registry,
+)
 from .latest import TrashDescription, TrashDescriptor
 from .migrate import MIGRATORS
 
@@ -14,10 +17,7 @@ for schema_version, migrator in MIGRATORS.items():
 
 def _build_trash(data: RawData) -> TrashDescription | TrashDescriptor:
     """Build a TrashDescription, unless the data is missing fields, in which case build a TrashDescriptor."""
-    try:
-        return TrashDescription.model_validate(data)
-    except ValidationError:
-        return TrashDescriptor.model_validate(data)
+    return build_description_or_descriptor(TrashDescription, TrashDescriptor, data)
 
 
 schema_registry.register("Trash", _build_trash)

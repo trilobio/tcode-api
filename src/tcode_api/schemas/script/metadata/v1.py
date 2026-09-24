@@ -2,10 +2,10 @@ from typing import Literal
 
 from pydantic import Field
 
-from ...base import BaseSchemaVersionedModel
+from ...base.schema_versioned_model.v1 import BaseSchemaVersionedModelV1
 
 
-class Metadata(BaseSchemaVersionedModel):
+class Metadata(BaseSchemaVersionedModelV1):
     """TCode script metadata."""
 
     type: Literal["Metadata"] = "Metadata"

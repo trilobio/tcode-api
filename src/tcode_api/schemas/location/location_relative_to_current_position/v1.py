@@ -4,10 +4,10 @@ from pydantic import Field
 
 from tcode_api.types import Matrix
 
-from ..base import BaseLocation
+from ..base.location.v1 import BaseLocationV1
 
 
-class LocationRelativeToCurrentPosition(BaseLocation):
+class LocationRelativeToCurrentPosition(BaseLocationV1):
     """Location specified by a transformation matrix relative to position of the robot's current control node."""
 
     type: Literal["LocationRelativeToCurrentPosition"] = "LocationRelativeToCurrentPosition"

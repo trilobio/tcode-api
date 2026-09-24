@@ -13,24 +13,26 @@ RawCommandData: TypeAlias = Annotated[
     Mapping[str, Any],
     Field(
         description="Raw tcode-api schema; will be migrated (if necessary) on load. See ``tcode_api.TCode`` for full structure example.",
-        example=tc.MOVE_TO_LOCATION(
-            type="MOVE_TO_LOCATION",
-            schema_version=2,
-            robot_id=generate_id(),
-            location=tc.LocationAsLabwareIndex(
-                type="LocationAsLabwareIndex",
-                schema_version=1,
-                labware_id=generate_id(),
-                location_index=0,
-                well_part=tc.WellPartType.BOTTOM,
-            ),
-            location_offset=identity_transform(),
-            flange=None,
-            flange_offset=identity_transform(),
-            path_type=None,
-            trajectory_type=None,
-            speed=None,
-        ).model_dump(),
+        examples=[
+            tc.MOVE_TO_LOCATION(
+                type="MOVE_TO_LOCATION",
+                schema_version=2,
+                robot_id=generate_id(),
+                location=tc.LocationAsLabwareIndex(
+                    type="LocationAsLabwareIndex",
+                    schema_version=1,
+                    labware_id=generate_id(),
+                    location_index=0,
+                    well_part=tc.WellPartType.BOTTOM,
+                ),
+                location_offset=identity_transform(),
+                flange=None,
+                flange_offset=identity_transform(),
+                path_type=None,
+                trajectory_type=None,
+                speed=None,
+            ).model_dump()
+        ],
     ),
 ]
 
@@ -61,6 +63,20 @@ class Result(BaseModel):
         for key, value in details.items():
             serialized_details[key] = str(value)
         return serialized_details
+
+
+class DiscoverFleetRequest(BaseModel):
+    """Request object for discover_fleet endpoint."""
+
+    robot_serial_numbers: list[str] = Field(
+        default_factory=list,
+        description="List of robot serial numbers to discover. If empty, all robots will be discovered.",
+        examples=[["T0001V0105F01L00N0001", "T0001V0105F01L00N0002"]],
+    )
+
+
+class DiscoverFleetResponse(BaseModel):
+    """Response object for discover_fleet endpoint."""
 
 
 class ClearScheduleResponse(BaseModel):
@@ -172,7 +188,7 @@ class SerialNumberLookupResult(BaseModel):
     serial_number: str | None = Field(
         default=None,
         description="Resolved serial number, or null if resolution failed for any reason (including not found).",
-        examples=["T0004V0102F01L00N003D"],
+        examples=["T0004V0102F01L00N0001", "T0001V0105F01L00N0001", None],
     )
     result: Result = Field(
         description="Result of the lookup attempt, including success status and error details if applicable.",

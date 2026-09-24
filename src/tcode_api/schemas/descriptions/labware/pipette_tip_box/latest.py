@@ -1,1 +1,1 @@
-from .v3 import PipetteTipBoxDescription, PipetteTipBoxDescriptor
+from .v4 import PipetteTipBoxDescription, PipetteTipBoxDescriptor

@@ -1,14 +1,14 @@
-"""Base classes for descriptions and descriptors of pipette tool entities."""
+"""BasePipetteDescriptor v1."""
 
 from abc import ABC
 
 from pydantic import Field
 
-from ....common.value_with_units import ValueWithUnits
-from ..base import BaseToolDescriptor
+from ......common.value_with_units import ValueWithUnits
+from ....base.tool_descriptor.v1 import BaseToolDescriptorV1
 
 
-class BasePipetteDescriptor(BaseToolDescriptor, ABC):
+class BasePipetteDescriptorV1(BaseToolDescriptorV1, ABC):
     """Base schema shared by all models in the PipetteDescriptor union."""
 
     min_volume: ValueWithUnits | None = Field(

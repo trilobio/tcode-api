@@ -1,26 +1,12 @@
-"""Base pydantic models shared by all TCode data structures.
-
-These models are fundamental, and as such not schema-versioned.
-As such, changes to these models is a fundamental breaking change.
-"""
+"""BaseSchemaVersionedModel v1."""
 
 from abc import ABC
 from typing import Self, TextIO
 
-from pydantic import BaseModel, ConfigDict
+from ..configured_model.v1 import BaseConfiguredModelV1
 
 
-class BaseConfiguredModel(BaseModel, ABC):
-    """pydantic.BaseModel with configuration to apply to all TCode data structures.
-
-    All TCode data structures should inherit from this class to ensure consistent
-    configuration.
-    """
-
-    model_config = ConfigDict(strict=True, extra="ignore")
-
-
-class BaseSchemaVersionedModel(BaseConfiguredModel, ABC):
+class BaseSchemaVersionedModelV1(BaseConfiguredModelV1, ABC):
     """TCode-configured BaseModel with a schema_version field.
 
     :note: ``read()`` and ``write()`` methods are exposed on this class because

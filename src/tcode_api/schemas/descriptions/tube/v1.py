@@ -4,7 +4,7 @@ from pydantic import Field
 
 from ...common.docs import MaxVolumeField, MinVolumeField
 from ...common.value_with_units import ValueWithUnits
-from ..base import BaseDescriberWithTags
+from ..base.describer_with_tags.v1 import BaseDescriberWithTagsV1
 from ..union import WellShapeDescription, WellShapeDescriptor
 from ..well_bottom.union import WellBottomShapeDescription, WellBottomShapeDescriptor
 
@@ -31,7 +31,7 @@ TopHeightField = Annotated[
 ]
 
 
-class TubeDescription(BaseDescriberWithTags):
+class TubeDescription(BaseDescriberWithTagsV1):
     """Description of a tube."""
 
     type: Literal["Tube"] = "Tube"
@@ -49,7 +49,7 @@ class TubeDescription(BaseDescriberWithTags):
     top_height: TopHeightField
 
 
-class TubeDescriptor(BaseDescriberWithTags):
+class TubeDescriptor(BaseDescriberWithTagsV1):
     """:class:``TubeDescription`` with optional parameters."""
 
     type: Literal["Tube"] = "Tube"

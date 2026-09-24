@@ -3,10 +3,10 @@ from typing import Literal
 from pydantic import Field
 
 from ...common.value_with_units import ValueWithUnits
-from ..base import BaseRobotSpecificTCodeCommand
+from ..base.robot_specific_tcode_command.v1 import BaseRobotSpecificTCodeCommandV1
 
 
-class WAIT(BaseRobotSpecificTCodeCommand):
+class WAIT(BaseRobotSpecificTCodeCommandV1):
     """Delay execution for a specified duration."""
 
     type: Literal["WAIT"] = "WAIT"

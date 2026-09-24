@@ -5,10 +5,10 @@ from pydantic import Field
 from ....types import Matrix, identity_transform
 from ...common.docs import LabwareIdField
 from ...common.enums import GraspType
-from ..base import BaseRobotSpecificTCodeCommand
+from ..base.robot_specific_tcode_command.v1 import BaseRobotSpecificTCodeCommandV1
 
 
-class PICK_UP_LABWARE(BaseRobotSpecificTCodeCommand):
+class PICK_UP_LABWARE(BaseRobotSpecificTCodeCommandV1):
     """Pick up a labware with the robot's plate gripper."""
 
     type: Literal["PICK_UP_LABWARE"] = "PICK_UP_LABWARE"

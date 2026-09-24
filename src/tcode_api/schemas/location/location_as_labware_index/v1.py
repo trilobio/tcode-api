@@ -2,10 +2,10 @@ from typing import Literal
 
 from pydantic import Field
 
-from ..base import BaseLocation
+from ..base.location.v1 import BaseLocationV1
 
 
-class LocationAsLabwareIndex(BaseLocation):
+class LocationAsLabwareIndex(BaseLocationV1):
     """Location specifed as a specific feature of a Labware (ex. bottom of well A1)."""
 
     type: Literal["LocationAsLabwareIndex"] = "LocationAsLabwareIndex"

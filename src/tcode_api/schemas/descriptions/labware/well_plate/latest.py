@@ -1,1 +1,1 @@
-from .v3 import WellPlateDescription, WellPlateDescriptor
+from .v5 import WellPlateDescription, WellPlateDescriptor

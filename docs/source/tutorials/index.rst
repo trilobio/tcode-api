@@ -8,3 +8,4 @@ Walk-throughs with code snippets to get you started using your Trilobot fleet.
    :caption: Tutorials:
 
    connect_to_fleet
+   camera_control

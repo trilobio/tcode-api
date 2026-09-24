@@ -8,16 +8,16 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pint import Unit
+from pint import Quantity, Unit
 from pint.errors import DimensionalityError
 
 from tcode_api.error import UnitsError
 from tcode_api.units import Q_
 
-from ..base import BaseConfiguredModel
+from ..base.configured_model.v1 import BaseConfiguredModelV1
 
 
-class ValueWithUnits(BaseConfiguredModel):
+class ValueWithUnits(BaseConfiguredModelV1):
     """A numeric value with associated units.
 
     :note: The following values are all equivalent:
@@ -100,7 +100,9 @@ class ValueWithUnits(BaseConfiguredModel):
             return ValueWithUnits(magnitude=self.magnitude + other.magnitude, units=self.units)
 
         try:
-            pint_quantity = Q_(self.magnitude, self.units) + Q_(other.magnitude, other.units)
+            pint_quantity: Quantity = Q_(self.magnitude, self.units) + Q_(
+                other.magnitude, other.units
+            )
         except DimensionalityError as e:
             raise UnitsError(
                 f"Cannot add quantities with incompatible units: '{self.units}' and '{other.units}'"
@@ -126,7 +128,9 @@ class ValueWithUnits(BaseConfiguredModel):
             return ValueWithUnits(magnitude=self.magnitude - other.magnitude, units=self.units)
 
         try:
-            pint_quantity = Q_(self.magnitude, self.units) - Q_(other.magnitude, other.units)
+            pint_quantity: Quantity = Q_(self.magnitude, self.units) - Q_(
+                other.magnitude, other.units
+            )
         except DimensionalityError as e:
             raise UnitsError(
                 f"Cannot subtract quantities with incompatible units: "

@@ -2,7 +2,7 @@ from typing import Annotated, Literal
 
 from pydantic import Field
 
-from ...base import BaseSchemaVersionedModel
+from ...base.schema_versioned_model.v1 import BaseSchemaVersionedModelV1
 from ...common.value_with_units import ValueWithUnits
 
 DiameterField = Annotated[
@@ -13,7 +13,7 @@ DiameterField = Annotated[
 ]
 
 
-class CircleDescription(BaseSchemaVersionedModel):
+class CircleDescription(BaseSchemaVersionedModelV1):
     """Description of a circle."""
 
     schema_version: Literal[1] = 1
@@ -22,7 +22,7 @@ class CircleDescription(BaseSchemaVersionedModel):
     diameter: DiameterField
 
 
-class CircleDescriptor(BaseSchemaVersionedModel):
+class CircleDescriptor(BaseSchemaVersionedModelV1):
     """CircleDescription with optional parameters."""
 
     type: Literal["Circle"] = "Circle"

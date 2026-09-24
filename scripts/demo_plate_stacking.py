@@ -8,6 +8,7 @@ import tcode_api.api as tc
 from tcode_api.cli import (
     DEFAULT_SERVICER_URL,
     output_file_path_annotation,
+    robot_serial_number_annotation,
     servicer_url_annotation,
 )
 from tcode_api.servicer import TCodeServicerClient
@@ -17,10 +18,12 @@ from tcode_api.utilities import describe_well_plate, generate_id, load_labware
 @plac.annotations(
     servicer_url=servicer_url_annotation,
     output_file_path=output_file_path_annotation,
+    robot_sn=robot_serial_number_annotation,
 )
 def main(
     servicer_url: str = DEFAULT_SERVICER_URL,
     output_file_path: pathlib.Path | None = None,
+    robot_sn: str | None = None,
 ) -> None:
     script = tc.TCodeScript.new(
         name=__file__,
@@ -29,7 +32,9 @@ def main(
 
     # FLEET
     robot_id, gripper_id = [generate_id() for _ in range(2)]
-    script.commands.append(tc.ADD_ROBOT(id=robot_id, descriptor=tc.RobotDescriptor()))
+    script.commands.append(
+        tc.ADD_ROBOT(id=robot_id, descriptor=tc.RobotDescriptor(serial_number=robot_sn))
+    )
     script.commands.append(
         tc.ADD_TOOL(robot_id=robot_id, id=gripper_id, descriptor=tc.GripperDescriptor())
     )
@@ -38,11 +43,12 @@ def main(
     plate_count = 3
     script.commands.append(tc.COMMENT(text=f"Create {plate_count} lidded Thermo NUNC plates"))
     labware_ids = [generate_id() for _ in range(plate_count)]
+    lid_ids = [generate_id() for _ in range(plate_count)]
     idxs_in_stack_order = list(range(1, len(labware_ids)))
     labware_holders = [
-        tc.LabwareHolderName(robot_id=robot_id, name=f"DeckSlot_{i}") for i in (8, 9, 12)
+        tc.LabwareHolderName(robot_id=robot_id, name=f"DeckSlot_{i}") for i in (2, 3, 4)
     ]
-    for id, holder in zip(labware_ids, labware_holders):
+    for id, lid_id, holder in zip(labware_ids, lid_ids, labware_holders):
         script.commands.append(
             tc.CREATE_LABWARE(
                 robot_id=robot_id,
@@ -50,7 +56,9 @@ def main(
                 holder=holder,
             ),
         )
-        script.commands.append(tc.ADD_LABWARE(id=id, descriptor=describe_well_plate(has_lid=True)))
+        script.commands.append(
+            tc.ADD_LABWARE(id=id, descriptor=describe_well_plate(has_lid=True), lid_id=lid_id)
+        )
 
     # ACTIONS #
     script.commands.append(tc.SWAP_TO_TOOL(robot_id=robot_id, id=gripper_id))
@@ -70,7 +78,7 @@ def main(
         )
 
     script.commands.append(tc.COMMENT(text="Move plate stack"))
-    deck_slot_name = "DeckSlot_11"
+    deck_slot_name = "DeckSlot_1"
     script.commands.append(tc.COMMENT(text=f"Moving {labware_ids[0]} to {deck_slot_name}"))
     script.commands.append(
         tc.PICK_UP_LABWARE(

@@ -38,3 +38,9 @@ output_file_path_annotation = plac.Annotation(
     kind="option",
     type=pathlib.Path,
 )
+
+robot_serial_number_annotation = plac.Annotation(
+    "Robot serial number to target (optional).",
+    kind="option",
+    abbrev="r",
+)

@@ -2,10 +2,10 @@ from typing import Literal
 
 from pydantic import Field
 
-from ..base import BaseTCodeCommand
+from ..base.tcode_command.v1 import BaseTCodeCommandV1
 
 
-class COMMENT(BaseTCodeCommand):
+class COMMENT(BaseTCodeCommandV1):
     """A human-readable comment in the TCode script."""
 
     type: Literal["COMMENT"] = "COMMENT"

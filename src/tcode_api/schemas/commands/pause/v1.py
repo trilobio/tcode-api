@@ -1,9 +1,9 @@
 from typing import Literal
 
-from ..base import BaseTCodeCommand
+from ..base.tcode_command.v1 import BaseTCodeCommandV1
 
 
-class PAUSE(BaseTCodeCommand):
+class PAUSE(BaseTCodeCommandV1):
     """Pause execution until manually resumed."""
 
     type: Literal["PAUSE"] = "PAUSE"

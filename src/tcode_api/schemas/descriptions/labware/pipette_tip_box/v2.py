@@ -1,11 +1,17 @@
+"""PipetteTipBoxDescriptor & PipetteTipBoxDescription v2
+
+- Replace `full` boolean field with structured `pipette_tip_layout` field.
+"""
+
 from typing import Literal
 
 from pydantic import Field
 
 from ....pipette_tip_layout.v1 import PipetteTipLayout
+from ....registry import RawData
 from ...grid.v1 import GridDescription, GridDescriptor
 from ...pipette_tip.v1 import PipetteTipDescription, PipetteTipDescriptor
-from ..base import BaseLabwareDescription, BaseLabwareDescriptor
+from ..base.labware_description.v1 import BaseLabwareDescriptionV1, BaseLabwareDescriptorV1
 
 grid_description = "Layout of the pipette tip box slots. typically an 8*12 grid for a 96 tip box."
 
@@ -18,7 +24,7 @@ pipette_tip_layout_description = (
 )
 
 
-class PipetteTipBoxDescription(BaseLabwareDescription):
+class PipetteTipBoxDescription(BaseLabwareDescriptionV1):
     """Description of a pipette tip box."""
 
     type: Literal["PipetteTipBox"] = "PipetteTipBox"
@@ -36,7 +42,7 @@ class PipetteTipBoxDescription(BaseLabwareDescription):
     )
 
 
-def migrate_v1_to_v2(data: dict) -> dict:
+def migrate_v1_to_v2(data: RawData) -> RawData:
     """Migrate :class:``PipetteTipBoxDescription``|:class:``PipetteTipBoxDescriptor`` data from v1 to v2."""
     # This logic allows data with no `schema_version` defined, which is fine, because older models didn't have that!
     # We're assuming that all older models are version 1.
@@ -60,7 +66,7 @@ def migrate_v1_to_v2(data: dict) -> dict:
     return new_data
 
 
-class PipetteTipBoxDescriptor(BaseLabwareDescriptor):
+class PipetteTipBoxDescriptor(BaseLabwareDescriptorV1):
     """PipetteTipBoxDescription with optional parameters."""
 
     type: Literal["PipetteTipBox"] = "PipetteTipBox"

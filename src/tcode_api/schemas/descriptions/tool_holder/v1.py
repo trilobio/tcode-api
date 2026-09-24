@@ -1,9 +1,9 @@
 from typing import Literal
 
-from ..base import BaseSchemaVersionedModel
+from ...base.schema_versioned_model.v1 import BaseSchemaVersionedModelV1
 
 
-class ToolHolderDescriptor(BaseSchemaVersionedModel):
+class ToolHolderDescriptor(BaseSchemaVersionedModelV1):
     """Descriptor for an entity that can hold tools."""
 
     type: Literal["ToolHolder"] = "ToolHolder"

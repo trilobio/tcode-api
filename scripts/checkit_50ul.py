@@ -9,6 +9,7 @@ import tcode_api.api as tc
 from tcode_api.cli import (
     DEFAULT_SERVICER_URL,
     output_file_path_annotation,
+    robot_serial_number_annotation,
     servicer_url_annotation,
 )
 from tcode_api.servicer import TCodeServicerClient
@@ -62,6 +63,7 @@ DEFAULT_WELL_BOTTOM_OFFSET = mm(3)
         choices=[1, 8],
         abbrev="cc",
     ),
+    robot_sn=robot_serial_number_annotation,
 )
 def main(
     servicer_url: str = DEFAULT_SERVICER_URL,
@@ -71,6 +73,7 @@ def main(
     pipette_volume: tc.ValueWithUnits = DEFAULT_PIPETTE_VOLUME,
     well_bottom_offset: tc.ValueWithUnits = DEFAULT_WELL_BOTTOM_OFFSET,
     channel_count: int = DEFAULT_CHANNEL_COUNT,
+    robot_sn: str | None = None,
 ) -> None:
     """Generate and execute the `checkit_50ul` TCode script."""
     pipette_volume_ul = pipette_volume.to("ul").magnitude
@@ -96,7 +99,9 @@ def main(
         pipette_tip_group_id_2,
         trash_can_id,
     ) = [generate_id() for _ in range(7)]
-    script.commands.append(tc.ADD_ROBOT(id=robot_id, descriptor=tc.RobotDescriptor()))
+    script.commands.append(
+        tc.ADD_ROBOT(id=robot_id, descriptor=tc.RobotDescriptor(serial_number=robot_sn))
+    )
     descriptor_constructor = (
         tc.EightChannelPipetteDescriptor
         if channel_count == 8

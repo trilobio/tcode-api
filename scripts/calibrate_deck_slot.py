@@ -17,6 +17,7 @@ import tcode_api.api as tc
 from tcode_api.cli import (
     DEFAULT_SERVICER_URL,
     output_file_path_annotation,
+    robot_serial_number_annotation,
     servicer_url_annotation,
 )
 from tcode_api.servicer import TCodeServicerClient
@@ -153,11 +154,13 @@ def _tip_box_name_for_pipette_max_volume(pipette_max_volume: tc.ValueWithUnits) 
         kind="option",
         abbrev="d",
     ),
+    robot_sn=robot_serial_number_annotation,
 )
 def main(
     servicer_url: str = DEFAULT_SERVICER_URL,
     output_file_path: pathlib.Path | None = None,
     deck_slot: str | None = None,
+    robot_sn: str | None = None,
 ) -> None:
     """Generate TCode script to calibrate a deck slot using CALIBRATE_LABWARE_HOLDER."""
 
@@ -197,7 +200,9 @@ def main(
 
     # FLEET
     robot_id, tool_id, tip_box_id = [generate_id() for _ in range(3)]
-    script.commands.append(tc.ADD_ROBOT(id=robot_id, descriptor=tc.RobotDescriptor()))
+    script.commands.append(
+        tc.ADD_ROBOT(id=robot_id, descriptor=tc.RobotDescriptor(serial_number=robot_sn))
+    )
     script.commands.append(tc.ADD_TOOL(robot_id=robot_id, id=tool_id, descriptor=descriptor))
 
     # LABWARE (required for pipette teach mode)

@@ -5,13 +5,18 @@ import functools
 import json
 import pathlib
 import site
+import sys
 import uuid
+from typing import cast
 
 import numpy as np
-from pydantic import TypeAdapter
 from scipy.spatial.transform import Rotation  # type: ignore[import-untyped]
+from typing_extensions import Sentinel
 
 import tcode_api.api as tc
+from tcode_api.api.compat import migrate_data_to_latest
+from tcode_api.schemas.base.schema_versioned_model.v1 import BaseSchemaVersionedModelV1
+from tcode_api.schemas.registry import schema_registry
 from tcode_api.types import Matrix, UnsanitizedFloat
 
 SCIPY_SEQ = "zyx"  # Extrinsic rotation sequence
@@ -32,70 +37,80 @@ else:
     DEFAULT_LABWARE_PATH = current_path.parent.parent.parent / DEFAULT_LABWARE_DIR
 
 
-class LabwareIO:
-    """Class for reading/writing labware descriptions from storage."""
+class SchemaIO:
+    """Class for reading/writing any registered tcode_api schema from/to storage.
 
-    def __init__(self, labware_dir: pathlib.Path | None = None) -> None:
-        """Initialize LabwareIO."""
-        if labware_dir is None:
-            self.labware_dir = DEFAULT_LABWARE_PATH
+    Unlike a fixed-type loader, each file is dispatched by its own ``"type"`` discriminator via
+    ``schema_registry``, so a single instance can read a directory containing a mix of schema
+    kinds (e.g. ``tcode_labware/`` mixes labware descriptions with nested ``PipetteTip`` files).
+    """
+
+    def __init__(self, schema_dir: pathlib.Path | None = None) -> None:
+        """Initialize SchemaIO."""
+        if schema_dir is None:
+            self.schema_dir = DEFAULT_LABWARE_PATH
         else:
-            self.labware_dir = pathlib.Path(labware_dir)
+            self.schema_dir = pathlib.Path(schema_dir)
 
-        if not self.labware_dir.exists():
+        if not self.schema_dir.exists():
             raise FileNotFoundError(
-                f"Labware directory not found: {self.labware_dir}. Please check whether tcode is installed correctly."
+                f"Schema directory not found: {self.schema_dir}. Please check whether tcode is installed correctly."
             )
-
-        self.labware_type_adapter: TypeAdapter = TypeAdapter(tc.LabwareDescription)
 
     def _resolve_file_path(
         self, file_path: str | pathlib.Path, exists: bool | None = None
     ) -> pathlib.Path:
-        """Resolve file path to labware description file.
+        """Resolve file path to a schema file.
 
-        :param file_path: Name of file or path to file containing description. If file_path is a string,
-            checks tcode_api/labware for a file whose name matches file_path. If no such file exists,
-            file_path is cast to a pathlib Path.
+        :param file_path: Name of file or path to file containing schema data. If file_path is a
+            string, checks ``self.schema_dir`` for a file whose name matches file_path. If no
+            such file exists, file_path is cast to a pathlib Path.
         :param exists: If True, raises FileNotFoundError if the resolved file does not exist. If
             False, does not check for existence. If None, doesn't check file existence.
-        :return: Resolved pathlib.Path to the labware description file.
+        :return: Resolved pathlib.Path to the schema file.
         """
         if isinstance(file_path, str):
-            file_path = self.labware_dir / f"{file_path}.json"
-            if not file_path.exists():
-                file_path = pathlib.Path(file_path)
+            clean_file_path = self.schema_dir / f"{file_path}.json"
+            if not clean_file_path.exists():
+                clean_file_path = pathlib.Path(file_path)
+        else:
+            clean_file_path = file_path
 
-        if exists is True and not file_path.exists():
-            raise FileNotFoundError(f"Labware file not found: {file_path}")
-        if exists is False and file_path.exists():
-            raise FileExistsError(f"Labware file already exists: {file_path}")
-        return file_path
+        if exists is True and not clean_file_path.exists():
+            raise FileNotFoundError(f"Schema file not found: {clean_file_path}")
+        if exists is False and clean_file_path.exists():
+            raise FileExistsError(f"Schema file already exists: {clean_file_path}")
+        return clean_file_path
 
-    def load(self, identifier: str | pathlib.Path) -> tc.LabwareDescription:
-        """Read labware description from JSON file.
+    def load(self, identifier: str | pathlib.Path) -> BaseSchemaVersionedModelV1:
+        """Read a schema instance from a JSON file, migrating it to the current version first.
 
-        :param identifier: Name of file or path to file containing description. If file_path is a string,
-            checks tcode_api/labware for a file whose name matches file_path. If no such file exists,
-            file_path is cast to a pathlib Path.
-        :return: tc.LabwareDescription loaded from the file.
+        :param identifier: Name of file or path to file containing schema data. If file_path is
+            a string, checks ``self.schema_dir`` for a file whose name matches file_path. If no
+            such file exists, file_path is cast to a pathlib Path.
+        :return: The current-version schema instance loaded from the file, dispatched by its
+            ``"type"`` field.
         """
         file_path = self._resolve_file_path(identifier, exists=True)
         with file_path.open("r", encoding="utf-8") as f:
-            data = f.read()
+            data = json.load(f)
 
-        model_constructor = self.labware_type_adapter.validate_python(json.loads(data))
-        return model_constructor.model_validate_json(data)
+        migrated = migrate_data_to_latest(
+            data=data,
+            schema_name=data["type"],
+            schema_version=data.get("schema_version", 1),
+        )
+        return schema_registry.build_instance(migrated)
 
-    def write(self, identifier: str | pathlib.Path, labware: tc.LabwareDescription) -> None:
-        """Write labware description to JSON file.
+    def write(self, identifier: str | pathlib.Path, schema: BaseSchemaVersionedModelV1) -> None:
+        """Write a schema instance to a JSON file.
 
-        :param identifier: Path to file where description will be written.
-        :param labware: tc.LabwareDescription to write to file.
+        :param identifier: Path to file where the schema data will be written.
+        :param schema: Schema instance to write to file.
         """
         file_path = pathlib.Path(identifier)
         with file_path.open("w", encoding="utf-8") as f:
-            f.write(labware.model_dump_json(indent=2))
+            f.write(schema.model_dump_json(indent=2))
 
 
 def load_labware(
@@ -110,8 +125,8 @@ def load_labware(
 
     :return: loaded tc.LabwareDescription.
     """
-    labware_io = LabwareIO(labware_dir=labware_dir)
-    return labware_io.load(identifier)
+    schema_io = SchemaIO(schema_dir=labware_dir)
+    return cast(tc.LabwareDescription, schema_io.load(identifier))
 
 
 def generate_id() -> str:
@@ -300,6 +315,9 @@ def location_as_labware_index(
     )
 
 
+_UNSET = Sentinel("UNSET")
+
+
 def describe_well_plate(
     tags: tc.Tags | None = None,
     named_tags: tc.NamedTags | None = None,
@@ -308,6 +326,7 @@ def describe_well_plate(
     row_pitch: float = 0.009,
     column_pitch: float = 0.009,
     has_lid: bool = False,
+    supports_lid: bool | Sentinel = _UNSET,
 ) -> tc.WellPlateDescriptor:
     """tc.WellPlateDescriptor constructor with nice defaults.
 
@@ -317,10 +336,27 @@ def describe_well_plate(
     :param column_count: Number of columns in the well plate. Defaults to 12.
     :param row_pitch: Pitch between rows in meters. Defaults to 0.009 m.
     :param column_pitch: Pitch between columns in meters. Defaults to 0.009 m.
-    :param has_lid: Whether the well plate has a lid. Defaults to False.
+    :param has_lid: Whether the well plate has a lid. If not given, no liddability is specified.
+    :param supports_lid: Whether the well plate supports a lid. If not specified, set to True if
+        has_lid is True, else None.
 
     :return: tc.WellPlateDescriptor constructed with the specified parameters.
+    :raise ValueError: If has_lid is True and supports_lid is False, as this is an invalid configuration.
     """
+    if isinstance(supports_lid, Sentinel):
+        supports_lid_desc = True if has_lid else None
+    else:
+        supports_lid_desc = supports_lid
+
+    liddability = tc.LiddabilityDescriptor(
+        supports_lid=supports_lid_desc,
+        lid=tc.LidDescriptor() if has_lid is True else None,
+    )
+    if liddability.lid is not None and liddability.supports_lid is False:
+        raise ValueError(
+            "Invalid configuration: has_lid is True but supports_lid is False. A well plate cannot have a lid if it does not support one."
+        )
+
     tags = [] if tags is None else tags
     named_tags = {} if named_tags is None else named_tags
     grid_descriptor = tc.GridDescriptor(
@@ -329,12 +365,11 @@ def describe_well_plate(
         row_pitch=m(row_pitch),
         column_pitch=m(column_pitch),
     )
-    lid_descriptor = tc.LidDescriptor() if has_lid else None
     return tc.WellPlateDescriptor(
         tags=tags,
         named_tags=named_tags,
         grid=grid_descriptor,
-        lid=lid_descriptor,
+        liddability=liddability,
     )
 
 
@@ -399,6 +434,21 @@ def describe_pipette_tip_group(
     )
 
 
+def format_seconds(seconds: float) -> str:
+    """Format a duration in seconds to human-readable format"""
+    seconds = int(seconds)
+    days, seconds = divmod(seconds, 86_400)
+    hours, seconds = divmod(seconds, 3_600)
+    minutes, seconds = divmod(seconds, 60)
+    time_without_days = f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+    if days == 0:
+        return time_without_days
+    elif days == 1:
+        return f"{days:02d} day, {time_without_days}"
+    else:
+        return f"{days:02d} days, {time_without_days}"
+
+
 describe_pipette_tip_1x1 = functools.partial(
     describe_pipette_tip_group, row_count=1, column_count=1
 )
@@ -421,3 +471,44 @@ describe_pipette_tip_1x8.__doc__ = (
     "param named_tags: Dictionary of named tags applied to the pipette tip. Defaults to an empty dictionary.\n\n"
     "return: tc.PipetteTipGroup with 1 row and 8 columns."
 )
+
+
+def prompt_accept_deck_layout(script: tc.TCodeScript) -> None:
+    """Display deck layout and required tools from provided script and prompt user to accept before proceeding."""
+    # Read deck layout
+    layout_commands: list[tc.CREATE_LABWARE] = [
+        cmd for cmd in script.commands if isinstance(cmd, tc.CREATE_LABWARE)
+    ]
+    tool_commands: list[tc.ADD_TOOL] = [
+        cmd for cmd in script.commands if isinstance(cmd, tc.ADD_TOOL)
+    ]
+    print("The script requires the following:")
+    print("Tools: -------------------")
+    for tool_cmd in tool_commands:
+        print(
+            f"\t{tool_cmd.descriptor.type}: max_volume={getattr(tool_cmd.descriptor, 'max_volume', 'N/A')}"
+        )
+    print("Deck Layout: -------------------")
+    for layout_cmd in layout_commands:
+        holder = layout_cmd.holder
+        if isinstance(holder, tc.LabwareHolderName):
+            try:
+                labware_name = layout_cmd.description.named_tags["name"]
+            except KeyError:
+                labware_name = "<no name>"
+            try:
+                model_name = layout_cmd.description.named_tags["model"]
+            except KeyError:
+                model_name = "<no model>"
+            print(
+                f"\t{holder.name} | {layout_cmd.description.type:18} | {model_name:30} | {labware_name}"
+            )
+
+    while True:
+        ans = input("Continue? [Y|n]: ").lower()
+        if ans in ["n", "no", "q", "quit", "stop", "exit"]:
+            sys.exit(0)
+        elif ans in ["", "y", "yes", "continue"]:
+            return
+        else:
+            print(f"Bad entry {ans} not in ['y', 'n']")

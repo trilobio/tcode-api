@@ -1,11 +1,15 @@
-# Protocol Designer starts the LabwareDescriptorBase at V3, so this increment has no changes.
+"""LidDescriptor & LidDescription v3
+
+- No changes; version bump only (Protocol Designer starts labware descriptors at v3).
+"""
+
 from typing import Literal
 
-from ..base import BaseLabwareDescription, BaseLabwareDescriptor
+from ..base.labware_description.v1 import BaseLabwareDescriptionV1, BaseLabwareDescriptorV1
 from .v1 import StackableField
 
 
-class LidDescription(BaseLabwareDescription):
+class LidDescription(BaseLabwareDescriptionV1):
     """Description of a plate lid."""
 
     type: Literal["Lid"] = "Lid"
@@ -14,7 +18,7 @@ class LidDescription(BaseLabwareDescription):
     stackable: StackableField
 
 
-class LidDescriptor(BaseLabwareDescriptor):
+class LidDescriptor(BaseLabwareDescriptorV1):
     """LidDescription with optional parameters."""
 
     type: Literal["Lid"] = "Lid"

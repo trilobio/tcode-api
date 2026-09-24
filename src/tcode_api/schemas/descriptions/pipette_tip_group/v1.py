@@ -7,11 +7,11 @@ from typing import Literal
 
 from pydantic import Field, PositiveInt
 
-from ...base import BaseSchemaVersionedModel
+from ...base.schema_versioned_model.v1 import BaseSchemaVersionedModelV1
 from ...common.docs import NamedTags, Tags
 
 
-class PipetteTipGroupDescriptor(BaseSchemaVersionedModel):
+class PipetteTipGroupDescriptor(BaseSchemaVersionedModelV1):
     """Grid layout of pipette tips."""
 
     type: Literal["PipetteTipGroup"] = "PipetteTipGroup"

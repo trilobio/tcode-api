@@ -50,7 +50,7 @@ TypeField = Annotated[
     Field(
         description=(
             "Discriminator field; overridden in subclass with class name as string sans versioning information. "
-            'ex. ``class MyLabwareHolderV1(BaseLabwareHolder): type: Literal["MyLabwareHolder"]`` = "MyLabwareHolder"'
+            'ex. ``class MyLabwareHolderV1(BaseLabwareHolderV1): type: Literal["MyLabwareHolder"]`` = "MyLabwareHolder"'
         ),
     ),
 ]

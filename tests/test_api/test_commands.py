@@ -3,14 +3,15 @@
 import datetime
 import logging
 import unittest
+from importlib.metadata import version
 from typing import get_args
 
 # Using the below import style because it's how we expect users to import tcode_api
 import tcode_api.api as tc
-from tcode_api.schemas.commands.base import (
-    BaseRobotSpecificTCodeCommand,
-    BaseTCodeCommand,
+from tcode_api.schemas.commands.base.robot_specific_tcode_command.v1 import (
+    BaseRobotSpecificTCodeCommandV1,
 )
+from tcode_api.schemas.commands.base.tcode_command.v1 import BaseTCodeCommandV1
 
 from .test_base import BaseTestCases
 
@@ -26,7 +27,7 @@ class TestTCodeScript(BaseTestCases.TestBaseSchemaVersionedModel):
             metadata=tc.Metadata(
                 name="unittest",
                 timestamp=datetime.datetime.now().isoformat(),
-                tcode_api_version="0.1.0",
+                tcode_api_version=version("tcode_api"),
             ),
         )
 
@@ -66,13 +67,14 @@ class TestTCodeEndpoints(unittest.TestCase):
 
     def test_endpoints(self) -> None:
         """Test that all endpoints are included in the type."""
-        ENDPOINTS_TO_SKIP = [BaseRobotSpecificTCodeCommand]
+        ENDPOINTS_TO_SKIP = [BaseRobotSpecificTCodeCommandV1]
         endpoints = [
             obj
             for obj in tc.__dict__.values()
             if hasattr(obj, "__bases__")
             and (
-                BaseTCodeCommand in obj.__bases__ or BaseRobotSpecificTCodeCommand in obj.__bases__
+                BaseTCodeCommandV1 in obj.__bases__
+                or BaseRobotSpecificTCodeCommandV1 in obj.__bases__
             )
         ]
         # https://stackoverflow.com/a/64643971

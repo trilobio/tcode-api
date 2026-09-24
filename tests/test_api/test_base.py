@@ -1,18 +1,18 @@
 import tempfile
 import unittest
 
-from tcode_api.schemas.base import BaseSchemaVersionedModel
+from tcode_api.schemas.base.schema_versioned_model.v1 import BaseSchemaVersionedModelV1
 
 
 class BaseTestCases:
     """Namespace to prevent unittest discovery of base test case classes."""
 
     class TestBaseSchemaVersionedModel(unittest.TestCase):
-        model: type[BaseSchemaVersionedModel]
+        model: type[BaseSchemaVersionedModelV1]
 
-        """Unittests for any model that subclasses :class:``BaseSchemaVersionedModel``."""
+        """Unittests for any model that subclasses :class:``BaseSchemaVersionedModelV1``."""
 
-        def _create_valid_model_instance(self) -> BaseSchemaVersionedModel:
+        def _create_valid_model_instance(self) -> BaseSchemaVersionedModelV1:
             """Create and return a valid instance of the model under test.
 
             Subclasses must override this method.

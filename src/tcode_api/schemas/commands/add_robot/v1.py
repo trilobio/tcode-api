@@ -3,10 +3,10 @@ from typing import Literal
 from pydantic import Field
 
 from ...descriptions.robot.v1 import RobotDescriptor
-from ..base import BaseTCodeCommand
+from ..base.tcode_command.v1 import BaseTCodeCommandV1
 
 
-class ADD_ROBOT(BaseTCodeCommand):
+class ADD_ROBOT(BaseTCodeCommandV1):
     """Find a matching robot on the fleet and assign it the given id."""
 
     type: Literal["ADD_ROBOT"] = "ADD_ROBOT"

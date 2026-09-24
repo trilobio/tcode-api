@@ -10,6 +10,7 @@ import tcode_api.api as tc
 from tcode_api.cli import (
     DEFAULT_SERVICER_URL,
     output_file_path_annotation,
+    robot_serial_number_annotation,
     servicer_url_annotation,
 )
 from tcode_api.servicer import TCodeServicerClient
@@ -43,6 +44,7 @@ def str_list_from_csv(input: str) -> list[str]:
     ),
     servicer_url=servicer_url_annotation,
     output_file_path=output_file_path_annotation,
+    robot_sn=robot_serial_number_annotation,
 )
 def main(
     deck_slots_with_full_boxes: list[str],
@@ -50,6 +52,7 @@ def main(
     pipette: Literal["c1", "c8"],
     servicer_url: str = DEFAULT_SERVICER_URL,
     output_file_path: str | None = None,
+    robot_sn: str | None = None,
 ) -> None:
     random.seed(0)  # Standardize the generated ids
     robot_id, tool_id = [generate_id() for _ in range(2)]
@@ -68,7 +71,9 @@ def main(
 
     # ROBOT
     script = tc.TCodeScript.new(name=__file__, description=__doc__)
-    script.commands.append(tc.ADD_ROBOT(id=robot_id, descriptor=tc.RobotDescriptor()))
+    script.commands.append(
+        tc.ADD_ROBOT(id=robot_id, descriptor=tc.RobotDescriptor(serial_number=robot_sn))
+    )
     script.commands.append(tc.ADD_TOOL(robot_id=robot_id, id=tool_id, descriptor=descriptor))
 
     # LABWARE
