@@ -5,6 +5,13 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
+## [v1.48.0]
+### Added
+- `CALIBRATE_LABWARE_WELL_CENTER` command: probes a well's inner walls to correct a
+    labware's well x/y centers.
+
+---
+
 ## [v1.47.0]
 ### Fixed
 - `TCodeServicerClient.execute_run_loop` (and so `run_script`) raises `RuntimeError` when the

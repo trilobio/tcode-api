@@ -1057,11 +1057,11 @@ class TestLabwarePinchableV3ToV4Migration(unittest.TestCase):
 
 
 class TestCalibrateLabwareWellCenterV1(unittest.TestCase):
-    """Regression tests for CALIBRATE_LABWARE_WELL_CENTER v1 (added in tcode-api v1.47.0)."""
+    """Regression tests for CALIBRATE_LABWARE_WELL_CENTER v1 (added in tcode-api v1.48.0)."""
 
     def test_v1_payload_validates_and_is_in_api_profile(self) -> None:
         """A v1 payload validates against the schema and appears in the API profile."""
-        profile = resolve_api_profile("v1.47.0", tcode_api_compat_context)
+        profile = resolve_api_profile("v1.48.0", tcode_api_compat_context)
         self.assertEqual(profile["CALIBRATE_LABWARE_WELL_CENTER"], 1)
         data = {
             "type": "CALIBRATE_LABWARE_WELL_CENTER",

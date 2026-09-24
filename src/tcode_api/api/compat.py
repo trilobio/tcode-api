@@ -335,7 +335,7 @@ tcode_api_compat_context = CompatContext(
             "v1.46.0": {
                 "ADD_PIPETTE_TIP_GROUP": 3,
             },
-            "v1.47.0": {
+            "v1.48.0": {
                 "CALIBRATE_LABWARE_WELL_CENTER": 1,
             },
         },
