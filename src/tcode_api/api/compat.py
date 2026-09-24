@@ -23,11 +23,15 @@ How to perform:
 
 import collections.abc
 import dataclasses
+import importlib
+import json
 import logging
+from typing import cast
 
 from packaging.version import Version
 from pydantic import ValidationError
 
+from ..schemas.commands.union import TCode
 from ..schemas.registry import (
     BuilderNotFoundError,
     MigrationRegistry,
@@ -37,6 +41,8 @@ from ..schemas.registry import (
     migration_registry,
     schema_registry,
 )
+from ..schemas.script.metadata.latest import Metadata
+from ..schemas.script.tcode_script import TCodeScript
 
 _logger = logging.getLogger(__name__)
 
@@ -749,3 +755,30 @@ def _build_migrator_chain(
                 break
 
     return current_name, migrators_to_apply
+
+
+def read_and_migrate_script(json_str: str) -> TCodeScript:
+    """Load a TCode script from a file-like object, and migrate it to the latest schema version.
+
+    :param json_str: JSON as a string.
+
+    :returns: The loaded TCode script.
+    """
+
+    j = json.loads(json_str)
+
+    api_version = j["metadata"]["tcode_api_version"]
+    # Older scripts have no `type`/`schema_version` on the script, metadata, or commands, so
+    # we can't migrate the whole script in one go. Instead, load each command individually,
+    # resolving its schema version from the API version.
+    commands: list[TCode] = []
+    for c in j["commands"]:
+        # load_api_object does the work of migration.
+        commands.append(cast(TCode, load_api_object(c, api_version=api_version)))
+
+    # Bump the script's overall version, since we've migrated every command in it.
+    metadata = Metadata(**j["metadata"])
+    metadata.tcode_api_version = importlib.metadata.version("tcode_api")
+
+    script = TCodeScript(metadata=metadata, commands=commands)
+    return script
