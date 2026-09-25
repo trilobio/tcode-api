@@ -1,0 +1,1532 @@
+{
+  "metadata": {
+    "name": "2025-05-28_KAPA_7",
+    "timestamp": "2026-08-20T00:37:12.261Z",
+    "tcode_api_version": "1.40.0"
+  },
+  "commands": [
+    {
+      "type": "ADD_ROBOT",
+      "id": "fQeYg_pxL8ySIupLmdZEYA",
+      "descriptor": {
+        "type": "Robot",
+        "serial_number": null
+      }
+    },
+    {
+      "type": "ADD_TOOL",
+      "id": "soH8fWYnusXmNTLWNzXEnA",
+      "descriptor": {
+        "id": "soH8fWYnusXmNTLWNzXEnA",
+        "type": "SingleChannelPipette",
+        "min_volume": {
+          "type": "ValueWithUnits",
+          "units": "mm³",
+          "magnitude": 2
+        },
+        "max_volume": {
+          "type": "ValueWithUnits",
+          "units": "mm³",
+          "magnitude": 20
+        },
+        "max_speed": {
+          "type": "ValueWithUnits",
+          "units": "(mm³)Hz",
+          "magnitude": 100
+        }
+      },
+      "robot_id": "fQeYg_pxL8ySIupLmdZEYA"
+    },
+    {
+      "type": "ADD_TOOL",
+      "id": "4xTc9-Mo5kD2dmebisb3SA",
+      "descriptor": {
+        "id": "4xTc9-Mo5kD2dmebisb3SA",
+        "type": "SingleChannelPipette",
+        "min_volume": {
+          "type": "ValueWithUnits",
+          "units": "mm³",
+          "magnitude": 100
+        },
+        "max_volume": {
+          "type": "ValueWithUnits",
+          "units": "mm³",
+          "magnitude": 1000
+        },
+        "max_speed": {
+          "type": "ValueWithUnits",
+          "units": "(mm³)Hz",
+          "magnitude": 100
+        }
+      },
+      "robot_id": "fQeYg_pxL8ySIupLmdZEYA"
+    },
+    {
+      "type": "CREATE_LABWARE",
+      "description": {
+        "schema_version": 3,
+        "id": "TrilobioDef_3DTrash---",
+        "name": "Trash Bin",
+        "x_length": {
+          "type": "ValueWithUnits",
+          "magnitude": 127.76,
+          "units": "mm"
+        },
+        "y_length": {
+          "type": "ValueWithUnits",
+          "magnitude": 85.48,
+          "units": "mm"
+        },
+        "z_length": {
+          "type": "ValueWithUnits",
+          "magnitude": 75,
+          "units": "mm"
+        },
+        "grid": {
+          "row_count": 1,
+          "column_count": 1,
+          "row_pitch": {
+            "type": "ValueWithUnits",
+            "magnitude": 0,
+            "units": "mm"
+          },
+          "column_pitch": {
+            "type": "ValueWithUnits",
+            "magnitude": 0,
+            "units": "mm"
+          },
+          "row_offset": {
+            "type": "ValueWithUnits",
+            "magnitude": 0,
+            "units": "mm"
+          },
+          "column_offset": {
+            "type": "ValueWithUnits",
+            "magnitude": 0,
+            "units": "mm"
+          }
+        },
+        "type": "Trash",
+        "depth": {
+          "type": "ValueWithUnits",
+          "magnitude": 71.66,
+          "units": "mm"
+        },
+        "well": {
+          "depth": {
+            "type": "ValueWithUnits",
+            "magnitude": 72,
+            "units": "mm"
+          },
+          "shape": {
+            "type": "AxisAlignedRectangle",
+            "x_length": {
+              "type": "ValueWithUnits",
+              "magnitude": 121.5,
+              "units": "mm"
+            },
+            "y_length": {
+              "type": "ValueWithUnits",
+              "magnitude": 79.25,
+              "units": "mm"
+            }
+          },
+          "bottom_shape": {
+            "type": "Flat"
+          },
+          "min_volume": {
+            "type": "ValueWithUnits",
+            "magnitude": 0,
+            "units": "uL"
+          },
+          "max_volume": {
+            "type": "ValueWithUnits",
+            "magnitude": 693279,
+            "units": "uL"
+          }
+        }
+      },
+      "holder": {
+        "type": "LabwareHolderName",
+        "robot_id": "fQeYg_pxL8ySIupLmdZEYA",
+        "name": "DeckSlot_1"
+      },
+      "robot_id": "fQeYg_pxL8ySIupLmdZEYA"
+    },
+    {
+      "type": "ADD_LABWARE",
+      "descriptor": {
+        "schema_version": 3,
+        "id": "TrilobioDef_3DTrash---",
+        "name": "Trash Bin",
+        "x_length": {
+          "type": "ValueWithUnits",
+          "magnitude": 127.76,
+          "units": "mm"
+        },
+        "y_length": {
+          "type": "ValueWithUnits",
+          "magnitude": 85.48,
+          "units": "mm"
+        },
+        "z_length": {
+          "type": "ValueWithUnits",
+          "magnitude": 75,
+          "units": "mm"
+        },
+        "grid": {
+          "row_count": 1,
+          "column_count": 1,
+          "row_pitch": {
+            "type": "ValueWithUnits",
+            "magnitude": 0,
+            "units": "mm"
+          },
+          "column_pitch": {
+            "type": "ValueWithUnits",
+            "magnitude": 0,
+            "units": "mm"
+          },
+          "row_offset": {
+            "type": "ValueWithUnits",
+            "magnitude": 0,
+            "units": "mm"
+          },
+          "column_offset": {
+            "type": "ValueWithUnits",
+            "magnitude": 0,
+            "units": "mm"
+          }
+        },
+        "type": "Trash",
+        "depth": {
+          "type": "ValueWithUnits",
+          "magnitude": 71.66,
+          "units": "mm"
+        },
+        "well": {
+          "depth": {
+            "type": "ValueWithUnits",
+            "magnitude": 72,
+            "units": "mm"
+          },
+          "shape": {
+            "type": "AxisAlignedRectangle",
+            "x_length": {
+              "type": "ValueWithUnits",
+              "magnitude": 121.5,
+              "units": "mm"
+            },
+            "y_length": {
+              "type": "ValueWithUnits",
+              "magnitude": 79.25,
+              "units": "mm"
+            }
+          },
+          "bottom_shape": {
+            "type": "Flat"
+          },
+          "min_volume": {
+            "type": "ValueWithUnits",
+            "magnitude": 0,
+            "units": "uL"
+          },
+          "max_volume": {
+            "type": "ValueWithUnits",
+            "magnitude": 693279,
+            "units": "uL"
+          }
+        }
+      },
+      "id": "C0NpOLmtmzWYqV-GMbEdxQ"
+    },
+    {
+      "type": "CREATE_LABWARE",
+      "description": {
+        "schema_version": 3,
+        "id": "TrilobioDef_uTip20uL--",
+        "name": "20ul Biotix Tip Box part: 63300042",
+        "x_length": {
+          "type": "ValueWithUnits",
+          "magnitude": 127.76,
+          "units": "mm"
+        },
+        "y_length": {
+          "type": "ValueWithUnits",
+          "magnitude": 85.47,
+          "units": "mm"
+        },
+        "z_length": {
+          "type": "ValueWithUnits",
+          "magnitude": 42.1,
+          "units": "mm"
+        },
+        "named_tags": {
+          "model": "biotix_utip_p20_box.obj"
+        },
+        "grid": {
+          "row_count": 8,
+          "column_count": 12,
+          "row_pitch": {
+            "type": "ValueWithUnits",
+            "magnitude": 9,
+            "units": "mm"
+          },
+          "column_pitch": {
+            "type": "ValueWithUnits",
+            "magnitude": 9,
+            "units": "mm"
+          },
+          "row_offset": {
+            "type": "ValueWithUnits",
+            "magnitude": 0,
+            "units": "mm"
+          },
+          "column_offset": {
+            "type": "ValueWithUnits",
+            "magnitude": 0,
+            "units": "mm"
+          }
+        },
+        "type": "PipetteTipBox",
+        "pipette_tip": {
+          "height": {
+            "type": "ValueWithUnits",
+            "magnitude": 50.5,
+            "units": "mm"
+          },
+          "min_volume": {
+            "type": "ValueWithUnits",
+            "magnitude": 10,
+            "units": "uL"
+          },
+          "max_volume": {
+            "type": "ValueWithUnits",
+            "magnitude": 20,
+            "units": "uL"
+          },
+          "tags": [
+            "manifold_match_5"
+          ],
+          "named_tags": {
+            "model": "biotix_utip_p20.obj"
+          },
+          "has_filter": true,
+          "flange_height": {
+            "type": "ValueWithUnits",
+            "magnitude": 16.1,
+            "units": "mm"
+          }
+        },
+        "full": true
+      },
+      "holder": {
+        "type": "LabwareHolderName",
+        "robot_id": "fQeYg_pxL8ySIupLmdZEYA",
+        "name": "DeckSlot_2"
+      },
+      "robot_id": "fQeYg_pxL8ySIupLmdZEYA"
+    },
+    {
+      "type": "ADD_LABWARE",
+      "descriptor": {
+        "schema_version": 3,
+        "id": "TrilobioDef_uTip20uL--",
+        "name": "20ul Biotix Tip Box part: 63300042",
+        "x_length": {
+          "type": "ValueWithUnits",
+          "magnitude": 127.76,
+          "units": "mm"
+        },
+        "y_length": {
+          "type": "ValueWithUnits",
+          "magnitude": 85.47,
+          "units": "mm"
+        },
+        "z_length": {
+          "type": "ValueWithUnits",
+          "magnitude": 42.1,
+          "units": "mm"
+        },
+        "named_tags": {
+          "model": "biotix_utip_p20_box.obj"
+        },
+        "grid": {
+          "row_count": 8,
+          "column_count": 12,
+          "row_pitch": {
+            "type": "ValueWithUnits",
+            "magnitude": 9,
+            "units": "mm"
+          },
+          "column_pitch": {
+            "type": "ValueWithUnits",
+            "magnitude": 9,
+            "units": "mm"
+          },
+          "row_offset": {
+            "type": "ValueWithUnits",
+            "magnitude": 0,
+            "units": "mm"
+          },
+          "column_offset": {
+            "type": "ValueWithUnits",
+            "magnitude": 0,
+            "units": "mm"
+          }
+        },
+        "type": "PipetteTipBox",
+        "pipette_tip": {
+          "height": {
+            "type": "ValueWithUnits",
+            "magnitude": 50.5,
+            "units": "mm"
+          },
+          "min_volume": {
+            "type": "ValueWithUnits",
+            "magnitude": 10,
+            "units": "uL"
+          },
+          "max_volume": {
+            "type": "ValueWithUnits",
+            "magnitude": 20,
+            "units": "uL"
+          },
+          "tags": [
+            "manifold_match_5"
+          ],
+          "named_tags": {
+            "model": "biotix_utip_p20.obj"
+          },
+          "has_filter": true,
+          "flange_height": {
+            "type": "ValueWithUnits",
+            "magnitude": 16.1,
+            "units": "mm"
+          }
+        },
+        "full": true
+      },
+      "id": "qmfussuYePaHBATG8L9_Cw"
+    },
+    {
+      "type": "CREATE_LABWARE",
+      "description": {
+        "schema_version": 3,
+        "id": "TrilobioDef_uTip1000uL",
+        "name": "1000ul Biotix Tip Box part: 63300060",
+        "x_length": {
+          "type": "ValueWithUnits",
+          "magnitude": 127.76,
+          "units": "mm"
+        },
+        "y_length": {
+          "type": "ValueWithUnits",
+          "magnitude": 85.47,
+          "units": "mm"
+        },
+        "z_length": {
+          "type": "ValueWithUnits",
+          "magnitude": 77,
+          "units": "mm"
+        },
+        "named_tags": {
+          "model": "biotix_utip_p1000_box.obj"
+        },
+        "grid": {
+          "row_count": 8,
+          "column_count": 12,
+          "row_pitch": {
+            "type": "ValueWithUnits",
+            "magnitude": 9,
+            "units": "mm"
+          },
+          "column_pitch": {
+            "type": "ValueWithUnits",
+            "magnitude": 9,
+            "units": "mm"
+          },
+          "row_offset": {
+            "type": "ValueWithUnits",
+            "magnitude": 0,
+            "units": "mm"
+          },
+          "column_offset": {
+            "type": "ValueWithUnits",
+            "magnitude": 0,
+            "units": "mm"
+          }
+        },
+        "type": "PipetteTipBox",
+        "pipette_tip": {
+          "height": {
+            "type": "ValueWithUnits",
+            "magnitude": 81.7,
+            "units": "mm"
+          },
+          "min_volume": {
+            "type": "ValueWithUnits",
+            "magnitude": 10,
+            "units": "uL"
+          },
+          "max_volume": {
+            "type": "ValueWithUnits",
+            "magnitude": 1000,
+            "units": "uL"
+          },
+          "tags": [
+            "manifold_match_6"
+          ],
+          "named_tags": {
+            "model": "biotix_utip_p1000.obj"
+          },
+          "has_filter": false,
+          "flange_height": {
+            "type": "ValueWithUnits",
+            "magnitude": 24.1,
+            "units": "mm"
+          }
+        },
+        "full": true
+      },
+      "holder": {
+        "type": "LabwareHolderName",
+        "robot_id": "fQeYg_pxL8ySIupLmdZEYA",
+        "name": "DeckSlot_5"
+      },
+      "robot_id": "fQeYg_pxL8ySIupLmdZEYA"
+    },
+    {
+      "type": "ADD_LABWARE",
+      "descriptor": {
+        "schema_version": 3,
+        "id": "TrilobioDef_uTip1000uL",
+        "name": "1000ul Biotix Tip Box part: 63300060",
+        "x_length": {
+          "type": "ValueWithUnits",
+          "magnitude": 127.76,
+          "units": "mm"
+        },
+        "y_length": {
+          "type": "ValueWithUnits",
+          "magnitude": 85.47,
+          "units": "mm"
+        },
+        "z_length": {
+          "type": "ValueWithUnits",
+          "magnitude": 77,
+          "units": "mm"
+        },
+        "named_tags": {
+          "model": "biotix_utip_p1000_box.obj"
+        },
+        "grid": {
+          "row_count": 8,
+          "column_count": 12,
+          "row_pitch": {
+            "type": "ValueWithUnits",
+            "magnitude": 9,
+            "units": "mm"
+          },
+          "column_pitch": {
+            "type": "ValueWithUnits",
+            "magnitude": 9,
+            "units": "mm"
+          },
+          "row_offset": {
+            "type": "ValueWithUnits",
+            "magnitude": 0,
+            "units": "mm"
+          },
+          "column_offset": {
+            "type": "ValueWithUnits",
+            "magnitude": 0,
+            "units": "mm"
+          }
+        },
+        "type": "PipetteTipBox",
+        "pipette_tip": {
+          "height": {
+            "type": "ValueWithUnits",
+            "magnitude": 81.7,
+            "units": "mm"
+          },
+          "min_volume": {
+            "type": "ValueWithUnits",
+            "magnitude": 10,
+            "units": "uL"
+          },
+          "max_volume": {
+            "type": "ValueWithUnits",
+            "magnitude": 1000,
+            "units": "uL"
+          },
+          "tags": [
+            "manifold_match_6"
+          ],
+          "named_tags": {
+            "model": "biotix_utip_p1000.obj"
+          },
+          "has_filter": false,
+          "flange_height": {
+            "type": "ValueWithUnits",
+            "magnitude": 24.1,
+            "units": "mm"
+          }
+        },
+        "full": true
+      },
+      "id": "FsOufK8-7HhIK5S6CnftFw"
+    },
+    {
+      "type": "CREATE_LABWARE",
+      "description": {
+        "schema_version": 3,
+        "id": "TrilobioDef_3DTube2mL-",
+        "name": "2ml Sarstedt 72.894.308 Tube Rack",
+        "x_length": {
+          "type": "ValueWithUnits",
+          "magnitude": 127.8,
+          "units": "mm"
+        },
+        "y_length": {
+          "type": "ValueWithUnits",
+          "magnitude": 85.3,
+          "units": "mm"
+        },
+        "z_length": {
+          "type": "ValueWithUnits",
+          "magnitude": 45,
+          "units": "mm"
+        },
+        "grid": {
+          "row_count": 4,
+          "column_count": 7,
+          "row_pitch": {
+            "type": "ValueWithUnits",
+            "magnitude": 18,
+            "units": "mm"
+          },
+          "column_pitch": {
+            "type": "ValueWithUnits",
+            "magnitude": 18,
+            "units": "mm"
+          },
+          "row_offset": {
+            "type": "ValueWithUnits",
+            "magnitude": 0,
+            "units": "mm"
+          },
+          "column_offset": {
+            "type": "ValueWithUnits",
+            "magnitude": 0,
+            "units": "mm"
+          }
+        },
+        "type": "TubeHolder",
+        "tube": {
+          "depth": {
+            "type": "ValueWithUnits",
+            "magnitude": 42.8,
+            "units": "mm"
+          },
+          "shape": {
+            "type": "Circle",
+            "diameter": {
+              "type": "ValueWithUnits",
+              "magnitude": 10.8,
+              "units": "mm"
+            }
+          },
+          "bottom_shape": {
+            "type": "Conical",
+            "offset": {
+              "type": "ValueWithUnits",
+              "magnitude": 0,
+              "units": "mm"
+            }
+          },
+          "min_volume": {
+            "type": "ValueWithUnits",
+            "magnitude": 20,
+            "units": "µL"
+          },
+          "max_volume": {
+            "type": "ValueWithUnits",
+            "magnitude": 1500,
+            "units": "µL"
+          },
+          "top_height": {
+            "type": "ValueWithUnits",
+            "magnitude": 8.2,
+            "units": "mm"
+          }
+        }
+      },
+      "holder": {
+        "type": "LabwareHolderName",
+        "robot_id": "fQeYg_pxL8ySIupLmdZEYA",
+        "name": "DeckSlot_6"
+      },
+      "robot_id": "fQeYg_pxL8ySIupLmdZEYA",
+      "annotation": "2ml Tube Rack"
+    },
+    {
+      "type": "ADD_LABWARE",
+      "descriptor": {
+        "schema_version": 3,
+        "id": "TrilobioDef_3DTube2mL-",
+        "name": "2ml Sarstedt 72.894.308 Tube Rack",
+        "x_length": {
+          "type": "ValueWithUnits",
+          "magnitude": 127.8,
+          "units": "mm"
+        },
+        "y_length": {
+          "type": "ValueWithUnits",
+          "magnitude": 85.3,
+          "units": "mm"
+        },
+        "z_length": {
+          "type": "ValueWithUnits",
+          "magnitude": 45,
+          "units": "mm"
+        },
+        "grid": {
+          "row_count": 4,
+          "column_count": 7,
+          "row_pitch": {
+            "type": "ValueWithUnits",
+            "magnitude": 18,
+            "units": "mm"
+          },
+          "column_pitch": {
+            "type": "ValueWithUnits",
+            "magnitude": 18,
+            "units": "mm"
+          },
+          "row_offset": {
+            "type": "ValueWithUnits",
+            "magnitude": 0,
+            "units": "mm"
+          },
+          "column_offset": {
+            "type": "ValueWithUnits",
+            "magnitude": 0,
+            "units": "mm"
+          }
+        },
+        "type": "TubeHolder",
+        "tube": {
+          "depth": {
+            "type": "ValueWithUnits",
+            "magnitude": 42.8,
+            "units": "mm"
+          },
+          "shape": {
+            "type": "Circle",
+            "diameter": {
+              "type": "ValueWithUnits",
+              "magnitude": 10.8,
+              "units": "mm"
+            }
+          },
+          "bottom_shape": {
+            "type": "Conical",
+            "offset": {
+              "type": "ValueWithUnits",
+              "magnitude": 0,
+              "units": "mm"
+            }
+          },
+          "min_volume": {
+            "type": "ValueWithUnits",
+            "magnitude": 20,
+            "units": "µL"
+          },
+          "max_volume": {
+            "type": "ValueWithUnits",
+            "magnitude": 1500,
+            "units": "µL"
+          },
+          "top_height": {
+            "type": "ValueWithUnits",
+            "magnitude": 8.2,
+            "units": "mm"
+          }
+        }
+      },
+      "id": "S5fzDnoGnv9jXgSyIEnA7w"
+    },
+    {
+      "type": "CREATE_LABWARE",
+      "description": {
+        "schema_version": 3,
+        "id": "TrilobioDef_Plate3788-",
+        "name": "Corning Costar 96 Well Plate #3788",
+        "x_length": {
+          "type": "ValueWithUnits",
+          "magnitude": 127.76,
+          "units": "mm"
+        },
+        "y_length": {
+          "type": "ValueWithUnits",
+          "magnitude": 85.47,
+          "units": "mm"
+        },
+        "z_length": {
+          "type": "ValueWithUnits",
+          "magnitude": 14.22,
+          "units": "mm"
+        },
+        "named_tags": {
+          "model": "well_plate_96.obj"
+        },
+        "grid": {
+          "row_count": 8,
+          "column_count": 12,
+          "row_pitch": {
+            "type": "ValueWithUnits",
+            "magnitude": 9,
+            "units": "mm"
+          },
+          "column_pitch": {
+            "type": "ValueWithUnits",
+            "magnitude": 9,
+            "units": "mm"
+          },
+          "row_offset": {
+            "type": "ValueWithUnits",
+            "magnitude": 0,
+            "units": "mm"
+          },
+          "column_offset": {
+            "type": "ValueWithUnits",
+            "magnitude": 0,
+            "units": "mm"
+          }
+        },
+        "type": "WellPlate",
+        "well": {
+          "depth": {
+            "type": "ValueWithUnits",
+            "magnitude": 11.3,
+            "units": "mm"
+          },
+          "shape": {
+            "type": "Circle",
+            "diameter": {
+              "type": "ValueWithUnits",
+              "magnitude": 6.86,
+              "units": "mm"
+            }
+          },
+          "bottom_shape": {
+            "type": "Round"
+          },
+          "min_volume": {
+            "type": "ValueWithUnits",
+            "magnitude": 10,
+            "units": "uL"
+          },
+          "max_volume": {
+            "type": "ValueWithUnits",
+            "magnitude": 260,
+            "units": "uL"
+          }
+        }
+      },
+      "holder": {
+        "type": "LabwareHolderName",
+        "robot_id": "fQeYg_pxL8ySIupLmdZEYA",
+        "name": "DeckSlot_7"
+      },
+      "robot_id": "fQeYg_pxL8ySIupLmdZEYA",
+      "annotation": "Sample Plate"
+    },
+    {
+      "type": "ADD_LABWARE",
+      "descriptor": {
+        "schema_version": 3,
+        "id": "TrilobioDef_Plate3788-",
+        "name": "Corning Costar 96 Well Plate #3788",
+        "x_length": {
+          "type": "ValueWithUnits",
+          "magnitude": 127.76,
+          "units": "mm"
+        },
+        "y_length": {
+          "type": "ValueWithUnits",
+          "magnitude": 85.47,
+          "units": "mm"
+        },
+        "z_length": {
+          "type": "ValueWithUnits",
+          "magnitude": 14.22,
+          "units": "mm"
+        },
+        "named_tags": {
+          "model": "well_plate_96.obj"
+        },
+        "grid": {
+          "row_count": 8,
+          "column_count": 12,
+          "row_pitch": {
+            "type": "ValueWithUnits",
+            "magnitude": 9,
+            "units": "mm"
+          },
+          "column_pitch": {
+            "type": "ValueWithUnits",
+            "magnitude": 9,
+            "units": "mm"
+          },
+          "row_offset": {
+            "type": "ValueWithUnits",
+            "magnitude": 0,
+            "units": "mm"
+          },
+          "column_offset": {
+            "type": "ValueWithUnits",
+            "magnitude": 0,
+            "units": "mm"
+          }
+        },
+        "type": "WellPlate",
+        "well": {
+          "depth": {
+            "type": "ValueWithUnits",
+            "magnitude": 11.3,
+            "units": "mm"
+          },
+          "shape": {
+            "type": "Circle",
+            "diameter": {
+              "type": "ValueWithUnits",
+              "magnitude": 6.86,
+              "units": "mm"
+            }
+          },
+          "bottom_shape": {
+            "type": "Round"
+          },
+          "min_volume": {
+            "type": "ValueWithUnits",
+            "magnitude": 10,
+            "units": "uL"
+          },
+          "max_volume": {
+            "type": "ValueWithUnits",
+            "magnitude": 260,
+            "units": "uL"
+          }
+        }
+      },
+      "id": "wofcWd0MPMIgClFpD4lAgw"
+    },
+    {
+      "type": "CREATE_LABWARE",
+      "description": {
+        "schema_version": 3,
+        "id": "TrilobioDef_3DTube2mL-",
+        "name": "2ml Sarstedt 72.894.308 Tube Rack",
+        "x_length": {
+          "type": "ValueWithUnits",
+          "magnitude": 127.8,
+          "units": "mm"
+        },
+        "y_length": {
+          "type": "ValueWithUnits",
+          "magnitude": 85.3,
+          "units": "mm"
+        },
+        "z_length": {
+          "type": "ValueWithUnits",
+          "magnitude": 45,
+          "units": "mm"
+        },
+        "grid": {
+          "row_count": 4,
+          "column_count": 7,
+          "row_pitch": {
+            "type": "ValueWithUnits",
+            "magnitude": 18,
+            "units": "mm"
+          },
+          "column_pitch": {
+            "type": "ValueWithUnits",
+            "magnitude": 18,
+            "units": "mm"
+          },
+          "row_offset": {
+            "type": "ValueWithUnits",
+            "magnitude": 0,
+            "units": "mm"
+          },
+          "column_offset": {
+            "type": "ValueWithUnits",
+            "magnitude": 0,
+            "units": "mm"
+          }
+        },
+        "type": "TubeHolder",
+        "tube": {
+          "depth": {
+            "type": "ValueWithUnits",
+            "magnitude": 42.8,
+            "units": "mm"
+          },
+          "shape": {
+            "type": "Circle",
+            "diameter": {
+              "type": "ValueWithUnits",
+              "magnitude": 10.8,
+              "units": "mm"
+            }
+          },
+          "bottom_shape": {
+            "type": "Conical",
+            "offset": {
+              "type": "ValueWithUnits",
+              "magnitude": 0,
+              "units": "mm"
+            }
+          },
+          "min_volume": {
+            "type": "ValueWithUnits",
+            "magnitude": 20,
+            "units": "µL"
+          },
+          "max_volume": {
+            "type": "ValueWithUnits",
+            "magnitude": 1500,
+            "units": "µL"
+          },
+          "top_height": {
+            "type": "ValueWithUnits",
+            "magnitude": 8.2,
+            "units": "mm"
+          }
+        }
+      },
+      "holder": {
+        "type": "LabwareHolderName",
+        "robot_id": "fQeYg_pxL8ySIupLmdZEYA",
+        "name": "DeckSlot_8"
+      },
+      "robot_id": "fQeYg_pxL8ySIupLmdZEYA",
+      "annotation": "Standards Tubes"
+    },
+    {
+      "type": "ADD_LABWARE",
+      "descriptor": {
+        "schema_version": 3,
+        "id": "TrilobioDef_3DTube2mL-",
+        "name": "2ml Sarstedt 72.894.308 Tube Rack",
+        "x_length": {
+          "type": "ValueWithUnits",
+          "magnitude": 127.8,
+          "units": "mm"
+        },
+        "y_length": {
+          "type": "ValueWithUnits",
+          "magnitude": 85.3,
+          "units": "mm"
+        },
+        "z_length": {
+          "type": "ValueWithUnits",
+          "magnitude": 45,
+          "units": "mm"
+        },
+        "grid": {
+          "row_count": 4,
+          "column_count": 7,
+          "row_pitch": {
+            "type": "ValueWithUnits",
+            "magnitude": 18,
+            "units": "mm"
+          },
+          "column_pitch": {
+            "type": "ValueWithUnits",
+            "magnitude": 18,
+            "units": "mm"
+          },
+          "row_offset": {
+            "type": "ValueWithUnits",
+            "magnitude": 0,
+            "units": "mm"
+          },
+          "column_offset": {
+            "type": "ValueWithUnits",
+            "magnitude": 0,
+            "units": "mm"
+          }
+        },
+        "type": "TubeHolder",
+        "tube": {
+          "depth": {
+            "type": "ValueWithUnits",
+            "magnitude": 42.8,
+            "units": "mm"
+          },
+          "shape": {
+            "type": "Circle",
+            "diameter": {
+              "type": "ValueWithUnits",
+              "magnitude": 10.8,
+              "units": "mm"
+            }
+          },
+          "bottom_shape": {
+            "type": "Conical",
+            "offset": {
+              "type": "ValueWithUnits",
+              "magnitude": 0,
+              "units": "mm"
+            }
+          },
+          "min_volume": {
+            "type": "ValueWithUnits",
+            "magnitude": 20,
+            "units": "µL"
+          },
+          "max_volume": {
+            "type": "ValueWithUnits",
+            "magnitude": 1500,
+            "units": "µL"
+          },
+          "top_height": {
+            "type": "ValueWithUnits",
+            "magnitude": 8.2,
+            "units": "mm"
+          }
+        }
+      },
+      "id": "p7pWMgZQDmWXyS54rycycA"
+    },
+    {
+      "type": "CREATE_LABWARE",
+      "description": {
+        "schema_version": 3,
+        "id": "TrilobioDef_Plate3788-",
+        "name": "Corning Costar 96 Well Plate #3788",
+        "x_length": {
+          "type": "ValueWithUnits",
+          "magnitude": 127.76,
+          "units": "mm"
+        },
+        "y_length": {
+          "type": "ValueWithUnits",
+          "magnitude": 85.47,
+          "units": "mm"
+        },
+        "z_length": {
+          "type": "ValueWithUnits",
+          "magnitude": 14.22,
+          "units": "mm"
+        },
+        "named_tags": {
+          "model": "well_plate_96.obj"
+        },
+        "grid": {
+          "row_count": 8,
+          "column_count": 12,
+          "row_pitch": {
+            "type": "ValueWithUnits",
+            "magnitude": 9,
+            "units": "mm"
+          },
+          "column_pitch": {
+            "type": "ValueWithUnits",
+            "magnitude": 9,
+            "units": "mm"
+          },
+          "row_offset": {
+            "type": "ValueWithUnits",
+            "magnitude": 0,
+            "units": "mm"
+          },
+          "column_offset": {
+            "type": "ValueWithUnits",
+            "magnitude": 0,
+            "units": "mm"
+          }
+        },
+        "type": "WellPlate",
+        "well": {
+          "depth": {
+            "type": "ValueWithUnits",
+            "magnitude": 11.3,
+            "units": "mm"
+          },
+          "shape": {
+            "type": "Circle",
+            "diameter": {
+              "type": "ValueWithUnits",
+              "magnitude": 6.86,
+              "units": "mm"
+            }
+          },
+          "bottom_shape": {
+            "type": "Round"
+          },
+          "min_volume": {
+            "type": "ValueWithUnits",
+            "magnitude": 10,
+            "units": "uL"
+          },
+          "max_volume": {
+            "type": "ValueWithUnits",
+            "magnitude": 260,
+            "units": "uL"
+          }
+        }
+      },
+      "holder": {
+        "type": "LabwareHolderName",
+        "robot_id": "fQeYg_pxL8ySIupLmdZEYA",
+        "name": "DeckSlot_9"
+      },
+      "robot_id": "fQeYg_pxL8ySIupLmdZEYA",
+      "annotation": "qPCR plate"
+    },
+    {
+      "type": "ADD_LABWARE",
+      "descriptor": {
+        "schema_version": 3,
+        "id": "TrilobioDef_Plate3788-",
+        "name": "Corning Costar 96 Well Plate #3788",
+        "x_length": {
+          "type": "ValueWithUnits",
+          "magnitude": 127.76,
+          "units": "mm"
+        },
+        "y_length": {
+          "type": "ValueWithUnits",
+          "magnitude": 85.47,
+          "units": "mm"
+        },
+        "z_length": {
+          "type": "ValueWithUnits",
+          "magnitude": 14.22,
+          "units": "mm"
+        },
+        "named_tags": {
+          "model": "well_plate_96.obj"
+        },
+        "grid": {
+          "row_count": 8,
+          "column_count": 12,
+          "row_pitch": {
+            "type": "ValueWithUnits",
+            "magnitude": 9,
+            "units": "mm"
+          },
+          "column_pitch": {
+            "type": "ValueWithUnits",
+            "magnitude": 9,
+            "units": "mm"
+          },
+          "row_offset": {
+            "type": "ValueWithUnits",
+            "magnitude": 0,
+            "units": "mm"
+          },
+          "column_offset": {
+            "type": "ValueWithUnits",
+            "magnitude": 0,
+            "units": "mm"
+          }
+        },
+        "type": "WellPlate",
+        "well": {
+          "depth": {
+            "type": "ValueWithUnits",
+            "magnitude": 11.3,
+            "units": "mm"
+          },
+          "shape": {
+            "type": "Circle",
+            "diameter": {
+              "type": "ValueWithUnits",
+              "magnitude": 6.86,
+              "units": "mm"
+            }
+          },
+          "bottom_shape": {
+            "type": "Round"
+          },
+          "min_volume": {
+            "type": "ValueWithUnits",
+            "magnitude": 10,
+            "units": "uL"
+          },
+          "max_volume": {
+            "type": "ValueWithUnits",
+            "magnitude": 260,
+            "units": "uL"
+          }
+        }
+      },
+      "id": "PP3C_PFlMhZipb4K6FfPpw"
+    },
+    {
+      "type": "ADD_PIPETTE_TIP_GROUP",
+      "id": "rnpk3i2Il6OGpmsSBu6rsQ",
+      "descriptor": {
+        "type": "PipetteTipGroup",
+        "row_count": 1,
+        "column_count": 1,
+        "pipette_tip_tags": [
+          "manifold_match_5"
+        ],
+        "pipette_tip_named_tags": {
+          "max_volume": "20.0"
+        }
+      },
+      "robot_id": "fQeYg_pxL8ySIupLmdZEYA"
+    },
+    {
+      "type": "ADD_PIPETTE_TIP_GROUP",
+      "id": "qlekjO7Lk3KfdWlAR4KB9w",
+      "descriptor": {
+        "type": "PipetteTipGroup",
+        "row_count": 1,
+        "column_count": 1,
+        "pipette_tip_tags": [
+          "manifold_match_6"
+        ],
+        "pipette_tip_named_tags": {
+          "max_volume": "1000.0"
+        }
+      },
+      "robot_id": "fQeYg_pxL8ySIupLmdZEYA"
+    },
+    {
+      "type": "RETRIEVE_TOOL",
+      "id": "soH8fWYnusXmNTLWNzXEnA",
+      "robot_id": "fQeYg_pxL8ySIupLmdZEYA"
+    },
+    {
+      "type": "RETRIEVE_PIPETTE_TIP_GROUP",
+      "id": "rnpk3i2Il6OGpmsSBu6rsQ",
+      "robot_id": "fQeYg_pxL8ySIupLmdZEYA"
+    },
+    {
+      "type": "COMMENT",
+      "text": "10mM Tris-HCl (Dilutant)-1 --9 uL primary, 19uL total--> 1st Dil all Samples-1"
+    },
+    {
+      "type": "MOVE_TO_LOCATION",
+      "location": {
+        "type": "LocationAsLabwareIndex",
+        "labware_id": "S5fzDnoGnv9jXgSyIEnA7w",
+        "location_index": 0,
+        "well_part": "TOP"
+      },
+      "location_offset": [
+        [
+          1,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          1,
+          0.02
+        ],
+        [
+          0,
+          0,
+          0,
+          1
+        ]
+      ],
+      "robot_id": "fQeYg_pxL8ySIupLmdZEYA",
+      "path_type": 2,
+      "annotation": "move to blowout aspirate"
+    },
+    {
+      "type": "ASPIRATE",
+      "volume": {
+        "type": "ValueWithUnits",
+        "units": "uL",
+        "magnitude": 10
+      },
+      "speed": {
+        "type": "ValueWithUnits",
+        "units": "uL / s",
+        "magnitude": 100
+      },
+      "annotation": "blowout aspirate",
+      "robot_id": "fQeYg_pxL8ySIupLmdZEYA"
+    },
+    {
+      "type": "MOVE_TO_LOCATION",
+      "location": {
+        "type": "LocationAsLabwareIndex",
+        "labware_id": "S5fzDnoGnv9jXgSyIEnA7w",
+        "location_index": 0,
+        "well_part": "BOTTOM"
+      },
+      "location_offset": [
+        [
+          1,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          1,
+          0.003
+        ],
+        [
+          0,
+          0,
+          0,
+          1
+        ]
+      ],
+      "robot_id": "fQeYg_pxL8ySIupLmdZEYA",
+      "path_type": 1,
+      "annotation": "move to aspirate"
+    },
+    {
+      "type": "ASPIRATE",
+      "volume": {
+        "type": "ValueWithUnits",
+        "units": "uL",
+        "magnitude": 9
+      },
+      "speed": {
+        "type": "ValueWithUnits",
+        "units": "uL / s",
+        "magnitude": 100
+      },
+      "annotation": "primary aspiration",
+      "robot_id": "fQeYg_pxL8ySIupLmdZEYA"
+    },
+    {
+      "type": "MOVE_TO_LOCATION",
+      "location": {
+        "type": "LocationAsLabwareIndex",
+        "labware_id": "wofcWd0MPMIgClFpD4lAgw",
+        "location_index": 1,
+        "well_part": "BOTTOM"
+      },
+      "location_offset": [
+        [
+          1,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          1,
+          0.003
+        ],
+        [
+          0,
+          0,
+          0,
+          1
+        ]
+      ],
+      "robot_id": "fQeYg_pxL8ySIupLmdZEYA",
+      "path_type": 2,
+      "annotation": "move to dispense"
+    },
+    {
+      "type": "DISPENSE",
+      "volume": {
+        "type": "ValueWithUnits",
+        "units": "uL",
+        "magnitude": 9
+      },
+      "speed": {
+        "type": "ValueWithUnits",
+        "units": "uL / s",
+        "magnitude": 100
+      },
+      "annotation": "dispense",
+      "robot_id": "fQeYg_pxL8ySIupLmdZEYA"
+    },
+    {
+      "type": "MOVE_TO_LOCATION",
+      "location": {
+        "type": "LocationAsLabwareIndex",
+        "labware_id": "wofcWd0MPMIgClFpD4lAgw",
+        "location_index": 1,
+        "well_part": "BOTTOM"
+      },
+      "location_offset": [
+        [
+          1,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          1,
+          0.003
+        ],
+        [
+          0,
+          0,
+          0,
+          1
+        ]
+      ],
+      "robot_id": "fQeYg_pxL8ySIupLmdZEYA",
+      "path_type": 1,
+      "annotation": "move to blowout dispense"
+    },
+    {
+      "type": "DISPENSE",
+      "volume": {
+        "type": "ValueWithUnits",
+        "units": "uL",
+        "magnitude": 10
+      },
+      "speed": {
+        "type": "ValueWithUnits",
+        "units": "uL / s",
+        "magnitude": 100
+      },
+      "annotation": "blowout dispense",
+      "robot_id": "fQeYg_pxL8ySIupLmdZEYA"
+    }
+  ]
+}

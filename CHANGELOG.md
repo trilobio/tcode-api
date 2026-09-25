@@ -5,10 +5,21 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
-## [v1.48.0]
+## [v1.49.0]
 ### Added
 - `CALIBRATE_LABWARE_WELL_CENTER` command: probes a well's inner walls to correct a
     labware's well x/y centers.
+
+---
+
+## [v1.48.0]
+### Added
+- The code that migrates old schemas to newer versions will recursively migrate
+  nested schemas.
+    - Only works when migrating to the newest known version.
+### Changed
+- `scripts/execute_tcode_file.py` migrates the tcode to the newest API version
+  before running it.
 
 ---
 

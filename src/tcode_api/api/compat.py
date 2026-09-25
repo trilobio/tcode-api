@@ -2,7 +2,7 @@
 
 Comtains:
     * mapping from tcode-api semantic version (e.g. 'v1.35.1') to individual schema versions (e.g. SEND_WEBHOOK -> v2, WAIT -> v3)
-    * ``resolve_api_profile`` function to navigate the mapping.
+    * ``_resolve_api_profile`` function to navigate the mapping.
 
 How to perform:
     Rename:
@@ -21,12 +21,17 @@ How to perform:
         * Add an entry to API_REMOVALS with the removed command mapped to the APIVersion
 """
 
+import collections.abc
 import dataclasses
+import importlib
+import json
 import logging
+from typing import cast
 
 from packaging.version import Version
 from pydantic import ValidationError
 
+from ..schemas.commands.union import TCode
 from ..schemas.registry import (
     BuilderNotFoundError,
     MigrationRegistry,
@@ -36,6 +41,8 @@ from ..schemas.registry import (
     migration_registry,
     schema_registry,
 )
+from ..schemas.script.metadata.latest import Metadata
+from ..schemas.script.tcode_script import TCodeScript
 
 _logger = logging.getLogger(__name__)
 
@@ -114,6 +121,12 @@ class CompatContext:
 
     schema_registry: SchemaRegistry
     """Registry of builders for schemas represented in the most modern version of the ``api_history_log``."""
+
+    def known_schema_names(self) -> set[SchemaName]:
+        names = set(self.schema_registry.keys)
+        for renames in self.api_history_log.migrations.values():
+            names.update(renames.keys())
+        return names
 
 
 class TargetSchemaNotFoundError(Exception):
@@ -335,7 +348,7 @@ tcode_api_compat_context = CompatContext(
             "v1.46.0": {
                 "ADD_PIPETTE_TIP_GROUP": 3,
             },
-            "v1.48.0": {
+            "v1.49.0": {
                 "CALIBRATE_LABWARE_WELL_CENTER": 1,
             },
         },
@@ -355,6 +368,7 @@ def migrate_data_to_latest(
     schema_name: str | None = None,
     schema_version: int | None = None,
     context: CompatContext = tcode_api_compat_context,
+    recurse: bool = True,
 ) -> RawData:
     """Migrate a given json blob to the latest version of its schema.
 
@@ -364,6 +378,7 @@ def migrate_data_to_latest(
     :param schema_version: The version of the schema to migrate. If not provided, will attempt to
         infer from the 'schema_version' key in the data.
     :param context: The targeted compatibility context. Defaults to the tcode-api context.
+    :param recurse: Whether to migrate schemas nested inside this schema. Defaults to True.
 
     :returns: The migrated json blob, updated to match the latest version of the schema.
         If no migrators were found for the given schema, returns the data unchanged.
@@ -377,6 +392,7 @@ def migrate_data_to_latest(
         schema_name=schema_name,
         schema_version=schema_version,
         context=context,
+        recurse=recurse,
     )
 
 
@@ -386,6 +402,7 @@ def migrate_data_to_version(
     schema_name: str | None = None,
     schema_version: int | None = None,
     context: CompatContext = tcode_api_compat_context,
+    recurse: bool | None = None,
 ) -> RawData:
     """Migrate a given json blob to the specified version of it's schema.
 
@@ -397,6 +414,9 @@ def migrate_data_to_version(
     :param schema_version: The version of the schema to migrate. If not provided, will attempt to
         infer from the 'schema_version' key in the data.
     :param context: The targeted compatibility context. Defaults to the tcode-api context.
+    :param recurse: Whether to migrate schemas nested inside this schema. Only possible when
+        we're migrating to the newest version (target_version is None). Defaults to None, which sets
+        it to True iff target_version is None.
 
     :returns: The migrated json blob, updated to match the specified version of the schema.
         If no migrators were found for the given schema, returns the data unchanged.
@@ -408,6 +428,9 @@ def migrate_data_to_version(
         * the target version has no registered migrator.
 
     """
+    if recurse is None:
+        recurse = target_version is None
+
     try:
         schema_name = schema_name or data["type"]
     except KeyError as err:
@@ -433,43 +456,87 @@ def migrate_data_to_version(
                 msg=f"Cannot migrate from version '{schema_version}' to version '{target_version}' for schema '{schema_name}' because the target version is older than the current version.",
                 data=data,
             )
-    try:
-        migrators = context.migration_registry.get_migrators_for_schema(schema_name)
-    except BuilderNotFoundError:
-        # No-op or error if no migrators
-        if target_version is not None and target_version != schema_version:
-            raise InvalidDataError(
-                msg=f"Cannot migrate from version '{schema_version}' to version '{target_version}' for schema '{schema_name}' because there are no registered migrators for this schema.",
-                data=data,
-            )
-        return data
 
-    # Validate target version against available migrators
-    if target_version is not None and target_version not in migrators:
+    try:
+        final_name, migration_steps = _build_migrator_chain(
+            incoming_name=schema_name,
+            incoming_schema_version=schema_version,
+            target_schema_version=target_version,
+            context=context,
+        )
+    except ValueError as err:
+        raise InvalidDataError(
+            msg=f"Invalid migration path for data with type '{schema_name}' and schema_version '{schema_version}'.",
+            data=data,
+        ) from err
+
+    if target_version is not None and target_version not in {v for _, v, _ in migration_steps}:
         raise InvalidDataError(
             msg=f"Cannot migrate from version '{schema_version}' to version '{target_version}' for schema '{schema_name}' because there is no registered migrator for the target version.",
             data=data,
         )
 
-    sorted_migrators = sorted(migrators)
-    if target_version is not None and sorted_migrators[-1] < target_version:
-        raise InvalidDataError(
-            msg=f"Cannot migrate from version '{schema_version}' to version '{target_version}' for schema '{schema_name}' because the target_version is newer than the latest migrator.",
-            data=data,
-        )
+    for step_name, step_version, migrator in migration_steps:
+        data = migrator(data)
 
-    for migrator_version in sorted_migrators:
-        if target_version is not None and migrator_version > target_version:
-            break  # Stop if we've reached the target version
+    # Recurse, and migrate nested schemas.
+    # We can only really do this if we're trying to migrate to the latest version.
+    if recurse:
+        if target_version is None:
+            data = _migrate_nested_schemas_to_latest(context, data, skip_parent=True)
+        else:
+            raise RuntimeError("Can only migrate nested schemas to newest version")
 
-        # We haven't reached the target version yet
-        if migrator_version > schema_version:
-            data = migrators[migrator_version](data)
-
-    return data
+    return {**data, "type": final_name}
 
 
-def resolve_api_profile(
+def _migrate_nested_schemas_to_latest(
+    context: CompatContext, data: RawData, skip_parent: bool = False
+) -> RawData:
+    """Recursively migrate nested schemas.
+
+    Because we don't reliably track the versions of nested schemas, this just migrates
+    everything to the newest version.
+
+    Also: this currently only reads the schema version embedded in the data as `schema_version`. It
+    doesn't figure out the schema version from the overall API version, as `migrate_data_to_version`
+    does. So if there are old nested schemas that don't have versions, this isn't gonna catch them.
+    This could be fixed, but not sure if worth the added complexity.
+
+    :param context: The targeted compatibility context.
+    :param data: JSON-like data to migrate.
+    :param skip_parent: Don't migrate this object, only migrate nested ones.
+
+    :returns: Data, migrated to newest versions.
+    """
+
+    if isinstance(data, list):
+        return [_migrate_nested_schemas_to_latest(context, d) for d in data]
+    if not isinstance(data, collections.abc.Mapping):
+        return data
+
+    if not skip_parent:
+        if "schema_version" in data:
+            if data.get("type") in context.known_schema_names():
+                data = migrate_data_to_latest(
+                    data=data,
+                    # No schema_name, it should be inferrable.
+                    schema_version=None,
+                    context=context,
+                    recurse=False,  # We're recursing out here, don't need to do it twice
+                )
+            else:
+                # We don't yet migrate things that changed name. As of 2026-09-22, I
+                # don't think we need to.
+                _logger.warning("schema_version exists, but type isn't in schema_registry.")
+        else:
+            # It's not a nested schema, it's some other thing.
+            pass
+
+    return {k: _migrate_nested_schemas_to_latest(context, v) for k, v in data.items()}
+
+
+def _resolve_api_profile(
     api_version: APIVersion,
     context: CompatContext = tcode_api_compat_context,
 ) -> dict[SchemaName, SchemaVersion]:
@@ -568,7 +635,7 @@ def load_api_object(
 
     # If we didn't get a schema_version from the data, look it up with the API version.
     if api_version is not None:
-        profile = resolve_api_profile(api_version, context=context)
+        profile = _resolve_api_profile(api_version, context=context)
         if incoming_name not in profile:
             raise TargetSchemaNotFoundError(
                 msg=f"Schema '{incoming_name}' not valid for API version '{api_version}'.",
@@ -591,30 +658,18 @@ def load_api_object(
                 expected_schema_version=profile[incoming_name],
             )
 
-    # Migrate data to the most recent accepted schema version for the incoming command
-    try:
-        new_name, migrators = _build_migrator_chain(
-            incoming_name=incoming_name,
-            incoming_schema_version=schema_version,
-            target_schema_version=profile[incoming_name] if api_version is not None else None,
-            context=context,
-        )
-    except ValueError as err:
-        raise InvalidDataError(
-            msg=f"Invalid migration path for data with type '{incoming_name}' and schema_version '{schema_version}'.",
-            data=data,
-        ) from err
-    for migrator in migrators:
-        data = migrator(data)
+    # Migrate data to the most recent accepted schema version for the incoming command.
+    # `migrate_data_to_latest` follows renames and rewrites the "type" key to the final name.
+    data = migrate_data_to_latest(
+        data=data,
+        schema_name=incoming_name,
+        schema_version=schema_version,
+        context=context,
+    )
+    new_name = data["type"]
 
     try:
-        new_data = {}
-        for key, value in data.items():
-            if key == "type":
-                new_data[key] = new_name
-            else:
-                new_data[key] = value
-        return context.schema_registry.build_instance(data=new_data, key=new_name)
+        return context.schema_registry.build_instance(data=data, key=new_name)
     except ValidationError as err:
         raise InvalidDataError(
             msg=f"Data failed validation against schema '{new_name}' version '{schema_version}'.",
@@ -622,12 +677,17 @@ def load_api_object(
         ) from err
 
 
+MigrationStep = tuple[
+    SchemaName, SchemaVersion, Migrator
+]  # (name the migrator belongs to, version it migrates *to*, fn)
+
+
 def _build_migrator_chain(
     incoming_name: SchemaName,
     incoming_schema_version: SchemaVersion,
     target_schema_version: SchemaVersion | None = None,
     context: CompatContext = tcode_api_compat_context,
-) -> tuple[SchemaName, list[Migrator]]:
+) -> tuple[SchemaName, list[MigrationStep]]:
     """Helper function to fetch all migrators necessary to migrate data from one schema_version to another, handling renames.
 
     :param incoming_name: The original name of the schema to migrate.
@@ -643,7 +703,7 @@ def _build_migrator_chain(
         there is a migrator from v2 to v3).
     :raises DeprecatedSchemaError: If the target schema is deprecated and cannot be migrated to the latest version.
     """
-    migrators_to_apply: list[Migrator] = []
+    migrators_to_apply: list[MigrationStep] = []
 
     current_name = incoming_name
     current_version = incoming_schema_version
@@ -657,6 +717,9 @@ def _build_migrator_chain(
             migrators = {}
 
         for version in sorted(migrators.keys()):
+            if (target_schema_version is not None) and (target_schema_version <= current_version):
+                break
+
             if version - current_version > 1:
                 raise ValueError(
                     f"Cannot migrate from version '{current_version}' to version '{version}' for schema '{current_name}' because there is a gap in the migration path. Missing migrator for version '{current_version + 1}'."
@@ -671,8 +734,11 @@ def _build_migrator_chain(
                 current_version,
                 version,
             )
-            migrators_to_apply.append(migrators[version])
+            migrators_to_apply.append((current_name, version, migrators[version]))
             current_version = version
+
+        if target_schema_version is not None and current_version >= target_schema_version:
+            break  # reached the target; don't follow renames past it
 
         # Check for renames in the API history log and update the current_name accordingly
         continue_traversing = False  # Set back to true if we find a rename
@@ -696,3 +762,35 @@ def _build_migrator_chain(
                 break
 
     return current_name, migrators_to_apply
+
+
+def read_and_migrate_script(json_str: str) -> TCodeScript:
+    """Load a TCode script from a file-like object, and migrate it to the latest schema version.
+
+    :param json_str: JSON as a string.
+
+    :returns: The loaded TCode script.
+    """
+
+    j = json.loads(json_str)
+
+    api_version = j["metadata"]["tcode_api_version"]
+    # Older scripts have no `type`/`schema_version` on the script, metadata, or commands, so
+    # we can't migrate the whole script in one go. Instead, load each command individually,
+    # resolving its schema version from the API version.
+    commands: list[TCode] = []
+    for c in j["commands"]:
+        # load_api_object does the work of migration.
+        commands.append(cast(TCode, load_api_object(c, api_version=api_version)))
+
+    metadata = Metadata(**j["metadata"])
+    # Bump the script's overall version, since we've migrated every command in it.
+    new_api_version = importlib.metadata.version("tcode_api")
+    if metadata.tcode_api_version != new_api_version:
+        _logger.info(
+            f"Bumping script's tcode API version from {metadata.tcode_api_version} to {new_api_version}"
+        )
+        metadata.tcode_api_version = new_api_version
+
+    script = TCodeScript(metadata=metadata, commands=commands)
+    return script
