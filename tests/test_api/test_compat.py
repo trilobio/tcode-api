@@ -7,6 +7,8 @@ import unittest
 from contextlib import contextmanager
 from typing import Iterator, Literal, cast
 
+from pydantic import ValidationError
+
 import tcode_api.api as tc  # This import allows us to test what a "customer" who imports TCode would see
 from tcode_api.api.compat import (
     APIHistoryLog,
@@ -1066,20 +1068,36 @@ class TestCalibrateLabwareWellCenterV1(unittest.TestCase):
         data = {
             "type": "CALIBRATE_LABWARE_WELL_CENTER",
             "schema_version": 1,
-            "id": "test-command-id",
             "robot_id": "test-robot-id",
             "location": {
                 "type": "LocationAsLabwareIndex",
                 "schema_version": 1,
                 "labware_id": "test-labware-id",
                 "location_index": 0,
-                "well_part": "bottom",
+                "well_part": "BOTTOM",
             },
             "persistent": False,
         }
         command = tc.CALIBRATE_LABWARE_WELL_CENTER.model_validate(data)
         self.assertTrue(command.modify_all_wells)
-        self.assertIsNone(command.max_probe_distance)
+        self.assertEqual(command.location.location_index, 0)
+
+    def test_v1_rejects_location_relative_to_labware(self) -> None:
+        """`LocationRelativeToLabware` carries no well index, so it must not validate."""
+        data = {
+            "type": "CALIBRATE_LABWARE_WELL_CENTER",
+            "schema_version": 1,
+            "robot_id": "test-robot-id",
+            "location": {
+                "type": "LocationRelativeToLabware",
+                "schema_version": 1,
+                "labware_id": "test-labware-id",
+                "transform": [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]],
+            },
+            "persistent": False,
+        }
+        with self.assertRaises(ValidationError):
+            tc.CALIBRATE_LABWARE_WELL_CENTER.model_validate(data)
 
 
 if __name__ == "__main__":
