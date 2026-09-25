@@ -26,7 +26,8 @@ class CALIBRATE_LABWARE_WELL_CENTER(BaseRobotSpecificTCodeCommandV1):
         description=(
             "Location specifying which labware and which well to probe. Only "
             "`LocationAsLabwareIndex` is accepted: re-centering is defined per well, and "
-            "`LocationRelativeToLabware` carries no well index."
+            "`LocationRelativeToLabware` carries no well index. `well_part` is ignored: "
+            "probing happens at the probe's current height."
         )
     )
 
