@@ -5,6 +5,13 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
+## [v1.49.0]
+### Added
+- `CALIBRATE_LABWARE_WELL_CENTER` command: probes a well's inner walls to correct a
+    labware's well x/y centers.
+
+---
+
 ## [v1.48.0]
 ### Added
 - The code that migrates old schemas to newer versions will recursively migrate

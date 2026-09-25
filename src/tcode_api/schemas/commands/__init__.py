@@ -11,6 +11,7 @@ from .add_tool.latest import ADD_TOOL
 from .aspirate.latest import ASPIRATE
 from .calibrate_labware_height.latest import CALIBRATE_LABWARE_HEIGHT
 from .calibrate_labware_holder.latest import CALIBRATE_LABWARE_HOLDER
+from .calibrate_labware_well_center.latest import CALIBRATE_LABWARE_WELL_CENTER
 from .calibrate_labware_well_depth.latest import CALIBRATE_LABWARE_WELL_DEPTH
 from .calibrate_tool.latest import CALIBRATE_TOOL
 from .comment.latest import COMMENT
@@ -45,6 +46,7 @@ __all__ = [
     "ASPIRATE",
     "CALIBRATE_LABWARE_HEIGHT",
     "CALIBRATE_LABWARE_HOLDER",
+    "CALIBRATE_LABWARE_WELL_CENTER",
     "CALIBRATE_LABWARE_WELL_DEPTH",
     "CALIBRATE_TOOL",
     "COMMENT",

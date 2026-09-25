@@ -8,6 +8,8 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Iterator, Literal, cast
 
+from pydantic import ValidationError
+
 import tcode_api.api as tc  # This import allows us to test what a "customer" who imports TCode would see
 from tcode_api.api.compat import (
     APIHistoryLog,
@@ -1500,6 +1502,48 @@ class TestReadAndMigrateScript(unittest.TestCase):
         script = read_and_migrate_script(json_str)
         self.assertIsInstance(script, tc.TCodeScript)
         self.assertGreater(len(script.commands), 0)
+
+
+class TestCalibrateLabwareWellCenterV1(unittest.TestCase):
+    """Regression tests for CALIBRATE_LABWARE_WELL_CENTER v1 (added in tcode-api v1.49.0)."""
+
+    def test_v1_payload_validates_and_is_in_api_profile(self) -> None:
+        """A v1 payload validates against the schema and appears in the API profile."""
+        profile = _resolve_api_profile("v1.49.0", tcode_api_compat_context)
+        self.assertEqual(profile["CALIBRATE_LABWARE_WELL_CENTER"], 1)
+        data = {
+            "type": "CALIBRATE_LABWARE_WELL_CENTER",
+            "schema_version": 1,
+            "robot_id": "test-robot-id",
+            "location": {
+                "type": "LocationAsLabwareIndex",
+                "schema_version": 1,
+                "labware_id": "test-labware-id",
+                "location_index": 0,
+                "well_part": "BOTTOM",
+            },
+            "persistent": False,
+        }
+        command = tc.CALIBRATE_LABWARE_WELL_CENTER.model_validate(data)
+        self.assertTrue(command.modify_all_wells)
+        self.assertEqual(command.location.location_index, 0)
+
+    def test_v1_rejects_location_relative_to_labware(self) -> None:
+        """`LocationRelativeToLabware` carries no well index, so it must not validate."""
+        data = {
+            "type": "CALIBRATE_LABWARE_WELL_CENTER",
+            "schema_version": 1,
+            "robot_id": "test-robot-id",
+            "location": {
+                "type": "LocationRelativeToLabware",
+                "schema_version": 1,
+                "labware_id": "test-labware-id",
+                "transform": [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]],
+            },
+            "persistent": False,
+        }
+        with self.assertRaises(ValidationError):
+            tc.CALIBRATE_LABWARE_WELL_CENTER.model_validate(data)
 
 
 if __name__ == "__main__":
