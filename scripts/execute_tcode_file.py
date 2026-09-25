@@ -5,7 +5,7 @@ import pathlib
 
 import plac  # type: ignore [import-untyped]
 
-from tcode_api.api import TCodeScript
+from tcode_api.api.compat import read_and_migrate_script
 from tcode_api.cli import (
     DEFAULT_SERVICER_URL,
     servicer_url_annotation,
@@ -22,7 +22,7 @@ def main(file_path: pathlib.Path, servicer_url: str = DEFAULT_SERVICER_URL) -> N
     with file_path.open() as io_object:
         file_text = io_object.read()
 
-    script = TCodeScript.model_validate_json(file_text)
+    script = read_and_migrate_script(file_text)
     client = TCodeServicerClient(servicer_url=servicer_url)
     client.run_script(script)
 
