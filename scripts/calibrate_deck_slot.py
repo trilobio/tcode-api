@@ -119,8 +119,35 @@ def prompt_deck_slot_name(choices: Iterable[str]) -> str:
             continue
 
 
-def normalize_deck_slot_name(deck_slot: str) -> str:
+def normalize_deck_slot_string(input_string: str) -> list[str]:
+    """Normalize a set of deck slot identifiers in a single string to a list of canonical names.
+
+    :param input_string: string identifier of one or more deck slots as follows:
+       "1-3,16" --> ["DeckSlot_1", "DeckSlot_2", "DeckSlot_3", "DeckSlot_16"]
+    :return: list of normalized names
+    """
+    retval: list[str] = []
+    for substring in input_string.split(","):
+        if "-" in substring:
+            raw_bookends = substring.split("-")
+            if len(raw_bookends) != 2:
+                raise RuntimeError(
+                    f"Expected only one '-' character in deck slot identifier, got '{substring}'"
+                )
+            ds_bgn = normalize_deck_slot_name(raw_bookends[0].strip())
+            ds_end = normalize_deck_slot_name(raw_bookends[1].strip())
+            for ds_num in range(int(ds_bgn[9:]), int(ds_end[9:])):
+                retval.append(normalize_deck_slot_name(ds_num))
+        else:
+            retval.append(normalize_deck_slot_name(substring.strip()))
+
+    return retval
+
+
+def normalize_deck_slot_name(deck_slot: str | int) -> str:
     """Normalize a deck slot identifier to the canonical 'DeckSlot_N' form."""
+    if isinstance(deck_slot, int):
+        return f"DeckSlot_{deck_slot}"
     raw = deck_slot.strip()
     if raw.isdigit():
         return f"DeckSlot_{int(raw)}"
@@ -149,8 +176,9 @@ def _tip_box_name_for_pipette_max_volume(pipette_max_volume: tc.ValueWithUnits) 
 @plac.annotations(
     servicer_url=servicer_url_annotation,
     output_file_path=output_file_path_annotation,
-    deck_slot=plac.Annotation(
-        "Deck slot (labware holder) name, e.g. DeckSlot_1. If omitted, prompts interactively.",
+    deck_slot_names=plac.Annotation(
+        'comma-separated string of Deck slot (labware holder) name(s), e.g. "DeckSlot_1" or "1,2,3,16".'
+        "If omitted, prompts interactively.",
         kind="option",
         abbrev="d",
     ),
@@ -159,7 +187,7 @@ def _tip_box_name_for_pipette_max_volume(pipette_max_volume: tc.ValueWithUnits) 
 def main(
     servicer_url: str = DEFAULT_SERVICER_URL,
     output_file_path: pathlib.Path | None = None,
-    deck_slot: str | None = None,
+    deck_slot_names: str | None = None,
     robot_sn: str | None = None,
 ) -> None:
     """Generate TCode script to calibrate a deck slot using CALIBRATE_LABWARE_HOLDER."""
@@ -189,21 +217,22 @@ def main(
         raise AssertionError(f"unhandled tool kind {tool_kind}")
 
     # Then select deck slot to calibrate.
-    if deck_slot is None:
-        deck_slot = prompt_deck_slot_name([f"DeckSlot_{i}" for i in range(1, 17)])
+    if deck_slot_names is None:
+        deck_slots = [prompt_deck_slot_name([f"DeckSlot_{i}" for i in range(1, 17)])]
     else:
-        deck_slot = normalize_deck_slot_name(deck_slot)
+        deck_slots = normalize_deck_slot_string(deck_slot_names)
 
-    name = f"Calibrate {deck_slot} ({tool_name_suffix})"
+    name = f"Calibrate {','.join(deck_slots)} ({tool_name_suffix})"
 
     script = tc.TCodeScript.new(name=name, description=__doc__)
 
     # FLEET
-    robot_id, tool_id, tip_box_id = [generate_id() for _ in range(3)]
-    script.commands.append(
-        tc.ADD_ROBOT(id=robot_id, descriptor=tc.RobotDescriptor(serial_number=robot_sn))
-    )
-    script.commands.append(tc.ADD_TOOL(robot_id=robot_id, id=tool_id, descriptor=descriptor))
+    script.commands = [
+        tc.ADD_ROBOT(
+            id=(robot_id := generate_id()), descriptor=tc.RobotDescriptor(serial_number=robot_sn)
+        ),
+        tc.ADD_TOOL(robot_id=robot_id, id=(tool_id := generate_id()), descriptor=descriptor),
+    ]
 
     # LABWARE (required for pipette teach mode)
     if tip_box_name is not None:
@@ -211,22 +240,24 @@ def main(
             tc.CREATE_LABWARE(
                 robot_id=robot_id,
                 description=load_labware(tip_box_name),
-                holder=tc.LabwareHolderName(robot_id=robot_id, name=deck_slot),
+                holder=tc.LabwareHolderName(robot_id=robot_id, name=deck_slots[0]),
             )
         )
-        script.commands.append(tc.ADD_LABWARE(id=tip_box_id, descriptor=describe_pipette_tip_box()))
-
-    # ACTIONS
-    script.commands.append(tc.SWAP_TO_TOOL(robot_id=robot_id, id=tool_id))
-    script.commands.append(
-        tc.CALIBRATE_LABWARE_HOLDER(
-            robot_id=robot_id,
-            location=tc.LocationAsLabwareHolder(
-                robot_id=robot_id,
-                labware_holder_name=deck_slot,
-            ),
+        script.commands.append(
+            tc.ADD_LABWARE(id=generate_id(), descriptor=describe_pipette_tip_box())
         )
-    )
+
+    script.commands.append(tc.SWAP_TO_TOOL(robot_id=robot_id, id=tool_id))
+    for deck_slot_name in deck_slots:
+        script.commands.append(
+            tc.CALIBRATE_LABWARE_HOLDER(
+                robot_id=robot_id,
+                location=tc.LocationAsLabwareHolder(
+                    robot_id=robot_id,
+                    labware_holder_name=deck_slot_name,
+                ),
+            )
+        )
     script.commands.append(tc.RETURN_TOOL(robot_id=robot_id))
 
     if output_file_path is not None:

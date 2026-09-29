@@ -5,6 +5,12 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
+## [v1.50.0]
+### Changed
+- `scripts/calibrate_deck_slot.py` can now sequentially calibrate multiple deck slots.
+
+---
+
 ## [v1.49.0]
 ### Added
 - `CALIBRATE_LABWARE_WELL_CENTER` command: probes a well's inner walls to correct a
