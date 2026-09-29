@@ -5,11 +5,11 @@ import functools
 import json
 import pathlib
 import site
-import sys
 import uuid
 from typing import cast
 
 import numpy as np
+from py_organelles import prompt_yes_no
 from scipy.spatial.transform import Rotation  # type: ignore[import-untyped]
 from typing_extensions import Sentinel
 
@@ -473,42 +473,114 @@ describe_pipette_tip_1x8.__doc__ = (
 )
 
 
-def prompt_accept_deck_layout(script: tc.TCodeScript) -> None:
-    """Display deck layout and required tools from provided script and prompt user to accept before proceeding."""
-    # Read deck layout
+def describe_tool_descriptor(descriptor: tc.ToolDescriptor) -> str:
+    """Render a short human-readable label for a tool descriptor.
+
+    Pipettes render as ``C<channel_count>P<max_volume_ul>`` (e.g. ``C8P200``); every other tool
+    renders as its type name (e.g. ``Probe``, ``Gripper``).
+
+    :param descriptor: Tool descriptor to label.
+    :return: Label for the tool.
+    """
+    if not isinstance(
+        descriptor, (tc.SingleChannelPipetteDescriptor, tc.EightChannelPipetteDescriptor)
+    ):
+        return str(descriptor.type)
+
+    channel_count = 1 if isinstance(descriptor, tc.SingleChannelPipetteDescriptor) else 8
+    if descriptor.max_volume is None:
+        volume = "?"
+    else:
+        volume = f"{round(descriptor.max_volume.to('ul').magnitude)}"
+    return f"C{channel_count}P{volume}"
+
+
+def format_table(headers: list[str], rows: list[list[str]], indent: str = "  ") -> str:
+    """Render rows as a fixed-width text table with a header rule.
+
+    Columns are widened to fit their longest cell, so the table is uniform regardless of content.
+
+    :param headers: Column headers; defines the column count.
+    :param rows: Row cells. Rows shorter than ``headers`` are padded with empty cells.
+    :param indent: String prefixed to every rendered line.
+    :return: The rendered table, newline-separated and without a trailing newline.
+    """
+    padded = [list(row) + [""] * (len(headers) - len(row)) for row in rows]
+    widths = [
+        max(len(headers[i]), *(len(row[i]) for row in padded)) if padded else len(headers[i])
+        for i in range(len(headers))
+    ]
+
+    def _line(cells: list[str]) -> str:
+        # Trailing empty cells are dropped rather than padded, so a short row does not end in
+        # a dangling separator.
+        last = max((i for i, cell in enumerate(cells) if cell), default=-1)
+        return (
+            indent
+            + " | ".join(cell.ljust(widths[i]) for i, cell in enumerate(cells[: last + 1])).rstrip()
+        )
+
+    rule = indent + "-+-".join("-" * width for width in widths)
+    return "\n".join([_line(headers), rule, *(_line(row) for row in padded)])
+
+
+def _labware_holder_label(holder: tc.LabwareHolder) -> str:
+    """Render a short label identifying a labware holder.
+
+    :param holder: Holder to label.
+    :return: The holder's name, or its TCode labware id when specified by id.
+    """
+    if isinstance(holder, tc.LabwareHolderName):
+        return holder.name
+    return f"<labware id {holder.id}>"
+
+
+def prompt_accept_deck_layout(script: tc.TCodeScript) -> bool:
+    """Prompt the user to accept the given scripts' required deck layout and tools.
+
+    :param script: TCodeScript parsed to determine required deck layout and tools.
+    :returns: True if the user accepts the deck layout, False if they reject it.
+
+    :raises SystemExit: If the user enters 'q' or 'quit' at the prompt.
+    """
     layout_commands: list[tc.CREATE_LABWARE] = [
         cmd for cmd in script.commands if isinstance(cmd, tc.CREATE_LABWARE)
     ]
     tool_commands: list[tc.ADD_TOOL] = [
         cmd for cmd in script.commands if isinstance(cmd, tc.ADD_TOOL)
     ]
-    print("The script requires the following:")
-    print("Tools: -------------------")
-    for tool_cmd in tool_commands:
-        print(
-            f"\t{tool_cmd.descriptor.type}: max_volume={getattr(tool_cmd.descriptor, 'max_volume', 'N/A')}"
-        )
-    print("Deck Layout: -------------------")
-    for layout_cmd in layout_commands:
-        holder = layout_cmd.holder
-        if isinstance(holder, tc.LabwareHolderName):
-            try:
-                labware_name = layout_cmd.description.named_tags["name"]
-            except KeyError:
-                labware_name = "<no name>"
-            try:
-                model_name = layout_cmd.description.named_tags["model"]
-            except KeyError:
-                model_name = "<no model>"
-            print(
-                f"\t{holder.name} | {layout_cmd.description.type:18} | {model_name:30} | {labware_name}"
-            )
 
-    while True:
-        ans = input("Continue? [Y|n]: ").lower()
-        if ans in ["n", "no", "q", "quit", "stop", "exit"]:
-            sys.exit(0)
-        elif ans in ["", "y", "yes", "continue"]:
-            return
-        else:
-            print(f"Bad entry {ans} not in ['y', 'n']")
+    print("The script requires the following:")
+
+    print("\nTools:")
+    if tool_commands:
+        print(
+            format_table(
+                ["Id", "Tool"],
+                [[cmd.id, describe_tool_descriptor(cmd.descriptor)] for cmd in tool_commands],
+            )
+        )
+    else:
+        print("  (none)")
+
+    print("\nDeck Layout:")
+    if layout_commands:
+        print(
+            format_table(
+                ["Holder", "Type", "Model", "Name"],
+                [
+                    [
+                        _labware_holder_label(cmd.holder),
+                        str(cmd.description.type),
+                        str(cmd.description.named_tags.get("model", "<no model>")),
+                        str(cmd.description.named_tags.get("name", "<no name>")),
+                    ]
+                    for cmd in layout_commands
+                ],
+            )
+        )
+    else:
+        print("  (none)")
+
+    print()
+    return prompt_yes_no("Continue?", default=True)

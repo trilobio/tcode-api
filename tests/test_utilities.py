@@ -10,7 +10,9 @@ from tcode_api.utilities import (
     describe_pipette_tip_1x8,
     describe_pipette_tip_box,
     describe_pipette_tip_group,
+    describe_tool_descriptor,
     describe_well_plate,
+    format_table,
     well_address_to_index,
 )
 
@@ -109,3 +111,62 @@ class TestWellAddressToIndex(unittest.TestCase):
             with self.subTest(address=address):
                 with self.assertRaises(expected_exception):
                     well_address_to_index(address)
+
+
+class TestDescribeToolDescriptor(unittest.TestCase):
+    """Test describe_tool_descriptor labels."""
+
+    def test_pipettes_render_channel_count_and_volume(self) -> None:
+        """Pipettes render as C<channel_count>P<max_volume_ul>, converting units as needed."""
+        self.assertEqual(
+            describe_tool_descriptor(
+                tc.SingleChannelPipetteDescriptor(
+                    max_volume=tc.ValueWithUnits(magnitude=1000, units="ul")
+                )
+            ),
+            "C1P1000",
+        )
+        self.assertEqual(
+            describe_tool_descriptor(
+                tc.EightChannelPipetteDescriptor(
+                    max_volume=tc.ValueWithUnits(magnitude=0.2, units="mL")
+                )
+            ),
+            "C8P200",
+        )
+
+    def test_pipette_without_max_volume(self) -> None:
+        """A pipette with no max_volume renders '?' rather than raising."""
+        self.assertEqual(describe_tool_descriptor(tc.SingleChannelPipetteDescriptor()), "C1P?")
+
+    def test_non_pipettes_render_their_type(self) -> None:
+        """Probes and grippers render as their type name."""
+        self.assertEqual(describe_tool_descriptor(tc.ProbeDescriptor()), "Probe")
+        self.assertEqual(describe_tool_descriptor(tc.GripperDescriptor()), "Gripper")
+
+
+class TestFormatTable(unittest.TestCase):
+    """Test the format_table renderer."""
+
+    def test_columns_are_uniform(self) -> None:
+        """Every cell in a column is padded to the width of that column's widest entry."""
+        rendered = format_table(["A", "Bee"], [["long value", "x"], ["y", "z"]], indent="")
+        self.assertEqual(
+            rendered.splitlines(),
+            [
+                "A          | Bee",
+                "-----------+----",
+                "long value | x",
+                "y          | z",
+            ],
+        )
+
+    def test_short_rows_are_padded(self) -> None:
+        """A row with fewer cells than headers is padded rather than raising."""
+        rendered = format_table(["A", "B"], [["only"]], indent="")
+        self.assertEqual(rendered.splitlines()[-1], "only")
+
+    def test_no_rows_renders_header_only(self) -> None:
+        """An empty row list still renders the header and rule."""
+        rendered = format_table(["A", "B"], [], indent="")
+        self.assertEqual(rendered.splitlines(), ["A | B", "--+--"])

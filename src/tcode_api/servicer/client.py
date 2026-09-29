@@ -417,7 +417,8 @@ class TCodeServicerClient:
             self.discover_fleet()
 
         if prompt_deck_layout:
-            prompt_accept_deck_layout(script)
+            if not prompt_accept_deck_layout(script):
+                raise RuntimeError("Deck layout not accepted by user; aborting script run.")
 
         total_commands = len(script.commands)
 

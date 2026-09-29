@@ -5,6 +5,24 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
+## [Unreleased]
+### Added
+- `py-organelles` dependency, for its `prompt_yes_no` prompt helper.
+- `describe_tool_descriptor`: renders pipettes as `C<channel_count>P<max_volume_ul>`
+    (e.g. `C8P200`) and other tools as their type name.
+- `format_table`: fixed-width table renderer with a header rule; columns size to content.
+
+### Changed
+- `prompt_accept_deck_layout` prints headed, uniformly-aligned tables and delegates its
+    prompt to `py_organelles.prompt_yes_no`. Quitting now raises `SystemExit("Cancelled.")`
+    instead of `sys.exit(0)`.
+
+### Fixed
+- `prompt_accept_deck_layout` silently omitted `CREATE_LABWARE` commands whose holder was a
+    `LabwareId`; they are now listed.
+
+---
+
 ## [v1.50.0]
 ### Changed
 - `scripts/calibrate_deck_slot.py` can now sequentially calibrate multiple deck slots.
