@@ -89,6 +89,10 @@ class RobotStatusDetail(BaseModel):
     """Per-robot status information."""
 
     robot_id: str
+    serial_number: str | None = Field(
+        default=None,
+        description="Physical serial number of the robot, when it has been resolved.",
+    )
     command_id: CommandID | None
     queue_depth: int
     run_state: bool
@@ -103,6 +107,10 @@ class GetStatusResponse(BaseModel):
     run_state: bool
     result: Result
     robots: list[RobotStatusDetail] = Field(default_factory=list)
+    mock: bool = Field(
+        default=False,
+        description="Whether the server is running against a mock fleet.",
+    )
 
 
 class ScheduleCommandRequest(BaseModel):

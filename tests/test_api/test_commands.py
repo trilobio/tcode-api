@@ -2,6 +2,7 @@
 
 import datetime
 import logging
+import math
 import unittest
 from importlib.metadata import version
 from typing import get_args
@@ -12,6 +13,13 @@ from tcode_api.schemas.commands.base.robot_specific_tcode_command.v1 import (
     BaseRobotSpecificTCodeCommandV1,
 )
 from tcode_api.schemas.commands.base.tcode_command.v1 import BaseTCodeCommandV1
+from tcode_api.servicer.servicer_api import (
+    GetStatusResponse,
+    Result,
+    RobotStatusDetail,
+)
+from tcode_api.types import identity_transform
+from tcode_api.utilities import create_transform, mm, rad
 
 from .test_base import BaseTestCases
 
@@ -156,3 +164,136 @@ class TestScheduleCommandRequestSyncFields(unittest.TestCase):
         restored = ScheduleCommandsRequest.model_validate_json(bulk.model_dump_json())
         self.assertEqual(restored.commands[0].depends_on, [])
         self.assertEqual(restored.commands[1].depends_on, ["a"])
+
+
+class TestGetStatusResponseMock(unittest.TestCase):
+    """Tests for the `mock` bit on GetStatusResponse."""
+
+    def _response(self, **kwargs) -> "GetStatusResponse":
+        return GetStatusResponse(
+            command_id=None,
+            operation_count=0,
+            run_state=False,
+            result=Result(success=True, code="success"),
+            **kwargs,
+        )
+
+    def test_defaults_to_false(self) -> None:
+        """A server that does not report the bit is assumed to drive real hardware."""
+        self.assertFalse(self._response().mock)
+
+    def test_round_trips(self) -> None:
+        """The bit survives serialize -> deserialize."""
+        response = self._response(mock=True)
+        self.assertTrue(GetStatusResponse.model_validate(response.model_dump()).mock)
+
+
+class TestRobotStatusDetailSerialNumber(unittest.TestCase):
+    """Tests for the physical serial number on RobotStatusDetail."""
+
+    def _detail(self, **kwargs) -> "RobotStatusDetail":
+        return RobotStatusDetail(
+            robot_id="robot-a",
+            command_id=None,
+            queue_depth=0,
+            run_state=False,
+            result=Result(success=True, code="success"),
+            **kwargs,
+        )
+
+    def test_defaults_to_none(self) -> None:
+        """A robot whose physical serial has not been resolved reports None."""
+        self.assertIsNone(self._detail().serial_number)
+
+    def test_round_trips(self) -> None:
+        """A resolved serial survives serialize -> deserialize."""
+        detail = self._detail(serial_number="T0001V0105F00L00N0004")
+        reloaded = RobotStatusDetail.model_validate(detail.model_dump())
+        self.assertEqual(reloaded.serial_number, "T0001V0105F00L00N0004")
+
+
+class TestAddModule(unittest.TestCase):
+    """Tests for ADD_MODULE, which registers a module and gives it an execution queue."""
+
+    def _descriptor(self) -> tc.ModuleDescriptor:
+        return tc.ModuleDescriptor(supports_liftable_labware=True)
+
+    def test_deck_slot_location(self) -> None:
+        """A module sitting in a deck slot is located by labware holder name."""
+        command = tc.ADD_MODULE(
+            id="magdeck-1",
+            descriptor=self._descriptor(),
+            location=tc.LocationAsLabwareHolder(
+                robot_id="robot-a", labware_holder_name="DeckSlot_3"
+            ),
+        )
+        self.assertIsInstance(command.location, tc.LocationAsLabwareHolder)
+        assert isinstance(command.location, tc.LocationAsLabwareHolder)  # narrow for mypy
+        self.assertEqual(command.location.labware_holder_name, "DeckSlot_3")
+
+    def test_fixed_location(self) -> None:
+        """A module bolted down is located by a transform relative to the robot's root."""
+        command = tc.ADD_MODULE(
+            id="shaker-1",
+            descriptor=self._descriptor(),
+            location=tc.LocationRelativeToRobot(
+                robot_id="robot-a",
+                matrix=create_transform(x=mm(100.0), a=rad(math.pi / 2)),
+            ),
+        )
+        self.assertIsInstance(command.location, tc.LocationRelativeToRobot)
+        assert isinstance(command.location, tc.LocationRelativeToRobot)  # narrow for mypy
+        self.assertEqual(command.location.matrix[0][3], 0.1)  # 100 mm, in metres
+
+    def test_location_is_discriminated(self) -> None:
+        """Only the two module location types are accepted."""
+        payload = {
+            "type": "ADD_MODULE",
+            "schema_version": 1,
+            "id": "magdeck-1",
+            "descriptor": self._descriptor().model_dump(),
+            "location": tc.LocationRelativeToWorld(matrix=identity_transform()).model_dump(),
+        }
+        with self.assertRaises(ValueError):
+            tc.ADD_MODULE.model_validate(payload)
+
+    def test_location_is_required(self) -> None:
+        """A module must say where it is."""
+        payload = {
+            "type": "ADD_MODULE",
+            "schema_version": 1,
+            "id": "magdeck-1",
+            "descriptor": self._descriptor().model_dump(),
+        }
+        with self.assertRaises(ValueError):
+            tc.ADD_MODULE.model_validate(payload)
+
+
+class TestSendWebhookTargetsModule(unittest.TestCase):
+    """SEND_WEBHOOK is addressed to a module, not a robot."""
+
+    def _webhook(self, **kwargs) -> tc.SEND_WEBHOOK:
+        return tc.SEND_WEBHOOK(pause_execution=False, url="https://example.invalid/hook", **kwargs)
+
+    def test_module_id_is_required(self) -> None:
+        """A webhook with no module has no queue to execute from."""
+        payload = {
+            "type": "SEND_WEBHOOK",
+            "schema_version": 2,
+            "pause_execution": False,
+            "url": "https://example.invalid/hook",
+        }
+        with self.assertRaises(ValueError):
+            tc.SEND_WEBHOOK.model_validate(payload)
+
+    def test_round_trips(self) -> None:
+        """module_id survives serialize -> deserialize."""
+        command = self._webhook(module_id="magdeck-1")
+        self.assertEqual(
+            tc.SEND_WEBHOOK.model_validate(command.model_dump()).module_id, "magdeck-1"
+        )
+
+    def test_carries_no_robot_id(self) -> None:
+        """A webhook does not occupy a robot; ordering against robot work is the
+        schedule envelope's job via depends_on / sync_group."""
+        self.assertNotIn("robot_id", tc.SEND_WEBHOOK.model_fields)

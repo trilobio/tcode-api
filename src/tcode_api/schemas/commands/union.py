@@ -3,6 +3,7 @@ from typing import Annotated
 from pydantic import Field
 
 from .add_labware.latest import ADD_LABWARE
+from .add_module.latest import ADD_MODULE
 from .add_pipette_tip_group.latest import ADD_PIPETTE_TIP_GROUP
 from .add_robot.latest import ADD_ROBOT
 from .add_tool.latest import ADD_TOOL
@@ -55,6 +56,7 @@ TCode = Annotated[
     ASPIRATE
     | ADD_LABWARE
     | ADD_PIPETTE_TIP_GROUP
+    | ADD_MODULE
     | ADD_ROBOT
     | ADD_TOOL
     | CALIBRATE_LABWARE_WELL_CENTER

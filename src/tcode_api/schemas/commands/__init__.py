@@ -5,6 +5,7 @@
 # to support Sphinx automodule autodoc generation for the tcode_api documentation.
 
 from .add_labware.latest import ADD_LABWARE
+from .add_module.latest import ADD_MODULE
 from .add_pipette_tip_group.latest import ADD_PIPETTE_TIP_GROUP
 from .add_robot.latest import ADD_ROBOT
 from .add_tool.latest import ADD_TOOL
@@ -40,6 +41,7 @@ from .wait.latest import WAIT
 
 __all__ = [
     "ADD_LABWARE",
+    "ADD_MODULE",
     "ADD_PIPETTE_TIP_GROUP",
     "ADD_ROBOT",
     "ADD_TOOL",
