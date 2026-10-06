@@ -3,7 +3,6 @@ from typing import Annotated
 from pydantic import Field
 
 from .add_labware.latest import ADD_LABWARE
-from .add_module.latest import ADD_MODULE
 from .add_pipette_tip_group.latest import ADD_PIPETTE_TIP_GROUP
 from .add_robot.latest import ADD_ROBOT
 from .add_tool.latest import ADD_TOOL
@@ -38,6 +37,7 @@ from .pick_up_labware.latest import PICK_UP_LABWARE
 from .pick_up_pipette_tip.latest import PICK_UP_PIPETTE_TIP
 from .put_down_labware.latest import PUT_DOWN_LABWARE
 from .put_down_pipette_tip.latest import PUT_DOWN_PIPETTE_TIP
+from .register_module.latest import REGISTER_MODULE
 from .remove_labware_lid.latest import REMOVE_LABWARE_LID
 from .replace_labware_lid.latest import REPLACE_LABWARE_LID
 from .retrieve_pipette_tip_group.latest import (
@@ -56,7 +56,6 @@ TCode = Annotated[
     ASPIRATE
     | ADD_LABWARE
     | ADD_PIPETTE_TIP_GROUP
-    | ADD_MODULE
     | ADD_ROBOT
     | ADD_TOOL
     | CALIBRATE_LABWARE_WELL_CENTER
@@ -77,6 +76,7 @@ TCode = Annotated[
     | PICK_UP_PIPETTE_TIP
     | PUT_DOWN_LABWARE
     | PUT_DOWN_PIPETTE_TIP
+    | REGISTER_MODULE
     | REMOVE_LABWARE_LID
     | REPLACE_LABWARE_LID
     | RETRIEVE_PIPETTE_TIP_GROUP

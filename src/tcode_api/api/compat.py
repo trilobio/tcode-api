@@ -357,11 +357,21 @@ tcode_api_compat_context = CompatContext(
                 "ModuleDescriptor": 1,
                 "SEND_WEBHOOK": 2,
             },
+            "v1.51.0": {
+                "CREATE_LABWARE": 4,
+                "ModuleId": 1,
+                "PUT_DOWN_LABWARE": 2,
+                "REGISTER_MODULE": 2,
+                "REMOVE_LABWARE_LID": 3,
+            },
         },
         migrations={
             "v1.37.0": {
                 "CALIBRATE_TOOL_FOR_PROBING": "CALIBRATE_TOOL",
-            }
+            },
+            "v1.51.0": {
+                "ADD_MODULE": "REGISTER_MODULE",
+            },
         },
     ),
     migration_registry=migration_registry,
