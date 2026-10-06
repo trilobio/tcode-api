@@ -351,6 +351,12 @@ tcode_api_compat_context = CompatContext(
             "v1.49.0": {
                 "CALIBRATE_LABWARE_WELL_CENTER": 1,
             },
+            "v1.50.0": {
+                "ADD_MODULE": 1,
+                "ModuleDescription": 1,
+                "ModuleDescriptor": 1,
+                "SEND_WEBHOOK": 2,
+            },
         },
         migrations={
             "v1.37.0": {

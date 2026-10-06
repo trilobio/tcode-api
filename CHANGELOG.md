@@ -5,6 +5,48 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
+## [v1.50.0]
+### Added
+- `ADD_MODULE`: registers a module and assigns it an id, mirroring `ADD_ROBOT` and
+  `ADD_LABWARE`. A module is a deck-side device that both holds labware at an offset pose and
+  accepts commands of its own; registering it gives it an execution queue, so work addressed
+  to the module is ordered against the module's other work rather than against a robot's.
+
+  `location` is a discriminated union of two existing location types, distinguishing mobile
+  modules from fixed ones: a `LocationAsLabwareHolder` places the module in a deck slot, so it
+  can be moved between slots like any other labware; a `LocationRelativeToRobot` fixes it at a
+  pose relative to the robot's root node, for modules that are bolted down.
+- `ModuleDescription` / `ModuleDescriptor`: a deck-slot module (magdeck, riser) that holds
+  other labware at an offset pose, so labware resting on it — and everything derived from that
+  pose, such as well locations and gripper pick/place targets — is raised relative to the deck
+  slot. The offset is a single `holder_transform` `Matrix`, matching `pinch_offset_transform`
+  and the `Location*` types. `supports_liftable_labware` is required, mirroring `pinchable`
+  on the labware base: set it `False` for modules whose body blocks the gripper's lift
+  paddles, forcing held labware to be PINCH-grasped. The module itself is never lifted — the
+  field describes what it permits of the labware it holds.
+
+  Modules are **not** in the `LabwareDescriptor` union; they are registered with `ADD_MODULE`
+  rather than `ADD_LABWARE`, so one physical module has exactly one id.
+- `RobotStatusDetail.serial_number`: the robot's physical serial number, when resolved.
+  Defaults to `None`.
+- `GetStatusResponse.mock`: whether the server is running against a mock fleet. Defaults to
+  `False`, so a server that does not report it is assumed to be driving real hardware.
+
+### Changed
+- `SEND_WEBHOOK` v2 adds a required `module_id`, naming the module registered earlier by
+  `ADD_MODULE`. The command executes from that module's queue, so sending a webhook no longer
+  occupies a robot; order it against robot motion with `depends_on` or `sync_group` on the
+  schedule envelope.
+
+  Previously `SEND_WEBHOOK` named no target at all, so a scheduler routing on an id treated it
+  as fleet-level: the command completed at schedule time and never executed, which meant
+  `pause_execution` never paused.
+
+  As with `PAUSE` v1→v2, the migrator **raises** rather than fabricating a value. A v1 payload
+  names no module and there is no way to infer which device it belonged to.
+
+---
+
 ## [v1.49.0]
 ### Added
 - `CALIBRATE_LABWARE_WELL_CENTER` command: probes a well's inner walls to correct a

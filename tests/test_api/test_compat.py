@@ -964,6 +964,35 @@ class TestPauseV1ToV2Migration(unittest.TestCase):
             migrate_data_to_latest(data=data, schema_name="PAUSE")
 
 
+class TestSendWebhookV1ToV2Migration(unittest.TestCase):
+    """Regression tests for the SEND_WEBHOOK v1->v2 migration (added in tcode-api v1.50.0)."""
+
+    def test_migrate_send_webhook_v1_with_module_id(self) -> None:
+        """A v1 SEND_WEBHOOK payload that already carries a ``module_id`` migrates to v2."""
+        data = {
+            "type": "SEND_WEBHOOK",
+            "schema_version": 1,
+            "module_id": "magdeck-1",
+            "pause_execution": False,
+            "url": "https://example.invalid/hook",
+        }
+        migrated = migrate_data_to_latest(data=data, schema_name="SEND_WEBHOOK")
+        self.assertEqual(migrated["schema_version"], 2)
+        self.assertEqual(migrated["module_id"], "magdeck-1")
+        self.assertEqual(migrated["url"], "https://example.invalid/hook")
+
+    def test_migrate_send_webhook_v1_without_module_id_raises(self) -> None:
+        """A v1 SEND_WEBHOOK names no module, and one cannot be inferred."""
+        data = {
+            "type": "SEND_WEBHOOK",
+            "schema_version": 1,
+            "pause_execution": False,
+            "url": "https://example.invalid/hook",
+        }
+        with self.assertRaises(ValueError):
+            migrate_data_to_latest(data=data, schema_name="SEND_WEBHOOK")
+
+
 class TestAddPipetteTipGroupV1ToV2Migration(unittest.TestCase):
     """Regression tests for the ADD_PIPETTE_TIP_GROUP v1->v2 migration (added in tcode-api v1.39.0)."""
 

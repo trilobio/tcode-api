@@ -9,6 +9,7 @@ backwards-compatible import surface at ``tcode_api.api``.
 
 from ..schemas.commands import (
     ADD_LABWARE,
+    ADD_MODULE,
     ADD_PIPETTE_TIP_GROUP,
     ADD_ROBOT,
     ADD_TOOL,
@@ -70,6 +71,8 @@ from ..schemas.descriptions import (
     LabwareHolderDescriptor,
     LidDescription,
     LidDescriptor,
+    ModuleDescription,
+    ModuleDescriptor,
     PipetteDescriptor,
     PipetteTipBoxDescription,
     PipetteTipBoxDescriptor,
@@ -117,6 +120,7 @@ from ..schemas.script import Metadata, TCodeScript
 
 __all__ = [
     "ADD_LABWARE",
+    "ADD_MODULE",
     "ADD_PIPETTE_TIP_GROUP",
     "ADD_ROBOT",
     "ADD_TOOL",
@@ -181,6 +185,8 @@ __all__ = [
     "LocationRelativeToRobot",
     "LocationRelativeToWorld",
     "Metadata",
+    "ModuleDescription",
+    "ModuleDescriptor",
     "NamedTags",
     "PathType",
     "PipetteDescriptor",
