@@ -6,10 +6,12 @@
 
 from .labware_holder_name.latest import LabwareHolderName
 from .labware_id.latest import LabwareId
+from .module_id.latest import ModuleId
 from .union import LabwareHolder
 
 __all__ = [
     "LabwareHolder",
     "LabwareHolderName",
     "LabwareId",
+    "ModuleId",
 ]

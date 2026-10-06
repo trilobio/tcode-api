@@ -5,6 +5,25 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
+## [v1.51.0]
+### Added
+- `ModuleId`: a `LabwareHolder` naming a registered module, so labware can be created on, put
+    down onto, or have its lid stored on a module.
+
+### Changed
+- `ADD_MODULE` renamed to `REGISTER_MODULE`, taking a `ModuleDescription` under `description` in
+    place of a `ModuleDescriptor` under `descriptor`. Modules are never resolved against the
+    fleet, so a partial descriptor had nothing to be completed from.
+- Stored `ADD_MODULE` payloads migrate via the rename in `APIHistoryLog.migrations` and
+    `REGISTER_MODULE`'s v1 to v2 migrator, which raises on a descriptor missing a required field.
+- `CREATE_LABWARE` v4, `PUT_DOWN_LABWARE` v2, `REMOVE_LABWARE_LID` v3: `LabwareHolder` gains
+    `ModuleId`. No fields change, so each migrator only moves the version.
+
+### Removed
+- The `add_module` schema package. `REGISTER_MODULE` v1 reproduces its class.
+
+---
+
 ## [v1.50.0]
 ### Added
 - `ADD_MODULE`: registers a module and assigns it an id, mirroring `ADD_ROBOT` and

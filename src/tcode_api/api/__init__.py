@@ -9,7 +9,6 @@ backwards-compatible import surface at ``tcode_api.api``.
 
 from ..schemas.commands import (
     ADD_LABWARE,
-    ADD_MODULE,
     ADD_PIPETTE_TIP_GROUP,
     ADD_ROBOT,
     ADD_TOOL,
@@ -32,6 +31,7 @@ from ..schemas.commands import (
     PICK_UP_PIPETTE_TIP,
     PUT_DOWN_LABWARE,
     PUT_DOWN_PIPETTE_TIP,
+    REGISTER_MODULE,
     REMOVE_LABWARE_LID,
     REPLACE_LABWARE_LID,
     RETRIEVE_PIPETTE_TIP_GROUP,
@@ -104,7 +104,12 @@ from ..schemas.descriptions import (
     WellShapeDescriptor,
 )
 from ..schemas.descriptions.liddability import LiddabilityDescription, LiddabilityDescriptor
-from ..schemas.labware_holder import LabwareHolder, LabwareHolderName, LabwareId
+from ..schemas.labware_holder import (
+    LabwareHolder,
+    LabwareHolderName,
+    LabwareId,
+    ModuleId,
+)
 from ..schemas.location import (
     Location,
     LocationAsLabwareHolder,
@@ -120,7 +125,6 @@ from ..schemas.script import Metadata, TCodeScript
 
 __all__ = [
     "ADD_LABWARE",
-    "ADD_MODULE",
     "ADD_PIPETTE_TIP_GROUP",
     "ADD_ROBOT",
     "ADD_TOOL",
@@ -143,6 +147,7 @@ __all__ = [
     "PICK_UP_PIPETTE_TIP",
     "PUT_DOWN_LABWARE",
     "PUT_DOWN_PIPETTE_TIP",
+    "REGISTER_MODULE",
     "REMOVE_LABWARE_LID",
     "REPLACE_LABWARE_LID",
     "RETRIEVE_PIPETTE_TIP_GROUP",
@@ -187,6 +192,7 @@ __all__ = [
     "Metadata",
     "ModuleDescription",
     "ModuleDescriptor",
+    "ModuleId",
     "NamedTags",
     "PathType",
     "PipetteDescriptor",
