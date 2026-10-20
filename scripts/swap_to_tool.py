@@ -51,7 +51,8 @@ def main(
     output_file_path: pathlib.Path | None = None,
     robot_sn: str | None = None,
 ) -> None:
-    """Generate and run a minimal script to pick up one tip."""
+    """Generate and run a minimal script to swap to a specified tool, racking the held tool
+    if necessary."""
 
     script = tc.TCodeScript.new(name=f"Swap to {tool_name}", description=__doc__)
     script.commands += [
