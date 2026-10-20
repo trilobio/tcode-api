@@ -4,6 +4,9 @@ All notable changes to this project will be documented here.
 Format: [Semantic Versioning](https://semver.org)
 
 ---
+## [v1.51.1]
+### Added
+- `scripts/swap_to_tool.py` script to swap between tools on a robot using Tcode.
 
 ## [v1.51.0]
 ### Added
