@@ -95,12 +95,10 @@ class SchemaIO:
         with file_path.open("r", encoding="utf-8") as f:
             data = json.load(f)
 
-        migrated = migrate_data_to_latest(
-            data=data,
-            schema_name=data["type"],
-            schema_version=data.get("schema_version", 1),
-        )
-        return schema_registry.build_instance(migrated)
+        # Schema files may predate `schema_version`; those are all version 1.
+        migrated = migrate_data_to_latest(data=data, unversioned_is_v1=True)
+        # Every schema registered by tcode-api is a BaseSchemaVersionedModelV1.
+        return cast(BaseSchemaVersionedModelV1, schema_registry.build_instance(migrated))
 
     def write(self, identifier: str | pathlib.Path, schema: BaseSchemaVersionedModelV1) -> None:
         """Write a schema instance to a JSON file.

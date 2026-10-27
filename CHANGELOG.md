@@ -5,6 +5,29 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
+## [Unreleased]
+### Changed
+- Schema versioning machinery moved to `py_organelles.schema_versioning`.
+  (`MigrationRegistry`, `SchemaRegistry`, `CompatContext`, `APIHistoryLog`, the
+  compat errors, and the migrate/load functions. `tcode_api.schemas.registry`
+  and `tcode_api.api.compat` re-export them, and `compat`'s functions still
+  default to `tcode_api_compat_context`.)
+- The guts of `BaseSchemaVersionedModelV1` are now in
+  `py_organelles.schema_versioning.BaseSchemaVersionedModel`.
+- `_resolve_api_profile` is public, as `resolve_api_profile`.
+- `load_api_object`, `migrate_data_to_latest`, `migrate_data_to_version`, and `SchemaIO.load`
+    all handle a missing `schema_version` the same way, through a new `unversioned_is_v1`
+    argument: version 1 if set, `InvalidDataError` if not. In `load_api_object`, a version looked
+    up from `api_version` comes first. `SchemaIO.load` sets `unversioned_is_v1`; nobody else does.
+- Nested migration treats a dict as a schema iff its `"type"` is a known schema
+  name, instead of checking for `schema_version`.
+- Migrated data always has a `schema_version`, even if no migrator ran.
+
+### Fixed
+- `SchemaRegistry.build_instance` uses its `key` argument. It used `data["type"]` regardless.
+
+---
+
 ## [v1.51.1]
 ### Added
 - `scripts/swap_to_tool.py` script to swap between tools on a robot using Tcode.
