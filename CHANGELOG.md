@@ -15,10 +15,10 @@ Format: [Semantic Versioning](https://semver.org)
 - The guts of `BaseSchemaVersionedModelV1` are now in
   `py_organelles.schema_versioning.BaseSchemaVersionedModel`.
 - `_resolve_api_profile` is public, as `resolve_api_profile`.
-- `load_api_object`, `migrate_data_to_latest`, `migrate_data_to_version`, and `SchemaIO.load`
-    all handle a missing `schema_version` the same way, through a new `unversioned_is_v1`
-    argument: version 1 if set, `InvalidDataError` if not. In `load_api_object`, a version looked
-    up from `api_version` comes first. `SchemaIO.load` sets `unversioned_is_v1`; nobody else does.
+- `load_api_object`, `migrate_data_to_latest`, and `migrate_data_to_version` all handle a
+    missing `schema_version` the same way, through a new `unversioned_is_v1` argument: version 1
+    if set, `InvalidDataError` if not. In `load_api_object`, a version looked up from
+    `api_version` comes first. Nothing sets `unversioned_is_v1` yet.
 - Nested migration treats a dict as a schema iff its `"type"` is a known schema
   name, instead of checking for `schema_version`.
 - Migrated data always has a `schema_version`, even if no migrator ran.

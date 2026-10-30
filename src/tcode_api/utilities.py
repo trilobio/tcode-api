@@ -95,8 +95,14 @@ class SchemaIO:
         with file_path.open("r", encoding="utf-8") as f:
             data = json.load(f)
 
-        # Schema files may predate `schema_version`; those are all version 1.
-        migrated = migrate_data_to_latest(data=data, unversioned_is_v1=True)
+        # Schema files may predate `schema_version`; those are all version 1. Not using
+        # `unversioned_is_v1`, because that also applies to nested schemas: custom labware may
+        # nest schemas without a `schema_version` that aren't version 1.
+        migrated = migrate_data_to_latest(
+            data=data,
+            schema_name=data["type"],
+            schema_version=data.get("schema_version", 1),
+        )
         # Every schema registered by tcode-api is a BaseSchemaVersionedModelV1.
         return cast(BaseSchemaVersionedModelV1, schema_registry.build_instance(migrated))
 

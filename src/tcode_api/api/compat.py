@@ -42,7 +42,6 @@ from py_organelles.schema_versioning import (
     SchemaVersionMismatchError,
     TargetSchemaExistsError,
     TargetSchemaNotFoundError,
-    resolve_api_profile,
 )
 
 from ..schemas.commands.union import TCode
@@ -263,9 +262,9 @@ def migrate_data_to_latest(
     """
     return schema_versioning.migrate_data_to_latest(
         data,
-        context,
         schema_name=schema_name,
         schema_version=schema_version,
+        context=context,
         recurse=recurse,
         unversioned_is_v1=unversioned_is_v1,
     )
@@ -288,9 +287,9 @@ def migrate_data_to_version(
     return schema_versioning.migrate_data_to_version(
         data,
         target_version,
-        context,
         schema_name=schema_name,
         schema_version=schema_version,
+        context=context,
         recurse=recurse,
         unversioned_is_v1=unversioned_is_v1,
     )
@@ -310,10 +309,22 @@ def load_api_object(
     """
     return schema_versioning.load_api_object(
         data,
-        context,
         api_version=api_version,
+        context=context,
         unversioned_is_v1=unversioned_is_v1,
     )
+
+
+def resolve_api_profile(
+    api_version: APIVersion,
+    context: CompatContext = tcode_api_compat_context,
+) -> dict[SchemaName, SchemaVersion]:
+    """Resolve a schema-version profile for the given API version.
+
+    Wraps :func:`py_organelles.schema_versioning.resolve_api_profile`, which documents the
+    parameters, defaulting ``context`` to the tcode-api context.
+    """
+    return schema_versioning.resolve_api_profile(api_version, context)
 
 
 def read_and_migrate_script(json_str: str) -> TCodeScript:
