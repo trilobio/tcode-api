@@ -16,6 +16,7 @@ from tcode_api.servicer.keyboard_input import get_key
 from tcode_api.servicer.servicer_api import (
     ClearScheduleResponse,
     EnterTeachModeRequest,
+    EnterTeachModeResponse,
     ExitTeachModeRequest,
     ExitTeachModeResponse,
     GetStatusResponse,
@@ -261,7 +262,8 @@ class TCodeServicerClient:
         """Teach a point for the specified robot.
 
         The robot starts in zero-G mode, where it can be moved by hand. `w`/`s` jog J2 up/down,
-        holding it in place (jog mode) until spacebar switches back. `q` finishes.
+        holding it in place (jog mode) until spacebar switches back. `q` finishes. Robots
+        without torque mode have no zero-G or jog modes, and spacebar does nothing.
 
         :param robot_id: The ID of the robot to teach the point for.
             Use the ADD_ROBOT command to set the robot ID.
@@ -273,14 +275,17 @@ class TCodeServicerClient:
         transform: Matrix | None = None
         try:
             jog = False
-            self._enter_teach_mode(robot_id, jog)
-            print("Teach mode - `w`/`s` jog up/down, `q` finishes")
-            print(zero_g_message)
+            torque_mode = self._enter_teach_mode(robot_id, jog)
+            if torque_mode:
+                print("Teach mode - `w`/`s` jog up/down, `q` finishes")
+                print(zero_g_message)
+            else:
+                print("Manual Jog Controls (w|s = up|down)\nw|s|q")
             while True:
                 key = get_key()
                 match key:
                     case "w" | "s":
-                        if not jog:
+                        if torque_mode and not jog:
                             jog = True  # Jogging J2 also holds it in place
                             print(jog_message)
                         self.schedule_command(
@@ -298,6 +303,9 @@ class TCodeServicerClient:
                         )
                         self.set_run_state(True)
                     case "space":
+                        if not torque_mode:
+                            print(f"Unrecognized char {key}")
+                            continue
                         jog = not jog
                         self._enter_teach_mode(robot_id, jog)
                         print(jog_message if jog else zero_g_message)
@@ -320,13 +328,15 @@ class TCodeServicerClient:
         )
         return transform
 
-    def _enter_teach_mode(self, robot_id: str, jog: bool) -> None:
+    def _enter_teach_mode(self, robot_id: str, jog: bool) -> bool:
+        """:return: whether the robot has torque mode, see `EnterTeachModeResponse`."""
         rsp = requests.post(
             f"{self.servicer_url}/{self.tcode_api_version}/enter_teach_mode",
             json=EnterTeachModeRequest(robot_id=robot_id, jog=jog).model_dump(),
             timeout=self.timeout,
         )
         rsp.raise_for_status()
+        return EnterTeachModeResponse.model_validate(rsp.json()).torque_mode
 
     def discover_fleet(self) -> None:
         """Scan the fleet for new robots, and update all robot states. Useful if you swapped tools manually as a developer."""

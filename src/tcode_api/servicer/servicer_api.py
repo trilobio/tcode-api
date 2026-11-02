@@ -160,9 +160,13 @@ class EnterTeachModeResponse(BaseModel):
     """Response from entering teach mode.
 
     :param result: Response metadata
+    :param torque_mode: whether the robot's joints have torque mode, so teach mode has zero-G and
+        jog modes. Without it (older firmware or servicer), J2 follows the force on the FTS and
+        can always be jogged.
     """
 
     result: Result
+    torque_mode: bool = False
 
 
 class ExitTeachModeRequest(BaseModel):

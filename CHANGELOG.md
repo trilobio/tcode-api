@@ -10,8 +10,9 @@ Format: [Semantic Versioning](https://semver.org)
 - `EnterTeachModeRequest.jog`, to switch teach mode between zero-G mode (every joint moves by
     hand) and jog mode (J2 holds its position, to be jogged). Needs a tcode servicer with torque
     mode teaching.
+- `EnterTeachModeResponse.torque_mode`: whether the robot has zero-G and jog modes.
 - `TCodeServicerClient.teach_point`: spacebar switches between zero-G and jog modes; `w`/`s` jog
-    J2 and switch to jog mode.
+    J2 and switch to jog mode. Robots without torque mode get the old `w`/`s`/`q` controls.
 
 ---
 
