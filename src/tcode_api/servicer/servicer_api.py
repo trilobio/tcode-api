@@ -148,9 +148,12 @@ class EnterTeachModeRequest(BaseModel):
     """Request to enter teach mode.
 
     :param robot_id: target robot ID
+    :param jog: hold J2 in place so it can be jogged ("jog mode"), instead of letting it be moved
+        by hand too ("zero-G mode"). Sent again in teach mode, switches between the two.
     """
 
     robot_id: str
+    jog: bool = False
 
 
 class EnterTeachModeResponse(BaseModel):

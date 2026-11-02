@@ -5,6 +5,16 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
+## [Unreleased]
+### Added
+- `EnterTeachModeRequest.jog`, to switch teach mode between zero-G mode (every joint moves by
+    hand) and jog mode (J2 holds its position, to be jogged). Needs a tcode servicer with torque
+    mode teaching.
+- `TCodeServicerClient.teach_point`: spacebar switches between zero-G and jog modes; `w`/`s` jog
+    J2 and switch to jog mode.
+
+---
+
 ## [v1.51.1]
 ### Added
 - `scripts/swap_to_tool.py` script to swap between tools on a robot using Tcode.
