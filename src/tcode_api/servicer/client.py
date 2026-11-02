@@ -274,8 +274,8 @@ class TCodeServicerClient:
         jog_message = "Jog mode - press spacebar to switch to zero-G mode"
         transform: Matrix | None = None
         try:
-            jog = False
-            torque_mode = self._enter_teach_mode(robot_id, jog)
+            j2_position_mode = False
+            torque_mode = self._enter_teach_mode(robot_id, j2_position_mode)
             if torque_mode:
                 print("Teach mode - `w`/`s` jog up/down, `q` finishes")
                 print(zero_g_message)
@@ -285,8 +285,8 @@ class TCodeServicerClient:
                 key = get_key()
                 match key:
                     case "w" | "s":
-                        if torque_mode and not jog:
-                            jog = True  # Jogging J2 also holds it in place
+                        if torque_mode and not j2_position_mode:
+                            j2_position_mode = True  # The servicer switches J2 to jog it
                             print(jog_message)
                         self.schedule_command(
                             id=generate_id(),
@@ -306,9 +306,9 @@ class TCodeServicerClient:
                         if not torque_mode:
                             print(f"Unrecognized char {key}")
                             continue
-                        jog = not jog
-                        self._enter_teach_mode(robot_id, jog)
-                        print(jog_message if jog else zero_g_message)
+                        j2_position_mode = not j2_position_mode
+                        self._enter_teach_mode(robot_id, j2_position_mode)
+                        print(jog_message if j2_position_mode else zero_g_message)
                     case "esc" | "q":
                         print("Exiting")
                         break
@@ -328,11 +328,13 @@ class TCodeServicerClient:
         )
         return transform
 
-    def _enter_teach_mode(self, robot_id: str, jog: bool) -> bool:
+    def _enter_teach_mode(self, robot_id: str, j2_position_mode: bool) -> bool:
         """:return: whether the robot has torque mode, see `EnterTeachModeResponse`."""
         rsp = requests.post(
             f"{self.servicer_url}/{self.tcode_api_version}/enter_teach_mode",
-            json=EnterTeachModeRequest(robot_id=robot_id, jog=jog).model_dump(),
+            json=EnterTeachModeRequest(
+                robot_id=robot_id, j2_position_mode=j2_position_mode
+            ).model_dump(),
             timeout=self.timeout,
         )
         rsp.raise_for_status()

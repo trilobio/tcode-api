@@ -7,7 +7,7 @@ Format: [Semantic Versioning](https://semver.org)
 
 ## [Unreleased]
 ### Added
-- `EnterTeachModeRequest.jog`, to switch teach mode between zero-G mode (every joint moves by
+- `EnterTeachModeRequest.j2_position_mode`, to switch teach mode between zero-G mode (every joint moves by
     hand) and jog mode (J2 holds its position, to be jogged). Needs a tcode servicer with torque
     mode teaching.
 - `EnterTeachModeResponse.torque_mode`: whether the robot has zero-G and jog modes.
