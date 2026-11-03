@@ -10,7 +10,9 @@ dependencies = [
     "numpy>=2.4.1",
     "pint>=0.25",
     "plac>=1.4.5",
-    "py-organelles @ git+https://github.com/trilobio/py-organelles.git@v3.1.0",
+    # For Github runners, specify a git hash. For local dev, uncomment the local source below.
+    # TODO: once py-organelles PR is merged, update to the relevant tag.
+    "py-organelles @ git+https://github.com/trilobio/py-organelles.git@a78992f99718b06fecbb4aa0b38f661642141549",
     "pydantic>=2.10.6",
     "python-socketio[client]>=5.13.0",
     "requests>=2.32.5",
@@ -26,10 +28,10 @@ build-backend = "hatchling.build"
 [tool.hatch.metadata]
 allow-direct-references = true
 
-# TODO: Remove before merging, once py-organelles PR is merged. Develops against a local checkout of
-# py-organelles in the meantime.
-[tool.uv.sources]
-py-organelles = { path = "../py-organelles", editable = true }
+# Uncomment for local dev.
+# TODO: Once py-organelles PR is merged, rm this.
+#[tool.uv.sources]
+#py-organelles = { path = "../py-organelles", editable = true }
 
 [tool.hatch.build.targets.sdist]
 include = ["tcode_labware/*.json", "src/"]
