@@ -32,16 +32,8 @@ from typing import cast
 from py_organelles import schema_versioning
 from py_organelles.schema_versioning import (
     APIHistoryLog,
-    APIVersion,
     BaseSchemaVersionedModel,
     CompatContext,
-    DeprecatedSchemaError,
-    InvalidDataError,
-    SchemaName,
-    SchemaVersion,
-    SchemaVersionMismatchError,
-    TargetSchemaExistsError,
-    TargetSchemaNotFoundError,
 )
 
 from ..schemas.commands.union import TCode
@@ -50,21 +42,11 @@ from ..schemas.script.metadata.latest import Metadata
 from ..schemas.script.tcode_script import TCodeScript
 
 __all__ = [
-    "APIHistoryLog",
-    "APIVersion",
     "CompatContext",
-    "DeprecatedSchemaError",
-    "InvalidDataError",
-    "SchemaName",
-    "SchemaVersion",
-    "SchemaVersionMismatchError",
-    "TargetSchemaExistsError",
-    "TargetSchemaNotFoundError",
     "load_api_object",
     "migrate_data_to_latest",
     "migrate_data_to_version",
     "read_and_migrate_script",
-    "resolve_api_profile",
     "tcode_api_compat_context",
 ]
 
@@ -313,18 +295,6 @@ def load_api_object(
         context=context,
         unversioned_is_v1=unversioned_is_v1,
     )
-
-
-def resolve_api_profile(
-    api_version: APIVersion,
-    context: CompatContext = tcode_api_compat_context,
-) -> dict[SchemaName, SchemaVersion]:
-    """Resolve a schema-version profile for the given API version.
-
-    Wraps :func:`py_organelles.schema_versioning.resolve_api_profile`, which documents the
-    parameters, defaulting ``context`` to the tcode-api context.
-    """
-    return schema_versioning.resolve_api_profile(api_version, context)
 
 
 def read_and_migrate_script(json_str: str) -> TCodeScript:

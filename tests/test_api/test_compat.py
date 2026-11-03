@@ -12,6 +12,8 @@ from pathlib import Path
 
 from pydantic import ValidationError
 
+from py_organelles.schema_versioning import resolve_api_profile
+
 import tcode_api.api as tc  # This import allows us to test what a "customer" who imports TCode would see
 from tcode_api.api.compat import (
     CompatContext,
@@ -19,7 +21,6 @@ from tcode_api.api.compat import (
     migrate_data_to_latest,
     migrate_data_to_version,
     read_and_migrate_script,
-    resolve_api_profile,
     tcode_api_compat_context,
 )
 from tcode_api.schemas.base.schema_versioned_model.v1 import BaseSchemaVersionedModelV1

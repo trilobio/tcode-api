@@ -8,13 +8,9 @@ Format: [Semantic Versioning](https://semver.org)
 ## [Unreleased]
 ### Changed
 - Schema versioning machinery moved to `py_organelles.schema_versioning`.
-  (`MigrationRegistry`, `SchemaRegistry`, `CompatContext`, `APIHistoryLog`, the
-  compat errors, and the migrate/load functions. `tcode_api.schemas.registry`
-  and `tcode_api.api.compat` re-export them, and `compat`'s functions still
-  default to `tcode_api_compat_context`.)
+    - Moved: `MigrationRegistry`, `SchemaRegistry`, `CompatContext`, `APIHistoryLog`, the compat errors, and the migrate/load functions.
 - The guts of `BaseSchemaVersionedModelV1` are now in
   `py_organelles.schema_versioning.BaseSchemaVersionedModel`.
-- `_resolve_api_profile` is public, as `resolve_api_profile`.
 - `load_api_object`, `migrate_data_to_latest`, and `migrate_data_to_version` all handle a
     missing `schema_version` the same way, through a new `unversioned_is_v1` argument: version 1
     if set, `InvalidDataError` if not. In `load_api_object`, a version looked up from
