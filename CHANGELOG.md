@@ -5,6 +5,14 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
+## [1.52.1]
+### Changed
+- `py-organelles` bumped to v4.2.0, which adds full support for
+    `SerialNumber.from_int(0xFFFFFFFFFFFFFFFF)` and moves the unittest `Factory` entry from
+    255 to 254. Nothing here reads either.
+
+---
+
 ## [1.52.0]
 ### Changed
 - Now depends on `py-organelles`.

@@ -1,6 +1,6 @@
 [project]
 name = "tcode-api"
-version = "1.52.0"
+version = "1.52.1"
 description = "Python implementation of Trilobio's TCode API"
 authors = [{ name = "Trilobio", email = "hello@trilo.bio" }]
 readme = "README.md"
@@ -10,7 +10,7 @@ dependencies = [
     "numpy>=2.4.1",
     "pint>=0.25",
     "plac>=1.4.5",
-    "py-organelles @ git+https://github.com/trilobio/py-organelles.git@v4.1.0",
+    "py-organelles @ git+https://github.com/trilobio/py-organelles.git@v4.2.0",
     "pydantic>=2.10.6",
     "python-socketio[client]>=5.13.0",
     "requests>=2.32.5",
