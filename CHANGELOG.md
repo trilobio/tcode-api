@@ -5,7 +5,7 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
-## [Unreleased]
+## [1.52.0]
 ### Changed
 - Now depends on `py-organelles`.
 - Schema versioning machinery moved to `py_organelles.schema_versioning`.
