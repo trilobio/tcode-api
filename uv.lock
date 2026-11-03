@@ -1048,8 +1048,8 @@ wheels = [
 
 [[package]]
 name = "py-organelles"
-version = "4.0.0"
-source = { git = "https://github.com/trilobio/py-organelles.git?rev=a78992f99718b06fecbb4aa0b38f661642141549#a78992f99718b06fecbb4aa0b38f661642141549" }
+version = "4.1.0"
+source = { git = "https://github.com/trilobio/py-organelles.git?rev=v4.1.0#cae13dcb1549dcc36b85e1258417c470bb7ee904" }
 dependencies = [
     { name = "numpy" },
     { name = "packaging" },
@@ -1554,7 +1554,7 @@ requires-dist = [
     { name = "numpy", specifier = ">=2.4.1" },
     { name = "pint", specifier = ">=0.25" },
     { name = "plac", specifier = ">=1.4.5" },
-    { name = "py-organelles", git = "https://github.com/trilobio/py-organelles.git?rev=a78992f99718b06fecbb4aa0b38f661642141549" },
+    { name = "py-organelles", git = "https://github.com/trilobio/py-organelles.git?rev=v4.1.0" },
     { name = "pydantic", specifier = ">=2.10.6" },
     { name = "python-socketio", extras = ["client"], specifier = ">=5.13.0" },
     { name = "requests", specifier = ">=2.32.5" },
