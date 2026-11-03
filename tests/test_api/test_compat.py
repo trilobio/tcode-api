@@ -10,9 +10,8 @@ import logging
 import unittest
 from pathlib import Path
 
-from pydantic import ValidationError
-
 from py_organelles.schema_versioning import resolve_api_profile
+from pydantic import ValidationError
 
 import tcode_api.api as tc  # This import allows us to test what a "customer" who imports TCode would see
 from tcode_api.api.compat import (
