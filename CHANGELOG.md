@@ -5,6 +5,29 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
+## [1.52.0]
+### Changed
+- Now depends on `py-organelles`.
+- Schema versioning machinery moved to `py_organelles.schema_versioning`.
+    - Moved: `MigrationRegistry`, `SchemaRegistry`, `CompatContext`, `APIHistoryLog`, the compat errors, and the migrate/load functions.
+- The guts of `BaseSchemaVersionedModelV1` are now in
+  `py_organelles.schema_versioning.BaseSchemaVersionedModel`.
+- `load_api_object`, `migrate_data_to_latest`, and `migrate_data_to_version` all handle a
+    missing `schema_version` the same way, through a new `unversioned_is_v1` argument: version 1
+    if set, `InvalidDataError` if not. In `load_api_object`, a version looked up from
+    `api_version` comes first. Nothing sets `unversioned_is_v1` yet.
+- It's possible to migrate an unversioned nested schema, though we don't actually do it.
+
+### Fixed
+- `SchemaRegistry.build_instance` uses its `key` argument. It used `data["type"]` regardless.
+
+### Removed
+- No longer exported; get them from `py_organelles` instead:
+    - `APIVersion`, `SchemaName`, `SchemaVersion`
+    - Errors: `DeprecatedSchemaError`, `InvalidDataError`, `SchemaVersionMismatchError`, `TargetSchemaExistsError`, `TargetSchemaNotFoundError`
+
+---
+
 ## [v1.51.1]
 ### Added
 - `scripts/swap_to_tool.py` script to swap between tools on a robot using Tcode.

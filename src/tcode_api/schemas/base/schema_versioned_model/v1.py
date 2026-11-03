@@ -1,35 +1,15 @@
 """BaseSchemaVersionedModel v1."""
 
 from abc import ABC
-from typing import Self, TextIO
+
+from py_organelles.schema_versioning import BaseSchemaVersionedModel
 
 from ..configured_model.v1 import BaseConfiguredModelV1
 
 
-class BaseSchemaVersionedModelV1(BaseConfiguredModelV1, ABC):
+class BaseSchemaVersionedModelV1(BaseConfiguredModelV1, BaseSchemaVersionedModel, ABC):
     """TCode-configured BaseModel with a schema_version field.
 
-    :note: ``read()`` and ``write()`` methods are exposed on this class because
-    only schema-versioned models should be read from and written to JSON blobs.
+    ``schema_version``, ``read()``, and ``write()`` come from :class:`BaseSchemaVersionedModel`;
+    this class adds TCode's configuration from :class:`BaseConfiguredModelV1`.
     """
-
-    schema_version: int
-
-    @classmethod
-    def read(cls, file_object: TextIO) -> Self:
-        """Load a model from a file-like object.
-
-        :param file_object: A file-like object (typically created via ``open('r')``).
-
-        :returns: The loaded model.
-        """
-        data = file_object.read()
-        return cls.model_validate_json(data)
-
-    def write(self, file_object: TextIO) -> None:
-        """Write the model to a file-like object.
-
-        :param file_object: A file-like object (typically created via ``open('w')``).
-        """
-        data = self.model_dump_json(indent=2)
-        file_object.write(data)
