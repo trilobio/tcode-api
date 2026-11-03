@@ -1048,8 +1048,8 @@ wheels = [
 
 [[package]]
 name = "py-organelles"
-version = "4.1.0"
-source = { git = "https://github.com/trilobio/py-organelles.git?rev=v4.1.0#cae13dcb1549dcc36b85e1258417c470bb7ee904" }
+version = "4.2.0"
+source = { git = "https://github.com/trilobio/py-organelles.git?rev=v4.2.0#1677f0ff16a2821c64a05145f93bdc67b8765f65" }
 dependencies = [
     { name = "numpy" },
     { name = "packaging" },
@@ -1518,7 +1518,7 @@ wheels = [
 
 [[package]]
 name = "tcode-api"
-version = "1.52.0"
+version = "1.52.1"
 source = { editable = "." }
 dependencies = [
     { name = "fastapi" },
@@ -1554,7 +1554,7 @@ requires-dist = [
     { name = "numpy", specifier = ">=2.4.1" },
     { name = "pint", specifier = ">=0.25" },
     { name = "plac", specifier = ">=1.4.5" },
-    { name = "py-organelles", git = "https://github.com/trilobio/py-organelles.git?rev=v4.1.0" },
+    { name = "py-organelles", git = "https://github.com/trilobio/py-organelles.git?rev=v4.2.0" },
     { name = "pydantic", specifier = ">=2.10.6" },
     { name = "python-socketio", extras = ["client"], specifier = ">=5.13.0" },
     { name = "requests", specifier = ">=2.32.5" },
