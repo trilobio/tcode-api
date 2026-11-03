@@ -21,7 +21,6 @@ Format: [Semantic Versioning](https://semver.org)
     `api_version` comes first. Nothing sets `unversioned_is_v1` yet.
 - Nested migration treats a dict as a schema iff its `"type"` is a known schema
   name, instead of checking for `schema_version`.
-- Migrated data always has a `schema_version`, even if no migrator ran.
 
 ### Fixed
 - `SchemaRegistry.build_instance` uses its `key` argument. It used `data["type"]` regardless.

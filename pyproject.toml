@@ -26,8 +26,8 @@ build-backend = "hatchling.build"
 [tool.hatch.metadata]
 allow-direct-references = true
 
-# TODO: Remove before merging, once py-organelles v3.1.0 is tagged. Develops against a local
-# checkout of py-organelles in the meantime.
+# TODO: Remove before merging, once py-organelles PR is merged. Develops against a local checkout of
+# py-organelles in the meantime.
 [tool.uv.sources]
 py-organelles = { path = "../py-organelles", editable = true }
 
