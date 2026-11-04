@@ -34,3 +34,8 @@ def get_key() -> str:
                 return _ord_to_str_map.get(k, chr(k))
     finally:
         termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_settings)
+
+
+def flush_keys() -> None:
+    """Discard keypresses that haven't been read yet."""
+    termios.tcflush(sys.stdin, termios.TCIFLUSH)

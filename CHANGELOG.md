@@ -14,6 +14,11 @@ Format: [Semantic Versioning](https://semver.org)
 - `TCodeServicerClient.teach_point`: spacebar switches between zero-G and jog modes; `w`/`s` jog
     J2 and switch to jog mode. Robots without torque mode get the old `w`/`s`/`q` controls.
 
+### Changed
+- Teach mode TUI (`TCodeServicerClient.teach_point`) used to queue up motions
+  if you pressed `w` or `s` quickly. It now drops the extra presses instead.
+  Slower but safer.
+
 ---
 
 ## [1.52.1]

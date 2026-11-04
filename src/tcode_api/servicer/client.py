@@ -12,7 +12,7 @@ from typing import Any
 import requests
 
 import tcode_api.api as tc
-from tcode_api.servicer.keyboard_input import get_key
+from tcode_api.servicer.keyboard_input import flush_keys, get_key
 from tcode_api.servicer.servicer_api import (
     ClearScheduleResponse,
     EnterTeachModeRequest,
@@ -271,6 +271,9 @@ class TCodeServicerClient:
         nothing). In addition, the robot will respond to vertical force on the FTS and jog up and
         down, to crudely mimic zero-G mode.
 
+        Each jog finishes before the next key is read, and keys pressed meanwhile are dropped, so
+        jogs don't queue up.
+
         :param robot_id: The ID of the robot to teach the point for.
             Use the ADD_ROBOT command to set the robot ID.
 
@@ -288,6 +291,7 @@ class TCodeServicerClient:
             else:
                 print("Manual Jog Controls (w|s = up|down)\nw|s|q")
             while True:
+                flush_keys()
                 key = get_key()
                 match key:
                     case "w" | "s":
@@ -308,6 +312,7 @@ class TCodeServicerClient:
                             ),
                         )
                         self.set_run_state(True)
+                        self._wait_for_empty_schedule()
                     case "space":
                         if not supports_torque_mode:
                             print("(robot doesn't support zero-G mode)")
@@ -345,6 +350,16 @@ class TCodeServicerClient:
         )
         rsp.raise_for_status()
         return EnterTeachModeResponse.model_validate(rsp.json()).supports_torque_mode
+
+    def _wait_for_empty_schedule(self) -> None:
+        """Block until every scheduled command has finished."""
+        while True:
+            status = self.get_status()
+            if not status.result.success:
+                raise RuntimeError(f"Command {status.command_id} failed: {status.result.message}")
+            if status.operation_count == 0:
+                return
+            time.sleep(0.05)
 
     def discover_fleet(self) -> None:
         """Scan the fleet for new robots, and update all robot states. Useful if you swapped tools manually as a developer."""
