@@ -259,11 +259,17 @@ class TCodeServicerClient:
         rsp.raise_for_status()
 
     def teach_point(self, robot_id: str) -> Matrix:
-        """Teach a point for the specified robot.
+        """TUI-based tool to teach a point for the specified robot.
 
-        The robot starts in zero-G mode, where it can be moved by hand. `w`/`s` jog J2 up/down,
-        holding it in place (jog mode) until spacebar switches back. `q` finishes. Robots
-        without torque mode have no zero-G or jog modes, and spacebar does nothing.
+        J1, J3, and J4 go limp.
+
+        J2 starts in zero-G mode, where it can be moved by hand. Press spacebar to switch between
+        zero-G mode and position mode, where you can jog up and down with `w` and `s`. (`w` and `s`
+        also enter position mode, for convenience.)
+
+        If the robot doesn't support torque mode, then you only get position mode (and spacebar does
+        nothing). In addition, the robot will respond to vertical force on the FTS and jog up and
+        down, to crudely mimic zero-G mode.
 
         :param robot_id: The ID of the robot to teach the point for.
             Use the ADD_ROBOT command to set the robot ID.
@@ -304,7 +310,7 @@ class TCodeServicerClient:
                         self.set_run_state(True)
                     case "space":
                         if not torque_mode:
-                            print(f"Unrecognized char {key}")
+                            print("(robot doesn't support zero-G mode)")
                             continue
                         j2_position_mode = not j2_position_mode
                         self._enter_teach_mode(robot_id, j2_position_mode)
@@ -313,7 +319,7 @@ class TCodeServicerClient:
                         print("Exiting")
                         break
                     case _:
-                        print(f"Unrecognized char {key}")
+                        print(f"Unrecognized key {key}")
         finally:
             rsp = requests.post(
                 f"{self.servicer_url}/{self.tcode_api_version}/exit_teach_mode",
