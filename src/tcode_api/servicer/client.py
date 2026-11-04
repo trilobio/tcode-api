@@ -264,8 +264,8 @@ class TCodeServicerClient:
         J1, J3, and J4 go limp.
 
         J2 starts in zero-G mode, where it can be moved by hand. Press spacebar to switch between
-        zero-G mode and position mode, where you can jog up and down with `w` and `s`. (`w` and `s`
-        also enter position mode, for convenience.)
+        zero-G mode and jog (position) mode, where you can jog up and down with `w` and `s`. (`w`
+        and `s` also enter jog mode, for convenience.)
 
         If the robot doesn't support torque mode, then you only get position mode (and spacebar does
         nothing). In addition, the robot will respond to vertical force on the FTS and jog up and
@@ -273,6 +273,8 @@ class TCodeServicerClient:
 
         Each jog finishes before the next key is read, and keys pressed meanwhile are dropped, so
         jogs don't queue up.
+
+        `q` or `esc` to quit.
 
         :param robot_id: The ID of the robot to teach the point for.
             Use the ADD_ROBOT command to set the robot ID.
@@ -286,7 +288,7 @@ class TCodeServicerClient:
             j2_position_mode = False
             supports_torque_mode = self._enter_teach_mode(robot_id, j2_position_mode)
             if supports_torque_mode:
-                print("Teach mode - `w`/`s` jog up/down, `q` finishes")
+                print("Teach mode - `w`/`s` jog up/down, `q` or `esc` to finish")
                 print(zero_g_message)
             else:
                 print("Manual Jog Controls (w|s = up|down)\nw|s|q")
