@@ -162,12 +162,12 @@ class EnterTeachModeResponse(BaseModel):
     """Response from entering teach mode.
 
     :param result: Response metadata
-    :param torque_mode: whether the robot's joints have torque mode, i.e. whether zero-G mode is
-        available.
+    :param supports_torque_mode: whether the robot's joints have torque mode, i.e. whether zero-G
+        mode is available.
     """
 
     result: Result
-    torque_mode: bool = False
+    supports_torque_mode: bool = False
 
 
 class ExitTeachModeRequest(BaseModel):

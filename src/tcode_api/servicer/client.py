@@ -281,8 +281,8 @@ class TCodeServicerClient:
         transform: Matrix | None = None
         try:
             j2_position_mode = False
-            torque_mode = self._enter_teach_mode(robot_id, j2_position_mode)
-            if torque_mode:
+            supports_torque_mode = self._enter_teach_mode(robot_id, j2_position_mode)
+            if supports_torque_mode:
                 print("Teach mode - `w`/`s` jog up/down, `q` finishes")
                 print(zero_g_message)
             else:
@@ -291,7 +291,7 @@ class TCodeServicerClient:
                 key = get_key()
                 match key:
                     case "w" | "s":
-                        if torque_mode and not j2_position_mode:
+                        if supports_torque_mode and not j2_position_mode:
                             j2_position_mode = True  # The servicer switches J2 to jog it
                             print(jog_message)
                         self.schedule_command(
@@ -309,7 +309,7 @@ class TCodeServicerClient:
                         )
                         self.set_run_state(True)
                     case "space":
-                        if not torque_mode:
+                        if not supports_torque_mode:
                             print("(robot doesn't support zero-G mode)")
                             continue
                         j2_position_mode = not j2_position_mode
@@ -344,7 +344,7 @@ class TCodeServicerClient:
             timeout=self.timeout,
         )
         rsp.raise_for_status()
-        return EnterTeachModeResponse.model_validate(rsp.json()).torque_mode
+        return EnterTeachModeResponse.model_validate(rsp.json()).supports_torque_mode
 
     def discover_fleet(self) -> None:
         """Scan the fleet for new robots, and update all robot states. Useful if you swapped tools manually as a developer."""
