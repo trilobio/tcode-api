@@ -5,7 +5,7 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
-## [Unreleased]
+## [1.53.0]
 ### Added
 - `EnterTeachModeRequest.j2_position_mode`, to switch teach mode between zero-G mode (every joint moves by
     hand) and jog mode (J2 holds its position, to be jogged). Needs a tcode servicer with torque
