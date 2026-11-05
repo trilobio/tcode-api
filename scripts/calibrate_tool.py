@@ -146,6 +146,7 @@ def yes_no_prompt(question: str) -> bool:
 
 
 @plac.annotations(
+    tool_kind=plac.Annotation("Tool to calibrate; prompts if omitted", choices=_tool_options),
     servicer_url=servicer_url_annotation,
     output_file_path=output_file_path_annotation,
     deck_slot_name=plac.Annotation("Deck slot name for pipette tip box", kind="option", abbrev="d"),
@@ -154,6 +155,7 @@ def yes_no_prompt(question: str) -> bool:
     xy=plac.Annotation("If set, calibrate the XY axis and Z axes", kind="flag", abbrev="xy"),
 )
 def main(
+    tool_kind: ToolOptions | None = None,
     servicer_url: str = DEFAULT_SERVICER_URL,
     output_file_path: pathlib.Path | None = None,
     deck_slot_name: str = "DeckSlot_8",
@@ -162,7 +164,8 @@ def main(
     xy: bool = False,
 ) -> None:
     """Run a tool calibration procedure through TCode. The script first prompts you to select a
-    tool to calibrate, then runs the appropriate procedure on the target fleet and robot.
+    tool to calibrate (unless given as an argument), then runs the appropriate procedure on the
+    target fleet and robot.
 
     If neither -z nor -xy is specified, the script selects 'xy+z' for all calibrations unless the
     tool doesn't support it, in which case it selects 'z' only.
@@ -177,7 +180,8 @@ def main(
     no_axis_input = not z_only and not xy
     if z_only and xy:
         raise RuntimeError("-z and -xy are mutually exclusive flags")
-    tool_kind = prompt_probeable_tool_kind()
+    if tool_kind is None:
+        tool_kind = prompt_probeable_tool_kind()
     calibrate_pipette_tip = False
     channel_count: int | None = None
     pipette_tip_volume: tc.ValueWithUnits | None = None

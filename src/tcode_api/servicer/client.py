@@ -356,6 +356,13 @@ class TCodeServicerClient:
                         # isn't left buffered when stdout is not a TTY.
                         print(flush=True)
                     raise RuntimeError(msg)
+
+                if not status.run_state:
+                    # Eg. a PAUSE command
+                    input("\nPaused. Press enter to resume.")
+                    self.set_run_state(True)
+                    continue
+
                 elapsed = (datetime.now() - time_start).total_seconds()
                 if display_progress:
                     print(
