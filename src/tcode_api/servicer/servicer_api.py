@@ -145,21 +145,29 @@ class ScheduleCommandsRequest(BaseModel):
 
 
 class EnterTeachModeRequest(BaseModel):
-    """Request to enter teach mode.
+    """Request to enter teach mode, or (if already in teach mode) switch J2's position mode.
+
+    Idempotent.
 
     :param robot_id: target robot ID
+    :param j2_position_mode: True puts J2 in position mode, so it can be jogged ("jog mode"). False
+        (default) puts it in torque-based zero-G mode.
     """
 
     robot_id: str
+    j2_position_mode: bool = False
 
 
 class EnterTeachModeResponse(BaseModel):
     """Response from entering teach mode.
 
     :param result: Response metadata
+    :param supports_torque_mode: whether the robot's joints have torque mode, i.e. whether zero-G
+        mode is available.
     """
 
     result: Result
+    supports_torque_mode: bool = False
 
 
 class ExitTeachModeRequest(BaseModel):
