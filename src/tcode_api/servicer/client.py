@@ -420,7 +420,7 @@ class TCodeServicerClient:
                         end="",
                         flush=True,
                     )
-            except KeyboardInterrupt:
+            except (KeyboardInterrupt, EOFError):
                 print()  # newline
                 self.set_run_state(False)
                 self.clear_tcode_resolution()
