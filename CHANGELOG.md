@@ -5,6 +5,12 @@ Format: [Semantic Versioning](https://semver.org)
 
 ---
 
+## [1.52.2]
+### Changed
+- Updated `MOVE_GRIPPER` and `GripperStateType` description to say that `WIDTH` mode specifies its width starting from closed. Also add in the nominal 127.5mm fully-closed number.
+
+---
+
 ## [1.52.1]
 ### Changed
 - `py-organelles` bumped to v4.2.0, which adds full support for

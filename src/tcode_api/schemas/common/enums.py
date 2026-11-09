@@ -44,7 +44,7 @@ class GripperStateType(int, Enum):
     """The gripper is fully closed."""
 
     WIDTH = 3
-    """Gripper is set to a specific distance between the fingers (above CLOSE)."""
+    """The gripper is somewhere between fully open and fully closed (inclusive). Width is specified in mm, where 0mm means fully closed."""
 
 
 class TrajectoryType(int, Enum):
