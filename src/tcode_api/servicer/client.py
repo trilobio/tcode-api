@@ -370,10 +370,14 @@ class TCodeServicerClient:
         )
         rsp.raise_for_status()
 
-    def execute_run_loop(self, display_progress: bool = True) -> None:
+    def execute_run_loop(
+        self, display_progress: bool = True, resume_from_pause: bool = False
+    ) -> None:
         """Run a blocking loop that monitors the servicer's status and exits when the current
             script is complete or an error occurs.
 
+        :param resume_from_pause: If True, when the fleet pauses (eg. a PAUSE command), prompt
+            on stdin and resume when the user presses enter.
         :note: This method can be interrupted with <Ctrl-C>, which will clear the robot state
             and exit cleanly.
         """
@@ -402,6 +406,13 @@ class TCodeServicerClient:
                         # isn't left buffered when stdout is not a TTY.
                         print(flush=True)
                     raise RuntimeError(msg)
+
+                if resume_from_pause and not status.run_state:
+                    # Eg. a PAUSE command
+                    input("\nPaused. Press enter to resume.")
+                    self.set_run_state(True)
+                    continue
+
                 elapsed = (datetime.now() - time_start).total_seconds()
                 if display_progress:
                     print(
@@ -409,7 +420,7 @@ class TCodeServicerClient:
                         end="",
                         flush=True,
                     )
-            except KeyboardInterrupt:
+            except (KeyboardInterrupt, EOFError):
                 print()  # newline
                 self.set_run_state(False)
                 self.clear_tcode_resolution()
@@ -427,6 +438,7 @@ class TCodeServicerClient:
         enable_socketio_user_input: bool = True,
         display_progress: bool = True,
         prompt_deck_layout: bool = True,
+        resume_from_pause: bool = False,
     ) -> None:
         """Schedule and execute a TCode script on the fleet, starting from an empty state.
 
@@ -444,6 +456,7 @@ class TCodeServicerClient:
         :param prompt_deck_layout: If True, prompt the user to confirm the deck layout before
             running the script. This is useful for ensuring that the physical layout matches the
             expected layout.
+        :param resume_from_pause: See `execute_run_loop`.
         """
         sio = None
         if enable_socketio_user_input:
@@ -515,7 +528,7 @@ class TCodeServicerClient:
                     )
         print()  # new line
         try:
-            self.execute_run_loop(display_progress)
+            self.execute_run_loop(display_progress, resume_from_pause)
         finally:
             try:
                 if sio is not None:
