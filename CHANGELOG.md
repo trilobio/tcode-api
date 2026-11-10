@@ -4,6 +4,13 @@ All notable changes to this project will be documented here.
 Format: [Semantic Versioning](https://semver.org)
 
 ---
+
+## [1.54.1]
+### Changed
+- Updated `MOVE_GRIPPER` and `GripperStateType` description to say that `WIDTH` mode specifies its width starting from closed. Also add in the nominal 127.5mm fully-closed number.
+
+---
+
 ## [1.54.0]
 
 ### Changed
@@ -36,12 +43,6 @@ Format: [Semantic Versioning](https://semver.org)
 - Teach mode TUI (`TCodeServicerClient.teach_point`) used to queue up motions
   if you pressed `w` or `s` quickly. It now drops the extra presses instead.
   Slower but safer.
-
----
-
-## [1.52.2]
-### Changed
-- Updated `MOVE_GRIPPER` and `GripperStateType` description to say that `WIDTH` mode specifies its width starting from closed. Also add in the nominal 127.5mm fully-closed number.
 
 ---
 
