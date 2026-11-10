@@ -19,5 +19,7 @@ class MOVE_GRIPPER(BaseRobotSpecificTCodeCommandV1):
 
     finger_separation: ValueWithUnits | None = Field(
         default=None,
-        description=("Desired finger separation for WIDTH, in millimeters above CLOSED. 0 is equivalent to CLOSED, roughly 127.5mm total distance between fingers. 1mm is 1mm wider than that, etc."),
+        description=(
+            "Desired finger separation for WIDTH, in millimeters above CLOSED. 0 is equivalent to CLOSED, roughly 127.5mm total distance between fingers. 1mm is 1mm wider than that, etc."
+        ),
     )
