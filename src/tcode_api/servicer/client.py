@@ -12,10 +12,11 @@ from typing import Any
 import requests
 
 import tcode_api.api as tc
-from tcode_api.servicer.keyboard_input import get_key
+from tcode_api.servicer.keyboard_input import flush_keys, get_key
 from tcode_api.servicer.servicer_api import (
     ClearScheduleResponse,
     EnterTeachModeRequest,
+    EnterTeachModeResponse,
     ExitTeachModeRequest,
     ExitTeachModeResponse,
     GetStatusResponse,
@@ -258,51 +259,74 @@ class TCodeServicerClient:
         rsp.raise_for_status()
 
     def teach_point(self, robot_id: str) -> Matrix:
-        """Teach a point for the specified robot.
+        """TUI-based tool to teach a point for the specified robot.
+
+        J1, J3, and J4 go limp.
+
+        J2 starts in zero-G mode, where it can be moved by hand. Press spacebar to switch between
+        zero-G mode and jog (position) mode, where you can jog up and down with `w` and `s`. (`w`
+        and `s` also enter jog mode, for convenience.)
+
+        If the robot doesn't support torque mode, then you only get position mode (and spacebar does
+        nothing). In addition, the robot will respond to vertical force on the FTS and jog up and
+        down, to crudely mimic zero-G mode.
+
+        Each jog finishes before the next key is read, and keys pressed meanwhile are dropped, so
+        jogs don't queue up.
+
+        `q` or `esc` to quit.
 
         :param robot_id: The ID of the robot to teach the point for.
             Use the ADD_ROBOT command to set the robot ID.
 
         :return: The matrix representing the taught point.
         """
+        zero_g_message = "Zero-G mode - press `w`, `s`, or spacebar to switch to jog mode"
+        jog_message = "Jog mode - press spacebar to switch to zero-G mode"
         transform: Matrix | None = None
         try:
-            rsp = requests.post(
-                f"{self.servicer_url}/{self.tcode_api_version}/enter_teach_mode",
-                json=EnterTeachModeRequest(robot_id=robot_id).model_dump(),
-                timeout=self.timeout,
-            )
-            rsp.raise_for_status()
-            print("Manual Jog Controls (w|s = up|down)\nw|s|q")
-            key_control_loop_running = True
-            while key_control_loop_running:
+            j2_position_mode = False
+            supports_torque_mode = self._enter_teach_mode(robot_id, j2_position_mode)
+            if supports_torque_mode:
+                print("Teach mode - `w`/`s` jog up/down, `q` or `esc` to finish")
+                print(zero_g_message)
+            else:
+                print("Manual Jog Controls (w|s = up|down)\nw|s|q")
+            while True:
+                flush_keys()
                 key = get_key()
                 match key:
-                    case "w":
+                    case "w" | "s":
+                        if supports_torque_mode and not j2_position_mode:
+                            j2_position_mode = True  # The servicer switches J2 to jog it
+                            print(jog_message)
                         self.schedule_command(
                             id=generate_id(),
                             command=tc.MOVE_TO_JOINT_POSE(
                                 robot_id=robot_id,
-                                joint_positions=[rad(0), mm(0.5), rad(0), rad(0)],
+                                joint_positions=[
+                                    rad(0),
+                                    mm(0.5) if key == "w" else mm(-0.5),
+                                    rad(0),
+                                    rad(0),
+                                ],
                                 relative=True,
                             ),
                         )
                         self.set_run_state(True)
-                    case "s":
-                        self.schedule_command(
-                            id=generate_id(),
-                            command=tc.MOVE_TO_JOINT_POSE(
-                                robot_id=robot_id,
-                                joint_positions=[rad(0), mm(-0.5), rad(0), rad(0)],
-                                relative=True,
-                            ),
-                        )
-                        self.set_run_state(True)
+                        self._wait_for_empty_schedule()
+                    case "space":
+                        if not supports_torque_mode:
+                            print("(robot doesn't support zero-G mode)")
+                            continue
+                        j2_position_mode = not j2_position_mode
+                        self._enter_teach_mode(robot_id, j2_position_mode)
+                        print(jog_message if j2_position_mode else zero_g_message)
                     case "esc" | "q":
                         print("Exiting")
-                        key_control_loop_running = False
+                        break
                     case _:
-                        print(f"Unrecognized char {key}")
+                        print(f"Unrecognized key {key}")
         finally:
             rsp = requests.post(
                 f"{self.servicer_url}/{self.tcode_api_version}/exit_teach_mode",
@@ -317,6 +341,28 @@ class TCodeServicerClient:
         )
         return transform
 
+    def _enter_teach_mode(self, robot_id: str, j2_position_mode: bool) -> bool:
+        """:return: whether the robot has torque mode, see `EnterTeachModeResponse`."""
+        rsp = requests.post(
+            f"{self.servicer_url}/{self.tcode_api_version}/enter_teach_mode",
+            json=EnterTeachModeRequest(
+                robot_id=robot_id, j2_position_mode=j2_position_mode
+            ).model_dump(),
+            timeout=self.timeout,
+        )
+        rsp.raise_for_status()
+        return EnterTeachModeResponse.model_validate(rsp.json()).supports_torque_mode
+
+    def _wait_for_empty_schedule(self) -> None:
+        """Block until every scheduled command has finished."""
+        while True:
+            status = self.get_status()
+            if not status.result.success:
+                raise RuntimeError(f"Command {status.command_id} failed: {status.result.message}")
+            if status.operation_count == 0:
+                return
+            time.sleep(0.05)
+
     def discover_fleet(self) -> None:
         """Scan the fleet for new robots, and update all robot states. Useful if you swapped tools manually as a developer."""
         rsp = requests.get(
@@ -324,10 +370,14 @@ class TCodeServicerClient:
         )
         rsp.raise_for_status()
 
-    def execute_run_loop(self, display_progress: bool = True) -> None:
+    def execute_run_loop(
+        self, display_progress: bool = True, resume_from_pause: bool = False
+    ) -> None:
         """Run a blocking loop that monitors the servicer's status and exits when the current
             script is complete or an error occurs.
 
+        :param resume_from_pause: If True, when the fleet pauses (eg. a PAUSE command), prompt
+            on stdin and resume when the user presses enter.
         :note: This method can be interrupted with <Ctrl-C>, which will clear the robot state
             and exit cleanly.
         """
@@ -356,6 +406,13 @@ class TCodeServicerClient:
                         # isn't left buffered when stdout is not a TTY.
                         print(flush=True)
                     raise RuntimeError(msg)
+
+                if resume_from_pause and not status.run_state:
+                    # Eg. a PAUSE command
+                    input("\nPaused. Press enter to resume.")
+                    self.set_run_state(True)
+                    continue
+
                 elapsed = (datetime.now() - time_start).total_seconds()
                 if display_progress:
                     print(
@@ -363,7 +420,7 @@ class TCodeServicerClient:
                         end="",
                         flush=True,
                     )
-            except KeyboardInterrupt:
+            except (KeyboardInterrupt, EOFError):
                 print()  # newline
                 self.set_run_state(False)
                 self.clear_tcode_resolution()
@@ -381,6 +438,7 @@ class TCodeServicerClient:
         enable_socketio_user_input: bool = True,
         display_progress: bool = True,
         prompt_deck_layout: bool = True,
+        resume_from_pause: bool = False,
     ) -> None:
         """Schedule and execute a TCode script on the fleet, starting from an empty state.
 
@@ -398,6 +456,7 @@ class TCodeServicerClient:
         :param prompt_deck_layout: If True, prompt the user to confirm the deck layout before
             running the script. This is useful for ensuring that the physical layout matches the
             expected layout.
+        :param resume_from_pause: See `execute_run_loop`.
         """
         sio = None
         if enable_socketio_user_input:
@@ -469,7 +528,7 @@ class TCodeServicerClient:
                     )
         print()  # new line
         try:
-            self.execute_run_loop(display_progress)
+            self.execute_run_loop(display_progress, resume_from_pause)
         finally:
             try:
                 if sio is not None:

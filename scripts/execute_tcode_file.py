@@ -16,15 +16,22 @@ from tcode_api.servicer import TCodeServicerClient
 @plac.annotations(
     file_path=plac.Annotation(".tc file to parse", type=pathlib.Path),
     servicer_url=servicer_url_annotation,
+    resume_from_pause=plac.Annotation(
+        "If set, prompt to resume when paused (eg. by a PAUSE command)", kind="flag", abbrev="p"
+    ),
 )
-def main(file_path: pathlib.Path, servicer_url: str = DEFAULT_SERVICER_URL) -> None:
+def main(
+    file_path: pathlib.Path,
+    servicer_url: str = DEFAULT_SERVICER_URL,
+    resume_from_pause: bool = False,
+) -> None:
     """Load and execute a .tc file."""
     with file_path.open() as io_object:
         file_text = io_object.read()
 
     script = read_and_migrate_script(file_text)
     client = TCodeServicerClient(servicer_url=servicer_url)
-    client.run_script(script)
+    client.run_script(script, resume_from_pause=resume_from_pause)
 
 
 if __name__ == "__main__":

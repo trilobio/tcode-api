@@ -4,6 +4,40 @@ All notable changes to this project will be documented here.
 Format: [Semantic Versioning](https://semver.org)
 
 ---
+## [1.54.0]
+
+### Changed
+- `tcode_labware/costar_3603_plate.json`: pinch center is 3mm up, not 10mm up,
+  bringing it in line with other spots
+  (`aceta/tcode/tcode/labware_structures.py`, and
+  `aceta/robot/tests/data/labware/well_plate.json` which is generated from
+  `labware_structures.py`).
+- `TCodeServicerClient`: if you pass `resume_from_pause=True`, then when the
+  fleet pauses (if the script isn't done), prompt the user via stdin to press
+  enter to restart it. Useful for running scripts where you want to go do
+  something by hand halfway through.
+- `scripts/execute_tcode_file.py`: new cmd-line arg `-p` sets
+  `resume_from_pause=True`.
+- `scripts/calibrate_tool.py` can take a cmd-line argument for which tool to
+  calibrate, instead of just a TUI input after starting it.
+
+---
+
+## [1.53.0]
+### Added
+- `EnterTeachModeRequest.j2_position_mode`, to switch teach mode between zero-G mode (every joint moves by
+    hand) and jog mode (J2 holds its position, to be jogged). Needs a tcode servicer with torque
+    mode teaching.
+- `EnterTeachModeResponse.supports_torque_mode`: whether the robot has zero-G and jog modes.
+- `TCodeServicerClient.teach_point`: spacebar switches between zero-G and jog modes; `w`/`s` jog
+    J2 and switch to jog mode. Robots without torque mode get the old `w`/`s`/`q` controls.
+
+### Changed
+- Teach mode TUI (`TCodeServicerClient.teach_point`) used to queue up motions
+  if you pressed `w` or `s` quickly. It now drops the extra presses instead.
+  Slower but safer.
+
+---
 
 ## [1.52.2]
 ### Changed
